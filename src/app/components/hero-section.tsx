@@ -63,13 +63,13 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
           <div className="flex items-start gap-2 mb-6">
             <Sparkles className="w-6 h-6 text-yellow-500" />
             <span className="px-4 py-1 bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-500 text-sm">
-              Season 6 - Épico
+              Season 19-2-3 - Épico
             </span>
             <Sparkles className="w-6 h-6 text-yellow-500" />
           </div>
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 text-white tracking-tight">
-            MU <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-300">Online</span>
+            MeuMU <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-300">Online</span>
           </h1>
 
           <p className="text-xl sm:text-2xl text-gray-300 mb-6">

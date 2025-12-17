@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { motion } from 'motion/react';
-import { SectionBackground } from './section-background';
+import heroImage from 'figma:asset/7c77bece727042bfc957b9adbcf34e1fa973fbec.png';
 
 // Mock data
 const mockUser = {
@@ -136,11 +136,18 @@ export function DashboardSection() {
 
   return (
     <div className="min-h-screen pt-32 pb-20 px-4">
-      <SectionBackground 
-        imageUrl="https://images.unsplash.com/photo-1762968755051-5f0b37d75609?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXJrJTIwa25pZ2h0JTIwYXJtb3J8ZW58MXx8fHwxNzY1ODcxMjAwfDA&ixlib=rb-4.1.0&q=80&w=1080"
-        character="Dark Knight"
-      />
-      <div className="max-w-7xl mx-auto">
+      {/* Background Image with Overlay */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 z-10" />
+        <img
+          src={heroImage}
+          alt="MU Online Background"
+          className="w-full h-full object-cover object-center"
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

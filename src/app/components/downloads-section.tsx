@@ -2,13 +2,13 @@ import { Download, FileArchive, Settings, HardDrive, ExternalLink } from 'lucide
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { motion } from 'motion/react';
-import { SectionBackground } from './section-background';
+import heroImage from 'figma:asset/7c77bece727042bfc957b9adbcf34e1fa973fbec.png';
 
 const downloads = [
   {
     id: '1',
     title: 'Cliente Completo',
-    description: 'Download completo do cliente MU Online Season 6. Inclui todos os arquivos necessários.',
+    description: 'Download completo do cliente MeuMU Online Season 19-2-3 - Épico. Inclui todos os arquivos necessários.',
     size: '2.5 GB',
     icon: FileArchive,
     color: 'yellow',
@@ -65,11 +65,18 @@ export function DownloadsSection() {
 
   return (
     <div className="min-h-screen pt-32 pb-20 px-4">
-      <SectionBackground 
-        imageUrl="https://images.unsplash.com/photo-1565942670438-ede6d60c368c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3YXJyaW9yJTIwc3dvcmQlMjBlcGljfGVufDF8fHx8MTc2NTg3MTE5OXww&ixlib=rb-4.1.0&q=80&w=1080"
-        character="Dark Lord"
-      />
-      <div className="max-w-7xl mx-auto">
+      {/* Background Image with Overlay */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 z-10" />
+        <img
+          src={heroImage}
+          alt="MU Online Background"
+          className="w-full h-full object-cover object-center"
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

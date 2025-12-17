@@ -9,6 +9,17 @@ import { ServerInfoWidget } from './components/server-info-widget';
 
 export default function App() {
   const [currentSection, setCurrentSection] = useState('home');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setCurrentSection('dashboard');
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentSection('home');
+  };
 
   const renderSection = () => {
     switch (currentSection) {
@@ -41,7 +52,13 @@ export default function App() {
       <div className="fixed inset-0 bg-gradient-to-b from-yellow-900/10 via-transparent to-black/50 pointer-events-none" />
 
       {/* Navigation */}
-      <Navigation onNavigate={setCurrentSection} currentSection={currentSection} />
+      <Navigation 
+        onNavigate={setCurrentSection} 
+        currentSection={currentSection}
+        isLoggedIn={isLoggedIn}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+      />
 
       {/* Server Info Widget */}
       <ServerInfoWidget />
@@ -58,7 +75,7 @@ export default function App() {
             <div>
               <h3 className="text-white mb-4">Sobre o Servidor</h3>
               <p className="text-gray-400 text-sm">
-                Servidor privado de MU Online Season 6 com experiência balanceada, eventos épicos e comunidade ativa desde 2024.
+                Servidor privado de MeuMU Online Season 19-2-3 - Épico com experiência balanceada, eventos épicos e comunidade ativa desde 2024.
               </p>
             </div>
             <div>
@@ -82,7 +99,7 @@ export default function App() {
           </div>
           <div className="pt-8 border-t border-yellow-500/20 text-center">
             <p className="text-gray-400 text-sm">
-              © 2024 MU Online - Epic Server. Todos os direitos reservados. | Made with ❤️ by Figma Make
+              © 2024 MeuMU Online - Season 19-2-3 - Épico. Todos os direitos reservados. | Made with ❤️ by Figma Make
             </p>
           </div>
         </div>

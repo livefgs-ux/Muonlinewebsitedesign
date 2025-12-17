@@ -2,7 +2,7 @@ import { Trophy, Medal, Award, Users } from 'lucide-react';
 import { Card } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { motion } from 'motion/react';
-import { SectionBackground } from './section-background';
+import heroImage from 'figma:asset/7c77bece727042bfc957b9adbcf34e1fa973fbec.png';
 
 // Mock data
 const topResets = [
@@ -54,11 +54,18 @@ const getRankMedal = (rank: number) => {
 export function RankingsSection() {
   return (
     <div className="min-h-screen pt-32 pb-20 px-4">
-      <SectionBackground 
-        imageUrl="https://images.unsplash.com/photo-1631290235496-b73219233bbf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGYlMjBhcmNoZXIlMjBmYW50YXN5fGVufDF8fHx8MTc2NTg0NzI4NXww&ixlib=rb-4.1.0&q=80&w=1080"
-        character="Muse Elf"
-      />
-      <div className="max-w-7xl mx-auto">
+      {/* Background Image with Overlay */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 z-10" />
+        <img
+          src={heroImage}
+          alt="MU Online Background"
+          className="w-full h-full object-cover object-center"
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

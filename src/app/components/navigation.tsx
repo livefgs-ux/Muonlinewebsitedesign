@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { Menu, X, Swords, Trophy, Download, Users, Calendar } from 'lucide-react';
+import { Menu, X, Swords, Trophy, Download, Users, Calendar, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface NavigationProps {
   onNavigate: (section: string) => void;
   currentSection: string;
+  isLoggedIn: boolean;
+  onLogin: () => void;
+  onLogout: () => void;
 }
 
-export function Navigation({ onNavigate, currentSection }: NavigationProps) {
+export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogin, onLogout }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -29,9 +32,9 @@ export function Navigation({ onNavigate, currentSection }: NavigationProps) {
             </div>
             <div>
               <h1 className="text-xl text-white">
-                MU <span className="text-yellow-500">Online</span>
+                MeuMU <span className="text-yellow-500">Online</span>
               </h1>
-              <p className="text-xs text-gray-400">Season 6 - Epic Server</p>
+              <p className="text-xs text-gray-400">Season 19-2-3 Epic Server</p>
             </div>
           </div>
 
@@ -53,14 +56,24 @@ export function Navigation({ onNavigate, currentSection }: NavigationProps) {
             ))}
           </div>
 
-          {/* Login Button */}
+          {/* Login/Logout Button */}
           <div className="hidden md:block">
-            <Button
-              onClick={() => onNavigate('dashboard')}
-              className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black shadow-lg shadow-yellow-500/50"
-            >
-              Entrar
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                onClick={onLogout}
+                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg shadow-red-600/50 hover:shadow-red-600/70 transition-all"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Deslogar
+              </Button>
+            ) : (
+              <Button
+                onClick={onLogin}
+                className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black shadow-lg shadow-yellow-500/50"
+              >
+                Entrar
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -94,15 +107,28 @@ export function Navigation({ onNavigate, currentSection }: NavigationProps) {
                 <span>{item.label}</span>
               </button>
             ))}
-            <Button
-              onClick={() => {
-                onNavigate('dashboard');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black"
-            >
-              Entrar
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                onClick={() => {
+                  onLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Deslogar
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  onLogin();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black"
+              >
+                Entrar
+              </Button>
+            )}
           </div>
         </div>
       )}

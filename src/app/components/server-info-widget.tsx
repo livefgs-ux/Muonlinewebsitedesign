@@ -1,7 +1,13 @@
-import { useState, useEffect } from 'react';
-import { Server, Users, TrendingUp, Zap, Circle } from 'lucide-react';
-import { Card } from './ui/card';
-import { motion } from 'motion/react';
+import { useState, useEffect } from "react";
+import {
+  Server,
+  Users,
+  TrendingUp,
+  Zap,
+  Circle,
+} from "lucide-react";
+import { Card } from "./ui/card";
+import { motion } from "motion/react";
 
 export function ServerInfoWidget() {
   const [isOnline, setIsOnline] = useState(true);
@@ -21,10 +27,14 @@ export function ServerInfoWidget() {
   }, []);
 
   const serverInfo = [
-    { label: 'Versão', value: 'Season 6', icon: Server },
-    { label: 'EXP Rate', value: '500x', icon: TrendingUp },
-    { label: 'Drop Rate', value: '70%', icon: Zap },
-    { label: 'Players Online', value: onlinePlayers.toLocaleString(), icon: Users },
+    { label: "Versão", value: "Season 19-2-3", icon: Server },
+    { label: "EXP Rate", value: "500x", icon: TrendingUp },
+    { label: "Drop Rate", value: "70%", icon: Zap },
+    {
+      label: "Players Online",
+      value: onlinePlayers.toLocaleString(),
+      icon: Users,
+    },
   ];
 
   return (
@@ -41,20 +51,22 @@ export function ServerInfoWidget() {
             <h3 className="text-white">Status do Servidor</h3>
             <div className="flex items-center gap-2">
               <Circle
-                className={`w-3 h-3 ${isOnline ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'}`}
+                className={`w-3 h-3 ${isOnline ? "fill-green-500 text-green-500" : "fill-red-500 text-red-500"}`}
               />
-              <span className={`text-sm ${isOnline ? 'text-green-500' : 'text-red-500'}`}>
-                {isOnline ? 'Online' : 'Offline'}
+              <span
+                className={`text-sm ${isOnline ? "text-green-500" : "text-red-500"}`}
+              >
+                {isOnline ? "Online" : "Offline"}
               </span>
             </div>
           </div>
-          
+
           {isOnline && (
             <div className="h-2 bg-black/50 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-green-500 to-yellow-500"
-                initial={{ width: '0%' }}
-                animate={{ width: '95%' }}
+                initial={{ width: "0%" }}
+                animate={{ width: "95%" }}
                 transition={{ duration: 1, delay: 0.2 }}
               />
             </div>
@@ -73,7 +85,9 @@ export function ServerInfoWidget() {
             >
               <div className="flex items-center gap-2">
                 <info.icon className="w-4 h-4 text-yellow-500" />
-                <span className="text-gray-400 text-sm">{info.label}</span>
+                <span className="text-gray-400 text-sm">
+                  {info.label}
+                </span>
               </div>
               <span className="text-white">{info.value}</span>
             </motion.div>
@@ -82,16 +96,30 @@ export function ServerInfoWidget() {
 
         {/* Social Links */}
         <div className="mt-6 pt-6 border-t border-yellow-500/20">
-          <h4 className="text-white text-sm mb-3">Comunidade</h4>
-          <div className="grid grid-cols-3 gap-2">
+          <h4 className="text-white text-sm mb-3">
+            Comunidade
+          </h4>
+          <div className="flex flex-col gap-2">
             {[
-              { name: 'Discord', color: 'bg-indigo-500/20 hover:bg-indigo-500/30 border-indigo-500/50 text-indigo-500' },
-              { name: 'WhatsApp', color: 'bg-green-500/20 hover:bg-green-500/30 border-green-500/50 text-green-500' },
-              { name: 'Fórum', color: 'bg-yellow-500/20 hover:bg-yellow-500/30 border-yellow-500/50 text-yellow-500' },
+              {
+                name: "Discord",
+                color:
+                  "bg-indigo-500/20 hover:bg-indigo-500/30 border-indigo-500/50 text-indigo-500",
+              },
+              {
+                name: "WhatsApp",
+                color:
+                  "bg-green-500/40 hover:bg-green-500/50 border-green-500/50 text-green-500",
+              },
+              {
+                name: "Fórum",
+                color:
+                  "bg-yellow-500/20 hover:bg-yellow-500/30 border-yellow-500/50 text-yellow-500",
+              },
             ].map((social) => (
               <button
                 key={social.name}
-                className={`px-3 py-2 rounded text-xs border transition-all ${social.color}`}
+                className={`px-4 py-2 rounded text-sm border transition-all ${social.color}`}
               >
                 {social.name}
               </button>
