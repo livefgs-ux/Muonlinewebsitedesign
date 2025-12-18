@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, Clock, Trophy, Swords, Castle } from 'lucide-react';
 import { Card } from './ui/card';
 import { motion } from 'motion/react';
-import heroImage from 'figma:asset/7c77bece727042bfc957b9adbcf34e1fa973fbec.png';
+import { SharedBackground } from './shared-background';
 
 interface Event {
   id: string;
@@ -96,15 +96,7 @@ export function EventsSection() {
   return (
     <div className="min-h-screen pt-32 pb-20 px-4">
       {/* Background Image with Overlay */}
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 z-10" />
-        <img
-          src={heroImage}
-          alt="MU Online Background"
-          className="w-full h-full object-cover object-center"
-        />
-      </div>
+      <SharedBackground />
 
       <div className="max-w-7xl mx-auto relative z-20">
         <motion.div

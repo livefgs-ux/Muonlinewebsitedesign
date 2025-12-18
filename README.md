@@ -1,220 +1,443 @@
-# ⚔️ MeuMU Online - Season 19-2-3 Épico
+# 🎮 MeuMU Online - Website Oficial
 
-Site completo para servidor privado de Mu Online com tema **Dark Medieval Fantasy** e dados **100% REAIS** do banco de dados MySQL.
+![MeuMU Online](https://img.shields.io/badge/Season-19--2--3%20%C3%89pico-gold?style=for-the-badge)
+![React](https://img.shields.io/badge/React-18.x-blue?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)
+![TailwindCSS](https://img.shields.io/badge/Tailwind-4.x-38bdf8?style=for-the-badge&logo=tailwind-css)
+![MySQL](https://img.shields.io/badge/MySQL-8.x-orange?style=for-the-badge&logo=mysql)
 
-## 🔥 Características
+> Website completo para servidor privado de MU Online com tema Dark Medieval Fantasy, sistema de login/cadastro, gestão de personagens, rankings em tempo real e integração com banco de dados MySQL.
 
-- ✅ **Dados 100% Reais** - Conecta ao banco MySQL do servidor
-- ✅ **Players Online em Tempo Real** - Atualiza a cada 10 segundos
-- ✅ **Rankings Dinâmicos** - Top Players, Guilds, PKs
-- ✅ **Sistema de Login/Cadastro**
-- ✅ **Área do Jogador** - Gestão de personagens
-- ✅ **Castle Siege** - Informações em tempo real
-- ✅ **AdminCP Completo** - 68+ componentes administrativos
-- ✅ **Multilíngue** - 8 idiomas (PT, EN, ES, FR, DE, IT, RU, ZH)
-- ✅ **Design Moderno** - Glassmorphism + Dark Medieval Fantasy
+---
 
-## 🚀 Início Rápido
+## ✨ Características Principais
 
-### 1️⃣ Configure o MySQL
+### 🎨 Interface & Design
+- ✅ **Dark Medieval Fantasy Theme** - Paleta obsidian, dourado e azul etéreo
+- ✅ **Glassmorphism Effects** - Efeitos modernos de vidro e blur
+- ✅ **Responsive Design** - Otimizado para desktop, tablet e mobile
+- ✅ **Animações Fluidas** - Motion/React para transições suaves
+- ✅ **Partículas Mágicas** - Efeitos visuais imersivos
 
-Edite o arquivo `.env`:
+### 🌍 Sistema Multilíngue
+- ✅ **8 Idiomas Suportados:**
+  - 🇧🇷 Português
+  - 🇺🇸 English
+  - 🇪🇸 Español
+  - 🇷🇺 Русский
+  - 🇹🇷 Türkçe
+  - 🇵🇱 Polski
+  - 🇩🇪 Deutsch
+  - 🇫🇷 Français
+
+### 🔐 Sistema de Autenticação
+- ✅ Login/Cadastro seguro com Supabase
+- ✅ Recuperação de senha
+- ✅ Sistema de sessões
+- ✅ Níveis de acesso (User/Admin)
+
+### 👤 Área do Jogador
+- ✅ Dashboard personalizado
+- ✅ Gestão de múltiplos personagens
+- ✅ Distribuição de pontos via web
+- ✅ Sistema de reset online
+- ✅ Histórico de personagens
+- ✅ Status online/offline em tempo real
+
+### 🏆 Rankings Dinâmicos
+- ✅ **Top Resets** - Jogadores com mais resets
+- ✅ **Top PK** - Maiores assassinos (PvP)
+- ✅ **Top Guilds** - Guildas mais fortes
+- ✅ **Top Events** - Campeões de eventos
+- ✅ Atualização automática do banco MySQL
+- ✅ Filtros e busca
+
+### 📅 Sistema de Eventos
+- ✅ **Cronômetros em Tempo Real** para eventos
+- ✅ Blood Castle, Devil Square, Chaos Castle
+- ✅ Golden Invasion, Castle Siege
+- ✅ Contagem regressiva dinâmica
+- ✅ Notificações visuais
+
+### 📰 Sistema de Notícias
+- ✅ AdminCP completo para gerenciar notícias
+- ✅ Editor visual com links e imagens
+- ✅ Publicação em Home e/ou página News
+- ✅ Sistema de categorias
+- ✅ Suporte a múltiplas imagens
+
+### 📥 Área de Downloads
+- ✅ Cliente completo do jogo
+- ✅ Launcher automático
+- ✅ Drivers e ferramentas
+- ✅ Guias e tutoriais
+- ✅ Status do servidor em tempo real
+
+### 🔧 Painel Administrativo (AdminCP)
+- ✅ Gerenciamento de notícias
+- ✅ Gestão de eventos
+- ✅ Moderação de usuários
+- ✅ Estatísticas do servidor
+- ✅ Logs e auditoria
+
+### 💾 Integração com Banco de Dados
+- ✅ **100% Dados Reais** do servidor MU Online
+- ✅ Conexão MySQL para `muonline` e `webmu`
+- ✅ Queries otimizadas
+- ✅ Rankings automáticos
+- ✅ Verificação de níveis para reset
+
+---
+
+## 🚀 Instalação Rápida
+
+### Pré-requisitos
+
+- Node.js 18.x ou superior
+- npm 9.x ou superior
+- MySQL 5.7+ ou 8.0+
+- Servidor MU Online rodando
+
+### Método 1: Script Automático (Recomendado)
+
+```bash
+# Clone o repositório
+git clone https://github.com/seu-usuario/meumu-online.git
+cd meumu-online
+
+# Dê permissão de execução
+chmod +x install.sh
+
+# Execute o instalador
+./install.sh
+```
+
+### Método 2: Instalação Manual
+
+```bash
+# Instalar dependências
+npm install
+
+# Configurar ambiente
+cp .env.example .env
+nano .env
+
+# Compilar projeto
+npm run build
+
+# Iniciar servidor
+npm start
+```
+
+📚 **Documentação completa:** [INSTALACAO.md](INSTALACAO.md)
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+meumu-online/
+├── public/
+│   └── assets/
+│       ├── backgrounds/        # Backgrounds do site
+│       ├── images/             # Imagens gerais
+│       └── icons/              # Ícones
+├── src/
+│   └── app/
+│       ├── components/         # Componentes React
+│       │   ├── hero-section.tsx
+│       │   ├── rankings-section.tsx
+│       │   ├── events-section.tsx
+│       │   ├── downloads-section.tsx
+│       │   ├── news-section.tsx
+│       │   ├── dashboard-section.tsx
+│       │   ├── admin-cp-section.tsx
+│       │   └── shared-background.tsx
+│       ├── contexts/           # Context API
+│       │   ├── LanguageContext.tsx
+│       │   └── NewsContext.tsx
+│       └── styles/             # Estilos globais
+├── supabase/                   # Backend Supabase
+│   └── functions/
+│       └── server/             # Edge Functions
+├── .env.example                # Exemplo de configuração
+├── install.sh                  # Script de instalação
+├── verify-assets.sh            # Verificação de assets
+├── INSTALACAO.md               # Guia de instalação
+├── ASSETS_MAPPING.md           # Mapeamento de assets
+└── README.md                   # Este arquivo
+```
+
+---
+
+## ⚙️ Configuração
+
+### Banco de Dados MySQL
+
+Edite o arquivo `.env` com as credenciais do seu servidor:
 
 ```env
-DB_HOST=192.168.1.100     # IP do seu servidor MySQL
-DB_USER=sa
-DB_PASSWORD=sua_senha      # Sua senha do MySQL
-DB_NAME=MuOnline
+DB_HOST=23.321.231.227
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=123123123
+DB_DATABASE_MU=muonline
+DB_DATABASE_WEB=webmu
 ```
 
-### 2️⃣ Teste a Conexão
+### Assets e Imagens
+
+⚠️ **IMPORTANTE:** O projeto requer 2 imagens que devem ser adicionadas manualmente:
+
+1. **Background Principal**
+   - Caminho: `/public/assets/backgrounds/hero-background.png`
+   - Resolução: 1920x1080px ou maior
+
+2. **Exemplo de Personagem**
+   - Caminho: `/public/assets/images/character-example.png`
+   - Resolução: 400x600px
+
+📸 **Como obter:** Consulte [ASSETS_MAPPING.md](ASSETS_MAPPING.md)
+
+---
+
+## 🎯 Uso
+
+### Desenvolvimento
 
 ```bash
-npm run test:db
+npm run dev
 ```
 
-### 3️⃣ Inicie o Servidor
+Acesse: `http://localhost:3000`
+
+### Produção
 
 ```bash
-# Opção 1: Tudo junto (recomendado)
-npm run dev:all
-
-# Opção 2: Separado
-npm run server    # Terminal 1 (Backend)
-npm run dev       # Terminal 2 (Frontend)
+npm run build
+npm start
 ```
 
-### 4️⃣ Acesse o Site
+### Com PM2 (Recomendado)
 
-- **Frontend:** http://localhost:5173
-- **API:** http://localhost:3001
+```bash
+npm install -g pm2
+pm2 start npm --name "meumu-online" -- start
+pm2 save
+```
 
-## 📚 Documentação
+---
 
-- 📖 **[INÍCIO RÁPIDO](INICIO_RAPIDO.md)** - 4 passos simples
-- 📖 **[GUIA COMPLETO](GUIA_CONEXAO_MYSQL.md)** - Instruções detalhadas
-- 📖 **[CONFIGURAÇÃO DO BACKEND](SERVER_SETUP.md)** - Setup da API
-- 📖 **[IMPLEMENTAÇÃO REAL](REAL_DATA_IMPLEMENTATION.md)** - Como funciona
+## 🔍 Verificação de Assets
 
-## 🎨 Tecnologias
+Antes de fazer deploy, execute:
+
+```bash
+chmod +x verify-assets.sh
+./verify-assets.sh
+```
+
+Este script verifica:
+- ✅ Remoção de imports `figma:asset/*`
+- ✅ Estrutura de pastas correta
+- ✅ Presença de imagens obrigatórias
+- ✅ Arquivos de configuração
+- ✅ Componentes atualizados
+
+---
+
+## 📊 Tecnologias Utilizadas
 
 ### Frontend
-- **React 18** - Framework JavaScript
-- **Vite** - Build tool ultrarrápido
-- **Tailwind CSS 4** - Estilização moderna
-- **TypeScript** - Tipagem estática
-- **Motion** - Animações suaves
-- **Radix UI** - Componentes acessíveis
+- **React 18.x** - Framework principal
+- **TypeScript** - Type safety
+- **Tailwind CSS 4.x** - Estilização
+- **Motion/React** - Animações (Framer Motion)
+- **Lucide React** - Ícones
 
 ### Backend
-- **Node.js** - Runtime JavaScript
-- **Express 5** - Framework web
-- **MySQL2** - Driver MySQL
-- **CORS** - Cross-Origin Resource Sharing
+- **Supabase** - BaaS (Auth, Database, Functions)
+- **MySQL** - Banco de dados MU Online
+- **Hono** - Web framework para Edge Functions
 
-## 📊 Estrutura do Projeto
+### Ferramentas
+- **Vite** - Build tool
+- **ESLint** - Linting
+- **Prettier** - Code formatting
 
-```
-/
-├── src/                          # Frontend React
-│   ├── app/
-│   │   ├── components/          # Componentes React
-│   │   │   ├── PlayersOnlineWidget.tsx
-│   │   │   ├── RealTimeRankings.tsx
-│   │   │   └── DatabaseConnectionSetup.tsx
-│   │   ├── hooks/               # React Hooks
-│   │   │   ├── useServerStats.ts
-│   │   │   └── useRankings.ts
-│   │   └── App.tsx              # Componente principal
-│   └── styles/                  # Estilos CSS
-│
-├── server/                       # Backend API
-│   ├── config/
-│   │   └── database.js          # Configuração MySQL
-│   ├── routes/
-│   │   ├── stats.js             # Rotas de estatísticas
-│   │   └── rankings.js          # Rotas de rankings
-│   ├── server.js                # Servidor Express
-│   └── test-connection.js       # Script de teste
-│
-├── .env                         # Credenciais MySQL (NÃO COMMITAR)
-├── .env.example                 # Exemplo de credenciais
-├── package.json                 # Dependências
-└── README.md                    # Este arquivo
-```
+---
 
-## 🔌 API Endpoints
+## 🌟 Funcionalidades Detalhadas
 
-### Estatísticas
-
-```
-GET /api/stats/online          # Players online
-GET /api/stats/server          # Estatísticas gerais
-GET /api/stats/castle-siege    # Castle Siege info
-```
+### Página Inicial (Home)
+- Hero section com background épico
+- Estatísticas do servidor em tempo real
+- Últimas notícias destacadas
+- CTAs para download e eventos
+- Scroll indicator animado
 
 ### Rankings
+- 4 categorias de rankings
+- Busca e filtros avançados
+- Paginação otimizada
+- Dados atualizados do MySQL
+- Animações de entrada
 
-```
-GET /api/rankings/players      # Top players
-GET /api/rankings/guilds       # Top guilds
-GET /api/rankings/killers      # Top PKs
-GET /api/rankings/gens         # Ranking Gens
-```
+### Eventos
+- Timer countdown para cada evento
+- Status (ativo/aguardando/concluído)
+- Informações detalhadas
+- Requisitos e recompensas
+- Notificações visuais
 
-## 🔒 Segurança
+### Downloads
+- Links para cliente completo
+- Launcher automático
+- Drivers necessários
+- Guias de instalação
+- Verificação de integridade
 
-### ⚠️ IMPORTANTE
+### Notícias
+- Sistema de publicação completo
+- Suporte a imagens e links
+- Categorização
+- Autor e data de publicação
+- Load more com paginação
 
-1. **NUNCA** commite o arquivo `.env` (já está no `.gitignore`)
-2. Use **senha forte** no MySQL
-3. Configure **firewall** para liberar apenas IPs confiáveis
-4. Crie usuário MySQL **apenas com permissão de SELECT**
+### Dashboard do Jogador
+- Login/cadastro seguro
+- Múltiplos personagens
+- Distribuição de pontos online
+- Sistema de reset verificado
+- Histórico de login
+- Funções administrativas
 
-### Exemplo de Permissões Seguras
+### AdminCP
+- Criar/editar/deletar notícias
+- Gerenciar eventos
+- Moderar usuários
+- Ver estatísticas
+- Logs de atividades
 
-```sql
--- Crie usuário somente leitura
-CREATE USER 'mu_readonly'@'%' IDENTIFIED BY 'SenhaForte123!';
+---
 
--- Dê permissão APENAS de SELECT
-GRANT SELECT ON MuOnline.* TO 'mu_readonly'@'%';
-FLUSH PRIVILEGES;
-```
+## 🐛 Problemas Comuns
 
-## 📦 Scripts Disponíveis
+### Erro: Cannot find module 'figma:asset'
 
+**Solução:**
 ```bash
-npm run dev          # Inicia frontend (Vite)
-npm run server       # Inicia backend (Express)
-npm run dev:all      # Inicia frontend + backend
-npm run test:db      # Testa conexão MySQL
-npm run build        # Build de produção
+grep -r "figma:asset" ./src
+# Se encontrar, os arquivos precisam ser atualizados
 ```
 
-## 🐛 Troubleshooting
-
-### Erro: "Can't connect to MySQL"
+### Imagens não aparecem
 
 **Solução:**
-1. Verifique se MySQL está rodando
-2. Confirme credenciais no `.env`
-3. Libere porta 3306 no firewall
-4. Teste: `mysql -h HOST -u USER -p DATABASE`
+```bash
+# Verificar se imagens existem
+ls public/assets/backgrounds/hero-background.png
+ls public/assets/images/character-example.png
 
-### Erro: "Access denied"
-
-**Solução:**
-1. Verifique usuário e senha no `.env`
-2. Confirme permissões no MySQL:
-```sql
-GRANT SELECT ON MuOnline.* TO 'sa'@'%';
-FLUSH PRIVILEGES;
+# Se não existirem, adicione manualmente (ver ASSETS_MAPPING.md)
 ```
 
-### Players Online sempre 0
+### Erro de conexão MySQL
 
 **Solução:**
-Verifique estrutura da tabela `MEMB_STAT`:
-```sql
-DESCRIBE MEMB_STAT;
-SELECT * FROM MEMB_STAT WHERE ConnectStat = 1;
+```bash
+# Testar conexão
+mysql -h 23.321.231.227 -u root -p123123123 muonline
+
+# Verificar .env
+cat .env | grep DB_
 ```
 
-## 🎯 Próximos Passos
-
-Depois da conexão funcionar:
-
-1. ✅ Substitua TODOS os dados fake pelos componentes reais
-2. ✅ Configure atualização automática dos rankings
-3. ✅ Adicione cache Redis para performance
-4. ✅ Implemente WebSocket para updates em tempo real
-5. ✅ Configure PM2 para produção
-
-## 📝 Licença
-
-Este projeto é privado e desenvolvido para o servidor **MeuMU Online**.
-
-## 👥 Créditos
-
-- **Servidor:** MeuMU Online - Season 19-2-3 Épico
-- **Tema:** Dark Medieval Fantasy
-- **Tecnologia:** React + Express + MySQL
+📚 Mais soluções em: [INSTALACAO.md - Problemas Comuns](INSTALACAO.md#problemas-comuns)
 
 ---
 
-## 🎮 Sobre o Servidor
+## 📝 Changelog
 
-**MeuMU Online** é um servidor privado de Mu Online Season 19-2-3 com rates épicos e sistema de progressão equilibrado. Junte-se à nossa comunidade e viva a experiência definitiva do Mu Online!
+### v2.0.0 - Dezembro 2024
+- ✅ Removida dependência do Figma (figma:asset/*)
+- ✅ Assets movidos para estrutura local
+- ✅ Script de instalação automatizado
+- ✅ Background unificado em todas as páginas
+- ✅ Documentação completa
+- ✅ Sistema de verificação de assets
 
-### Características do Servidor
-- ⚔️ **Season 19-2-3** com todas as atualizações
-- 🏆 **Sistema de Resets** infinito
-- 🛡️ **Castle Siege** semanal
-- 👥 **Gens System** Duprian vs Vanert
-- 🎁 **Eventos automáticos** a cada 2 horas
-- 💎 **Shop VIP** com itens exclusivos
+### v1.5.0 - Dezembro 2024
+- ✅ Sistema multilíngue (8 idiomas)
+- ✅ AdminCP completo
+- ✅ Seletor de idiomas otimizado
+- ✅ Melhorias de performance
+
+### v1.0.0 - Dezembro 2024
+- ✅ Lançamento inicial
+- ✅ Todas as funcionalidades principais
 
 ---
 
-**⚔️ Feito com ❤️ para a comunidade MU Online**
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Por favor:
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+---
+
+## 📄 Licença
+
+Este projeto é privado e desenvolvido especificamente para MeuMU Online.
+
+---
+
+## 📞 Suporte
+
+- 📧 Email: suporte@meumu.com.br
+- 💬 Discord: [MeuMU Online Community](https://discord.gg/meumu)
+- 📱 WhatsApp: [Grupo Oficial](https://wa.me/...)
+
+---
+
+## 🎮 Sobre MeuMU Online
+
+**MeuMU Online** é um servidor privado de MU Online Season 19-2-3 Épico, focado em proporcionar a melhor experiência de jogo com:
+
+- ⚔️ Rates balanceados (500x EXP, 70% Drop)
+- 🎯 Eventos épicos diários
+- 🏆 Sistema de rankings competitivo
+- 👥 Comunidade ativa e engajada
+- 🛡️ Anti-cheat robusto
+- 🔧 Suporte 24/7
+- 💎 Uptime de 99.9%
+
+---
+
+## 🌟 Screenshots
+
+*Em breve - Adicione capturas de tela do site aqui*
+
+---
+
+## 🙏 Agradecimentos
+
+- Comunidade MU Online Brasil
+- Desenvolvedores Webzen
+- Contribuidores open-source
+- Jogadores de MeuMU Online
+
+---
+
+**Desenvolvido com ❤️ para a comunidade MU Online**
+
+⚔️ Entre na lenda. Domine os reinos. Torne-se imortal. 🎮
+
+---
+
+*Última atualização: 18 de dezembro de 2024*

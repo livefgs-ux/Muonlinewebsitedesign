@@ -26,9 +26,6 @@ export function LanguageSelector() {
       >
         <Globe className="w-4 h-4 text-yellow-500 group-hover:rotate-12 transition-transform duration-300" />
         <span className="text-2xl leading-none">{languageFlags[language]}</span>
-        <span className="hidden sm:block text-sm text-gray-300 group-hover:text-yellow-500 transition-colors">
-          {languageNames[language]}
-        </span>
         {isAutoDetected && (
           <span 
             className="hidden md:block text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30"

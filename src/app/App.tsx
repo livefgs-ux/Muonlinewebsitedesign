@@ -17,7 +17,7 @@ import { NewsProvider } from './contexts/NewsContext';
 export default function App() {
   const [currentSection, setCurrentSection] = useState('home');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(true); // Admin status - DEFAULT TRUE PARA TESTE
+  const [isAdmin, setIsAdmin] = useState(false); // Admin status - DEFAULT FALSE (só true quando admin logado)
 
   const handleLoginSuccess = (username: string) => {
     setIsLoggedIn(true);
@@ -68,11 +68,6 @@ export default function App() {
               isAdmin={isAdmin}
               onLogout={handleLogout}
             />
-            
-            {/* Language Selector - Fixed top right above widgets */}
-            <div className="fixed top-24 right-6 z-40">
-              <LanguageSelector />
-            </div>
             
             {renderSection()}
             

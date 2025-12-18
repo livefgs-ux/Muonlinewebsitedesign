@@ -1,9 +1,9 @@
 import { Download, Play, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
-import heroImage from 'figma:asset/7c77bece727042bfc957b9adbcf34e1fa973fbec.png';
 import { useLanguage } from '../contexts/LanguageContext';
 import { HomeNewsSection } from './home-news-section';
+import { SharedBackground } from './shared-background';
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
@@ -15,47 +15,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
   return (
     <>
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div className="fixed inset-0 z-0">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="absolute inset-0"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 z-10" />
-            <img
-              src={heroImage}
-              alt="MU Online Elf Warrior"
-              className="w-full h-full object-cover object-center"
-            />
-          </motion.div>
-        </div>
-
-        {/* Animated Particles */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-yellow-500 rounded-full"
-              initial={{
-                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1920),
-                y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1080),
-                opacity: 0,
-              }}
-              animate={{
-                y: [null, Math.random() * -100],
-                opacity: [0, 1, 0],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-              }}
-            />
-          ))}
-        </div>
+        <SharedBackground />
 
         {/* Content - Positioned to the left */}
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">

@@ -6,8 +6,10 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { motion } from 'motion/react';
-import heroImage from 'figma:asset/7c77bece727042bfc957b9adbcf34e1fa973fbec.png';
-import characterExample from 'figma:asset/0481c7d9f941d688b911f1c81a92c821fe1a50e8.png';
+
+// Imagens locais (anteriormente figma:asset)
+const heroImage = '/assets/backgrounds/hero-background.png';
+const characterExample = '/assets/images/character-example.png';
 
 // Mock data
 const mockUser = {

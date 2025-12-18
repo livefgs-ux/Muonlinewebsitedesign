@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Menu, X, Swords, Trophy, Download, Users, Calendar, Shield, Newspaper } from 'lucide-react';
 import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
+import { LanguageSelector } from './language-selector';
 
 interface NavigationProps {
   onNavigate: (section: string) => void;
@@ -77,13 +78,21 @@ export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, i
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden text-white p-2"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Right Side: Language Selector + Mobile Menu */}
+          <div className="flex items-center gap-3">
+            {/* Language Selector - Always visible on desktop */}
+            <div className="hidden md:block">
+              <LanguageSelector />
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden text-white p-2"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -91,6 +100,11 @@ export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, i
       {mobileMenuOpen && (
         <div className="md:hidden backdrop-blur-lg bg-black/90 border-t border-yellow-500/20">
           <div className="px-4 py-4 space-y-2">
+            {/* Language Selector for Mobile - At top */}
+            <div className="mb-4 pb-4 border-b border-yellow-500/20">
+              <LanguageSelector />
+            </div>
+
             {navItems.map((item) => (
               <button
                 key={item.id}
