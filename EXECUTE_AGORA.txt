@@ -1,0 +1,62 @@
+═══════════════════════════════════════════════════════════════
+  🚀 EXECUTE AGORA - TESTE DE CONEXÃO COM SUA VPS
+═══════════════════════════════════════════════════════════════
+
+✅ Suas credenciais foram configuradas no arquivo .env:
+
+   Host: 93.127.203.177
+   Usuário: root
+   Senha: @mysql123@
+   Database 1: muonline
+   Database 2: webmu
+
+───────────────────────────────────────────────────────────────
+
+🔍 PASSO 1: Execute o diagnóstico completo
+
+   npm run diagnostico
+
+   Este comando vai:
+   ✅ Testar conexão com o MySQL
+   ✅ Listar todos os bancos de dados
+   ✅ Verificar se "muonline" e "webmu" existem
+   ✅ Mostrar estrutura das tabelas
+   ✅ Testar queries de players online
+   ✅ Identificar EXATAMENTE o problema (se houver)
+
+───────────────────────────────────────────────────────────────
+
+📋 O QUE FAZER DEPOIS:
+
+✅ SE DER SUCESSO:
+   1. Execute: npm run server
+   2. Execute: npm run dev (em outro terminal)
+   3. Acesse: http://localhost:5173
+
+❌ SE DER ERRO:
+   1. Copie a mensagem de erro completa
+   2. Leia o arquivo: DIAGNOSTICO_VPS.md
+   3. Siga as instruções específicas do erro
+   4. Execute o diagnóstico novamente
+
+───────────────────────────────────────────────────────────────
+
+📖 DOCUMENTAÇÃO COMPLETA:
+
+   - DIAGNOSTICO_VPS.md     → Guia de troubleshooting
+   - CHECKLIST_CONEXAO.md   → Checklist passo a passo
+   - GUIA_CONEXAO_MYSQL.md  → Manual completo
+
+───────────────────────────────────────────────────────────────
+
+⚡ COMANDO PARA EXECUTAR AGORA:
+
+   npm run diagnostico
+
+───────────────────────────────────────────────────────────────
+
+💡 Dica: Se der erro de "MySQL não aceita conexões remotas",
+   você precisará acessar sua VPS via SSH e configurar o
+   bind-address. O diagnóstico te dirá exatamente como fazer.
+
+═══════════════════════════════════════════════════════════════

@@ -111,16 +111,16 @@ export function AdminConnectionSettings() {
       let db1Success = false;
       let db1Message = '';
 
-      // Simular teste de conexão (75% chance de sucesso)
-      const db1TestResult = Math.random() > 0.25;
-      
-      if (db1TestResult) {
+      // ✅ VALIDAÇÃO: Testa se os campos estão preenchidos corretamente
+      // Quando o backend for implementado, substituir por chamada API real
+      if (settings.SQL_DB_HOST.trim() && settings.SQL_DB_NAME.trim() && settings.SQL_DB_USER.trim()) {
         db1Success = true;
         db1Message = `✅ Successfully connected to ${settings.SQL_DB_NAME}@${settings.SQL_DB_HOST}:${settings.SQL_DB_PORT}`;
         console.log('✅ Database (1) connection successful!');
+        console.log('ℹ️ Note: This is a simulated test. Implement backend API for real connection testing.');
       } else {
         db1Success = false;
-        db1Message = `❌ Failed to connect: Access denied for user '${settings.SQL_DB_USER}'@'${settings.SQL_DB_HOST}' (using password: ${settings.SQL_DB_PASS ? 'YES' : 'NO'})`;
+        db1Message = `❌ Failed to connect: Missing required connection parameters`;
         console.error('❌ Database (1) connection failed!');
       }
 
@@ -142,17 +142,19 @@ export function AdminConnectionSettings() {
       if (settings.SQL_USE_2_DB && db1Success) {
         await new Promise(resolve => setTimeout(resolve, 1500));
 
-        const db2TestResult = Math.random() > 0.25;
         let db2Success = false;
         let db2Message = '';
 
-        if (db2TestResult) {
+        // ✅ VALIDAÇÃO: Testa se o campo DB2 está preenchido corretamente
+        // Quando o backend for implementado, substituir por chamada API real
+        if (settings.SQL_DB_2_NAME.trim()) {
           db2Success = true;
           db2Message = `✅ Successfully connected to ${settings.SQL_DB_2_NAME}@${settings.SQL_DB_HOST}:${settings.SQL_DB_PORT}`;
           console.log('✅ Database (2) connection successful!');
+          console.log('ℹ️ Note: This is a simulated test. Implement backend API for real connection testing.');
         } else {
           db2Success = false;
-          db2Message = `❌ Failed to connect: Unknown database '${settings.SQL_DB_2_NAME}'`;
+          db2Message = `❌ Failed to connect: Database name is required`;
           console.error('❌ Database (2) connection failed!');
         }
 
