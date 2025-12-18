@@ -1,4 +1,4 @@
-# ✅ CHECKLIST DE CONEXÃO - VPS 93.127.203.177
+# ✅ CHECKLIST DE CONEXÃO - VPS 23.321.231.227
 
 ## 📋 PASSO A PASSO VISUAL
 
@@ -7,9 +7,9 @@
 Abra o arquivo `.env` e confirme:
 
 ```env
-DB_HOST=93.127.203.177     ✅ Seu IP VPS
+DB_HOST=23.321.231.227     ✅ Seu IP VPS
 DB_USER=root               ✅ Usuário MySQL
-DB_PASSWORD=@mysql123@     ✅ Sua senha
+DB_PASSWORD=123123123      ✅ Sua senha
 DB_NAME=muonline           ✅ Nome do banco
 ```
 
@@ -37,7 +37,7 @@ npm run diagnostico
 
 ```bash
 # Acesse a VPS
-ssh root@93.127.203.177
+ssh root@23.321.231.227
 
 # Execute estes 5 comandos:
 

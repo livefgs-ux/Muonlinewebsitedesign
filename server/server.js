@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { testConnection } from './config/database.js';
 import statsRoutes from './routes/stats.js';
 import rankingsRoutes from './routes/rankings.js';
+import authRoutes from './routes/auth.js';
 
 // Carrega variáveis de ambiente
 dotenv.config();
@@ -34,6 +35,7 @@ app.get('/health', (req, res) => {
 // Rotas da API
 app.use('/api/stats', statsRoutes);
 app.use('/api/rankings', rankingsRoutes);
+app.use('/api/auth', authRoutes);
 
 // Rota para testar conexão com banco
 app.get('/api/test-connection', async (req, res) => {
@@ -70,6 +72,7 @@ async function startServer() {
       console.log(`📡 Health check: http://localhost:${PORT}/health`);
       console.log(`📊 Stats: http://localhost:${PORT}/api/stats/online`);
       console.log(`🏆 Rankings: http://localhost:${PORT}/api/rankings/players`);
+      console.log(`🔒 Auth: http://localhost:${PORT}/api/auth/login`);
       console.log(`\n⚔️  MeuMU Online - Season 19-2-3 Épico\n`);
     });
   } catch (error) {

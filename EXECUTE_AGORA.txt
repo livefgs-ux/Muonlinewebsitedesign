@@ -4,11 +4,9 @@
 
 ✅ Suas credenciais foram configuradas no arquivo .env:
 
-   Host: 93.127.203.177
+   Host: 23.321.231.227
    Usuário: root
-   Senha: @mysql123@
-   Database 1: muonline
-   Database 2: webmu
+   Senha: 123123123
 
 ───────────────────────────────────────────────────────────────
 
@@ -59,4 +57,4 @@
    você precisará acessar sua VPS via SSH e configurar o
    bind-address. O diagnóstico te dirá exatamente como fazer.
 
-═══════════════════════════════════════════════════════════════
+═══════════════════════════════════��═══════════════════════════

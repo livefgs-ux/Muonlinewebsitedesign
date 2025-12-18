@@ -1,11 +1,13 @@
-# 🔍 DIAGNÓSTICO - Conexão VPS 93.127.203.177
+# 🔍 DIAGNÓSTICO - Conexão VPS 23.321.231.227
 
 ## ✅ Credenciais Configuradas
 
+Arquivo `.env` criado com:
+
 ```
-Host: 93.127.203.177
+Host: 23.321.231.227
 Usuário: root
-Senha: @mysql123@
+Senha: 123123123
 Database 1: muonline
 Database 2: webmu
 ```
@@ -57,7 +59,7 @@ Se **DER ERRO**, o script dirá EXATAMENTE qual é o problema e como resolver.
 
 ```bash
 # 1. Conecte na VPS
-ssh root@93.127.203.177
+ssh root@23.321.231.227
 
 # 2. Edite o arquivo de configuração do MySQL
 sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
@@ -110,7 +112,7 @@ sudo ufw enable
 ```bash
 # 1. Acesse o MySQL
 sudo mysql -u root -p
-# (Digite a senha: @mysql123@)
+# (Digite a senha: 123123123)
 
 # 2. Execute estes comandos:
 USE mysql;
@@ -119,7 +121,7 @@ USE mysql;
 UPDATE user SET host='%' WHERE user='root';
 
 # Ou crie um novo usuário específico (MAIS SEGURO):
-CREATE USER 'muadmin'@'%' IDENTIFIED BY '@mysql123@';
+CREATE USER 'muadmin'@'%' IDENTIFIED BY '123123123';
 GRANT ALL PRIVILEGES ON muonline.* TO 'muadmin'@'%';
 GRANT ALL PRIVILEGES ON webmu.* TO 'muadmin'@'%';
 FLUSH PRIVILEGES;
@@ -134,7 +136,7 @@ sudo systemctl restart mysql
 Se criar o novo usuário, altere no `.env`:
 ```env
 DB_USER=muadmin
-DB_PASSWORD=@mysql123@
+DB_PASSWORD=123123123
 ```
 
 ### Problema 4: Bancos de dados com nomes diferentes
@@ -176,7 +178,7 @@ sudo ufw status
 
 # 4. Teste conexão local
 mysql -u root -p
-# Digite: @mysql123@
+# Digite: 123123123
 # Depois: SHOW DATABASES;
 # Depois: EXIT;
 
@@ -228,18 +230,18 @@ sudo tail -f /var/log/mysql/error.log
 
 ```bash
 # Tenta conectar ao MySQL remoto
-mysql -h 93.127.203.177 -u root -p
-# Digite: @mysql123@
+mysql -h 23.321.231.227 -u root -p
+# Digite: 123123123
 ```
 
 ### Verificar se porta está aberta:
 
 ```bash
 # Da sua máquina local
-telnet 93.127.203.177 3306
+telnet 23.321.231.227 3306
 
 # Ou use nmap
-nmap -p 3306 93.127.203.177
+nmap -p 3306 23.321.231.227
 ```
 
 ---
