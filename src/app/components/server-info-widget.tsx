@@ -5,35 +5,151 @@ import {
   TrendingUp,
   Zap,
   Circle,
+  Skull,
 } from "lucide-react";
 import { Card } from "./ui/card";
 import { motion } from "motion/react";
+import { useLanguage } from "../contexts/LanguageContext";
 
-export function ServerInfoWidget() {
+interface ServerInfoWidgetProps {
+  currentSection?: string;
+}
+
+interface ServerData {
+  status: string;
+  players_online: number;
+  total_accounts: number;
+  total_characters: number;
+  total_guilds: number;
+  castle_owner: string;
+  total_bosses: number;
+  alive_bosses: number;
+  server_name: string;
+  season: string;
+  exp_rate: string;
+  drop_rate: string;
+  updated_at: string;
+}
+
+export function ServerInfoWidget({ currentSection = 'home' }: ServerInfoWidgetProps) {
   const [isOnline, setIsOnline] = useState(true);
-  const [onlinePlayers, setOnlinePlayers] = useState(1247);
+  const [serverData, setServerData] = useState<ServerData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { t } = useLanguage();
 
-  // Simulate real-time player count changes
+  // Fetch server data from API
   useEffect(() => {
-    const interval = setInterval(() => {
-      setOnlinePlayers((prev) => {
-        const change = Math.floor(Math.random() * 10) - 5;
-        const newCount = prev + change;
-        return Math.max(1200, Math.min(1300, newCount));
-      });
-    }, 5000);
+    const fetchServerInfo = async () => {
+      try {
+        // Try PHP API first
+        const response = await fetch('/api/get_server_info.php');
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (response.ok && contentType?.includes('application/json')) {
+          const data = await response.json();
+          setServerData(data);
+          setIsOnline(data.status === 'online');
+          setIsLoading(false);
+          return;
+        }
+        
+        // If not JSON, try fallback
+        throw new Error('API returned non-JSON response');
+        
+      } catch (error) {
+        // Fallback: try to load from static JSON
+        try {
+          const fallbackResponse = await fetch('/api/data/server_info.json');
+          const contentType = fallbackResponse.headers.get('content-type');
+          
+          if (fallbackResponse.ok && (contentType?.includes('application/json') || contentType?.includes('text/plain'))) {
+            const data = await fallbackResponse.json();
+            setServerData(data);
+            setIsOnline(data.status === 'online');
+          } else {
+            // Use hardcoded fallback data
+            setServerData({
+              status: 'online',
+              players_online: 1247,
+              total_accounts: 5634,
+              total_characters: 12847,
+              total_guilds: 234,
+              castle_owner: 'DragonGuard',
+              total_bosses: 120,
+              alive_bosses: 87,
+              server_name: 'MeuMU Online',
+              season: 'Season 19-2-3 - Épico',
+              exp_rate: '9999x',
+              drop_rate: '60%',
+              updated_at: new Date().toISOString()
+            });
+            setIsOnline(true);
+          }
+        } catch (fallbackError) {
+          // Last resort: use hardcoded data
+          setServerData({
+            status: 'online',
+            players_online: 1247,
+            total_accounts: 5634,
+            total_characters: 12847,
+            total_guilds: 234,
+            castle_owner: 'DragonGuard',
+            total_bosses: 120,
+            alive_bosses: 87,
+            server_name: 'MeuMU Online',
+            season: 'Season 19-2-3 - Épico',
+            exp_rate: '9999x',
+            drop_rate: '60%',
+            updated_at: new Date().toISOString()
+          });
+          setIsOnline(true);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Fetch immediately
+    fetchServerInfo();
+
+    // Fetch every 30 seconds
+    const interval = setInterval(fetchServerInfo, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
+  // Hide widget in AdminCP and Dashboard - AFTER hooks
+  const hiddenSections = ['admincp', 'dashboard'];
+  if (hiddenSections.includes(currentSection)) {
+    return null;
+  }
+
   const serverInfo = [
-    { label: "Versão", value: "Season 19-2-3", icon: Server },
-    { label: "EXP Rate", value: "500x", icon: TrendingUp },
-    { label: "Drop Rate", value: "70%", icon: Zap },
+    { 
+      label: t.common.season.split(' ')[0], // "Season"
+      value: serverData?.season.split(' - ')[0] || "Season 19-2-3", 
+      icon: Server 
+    },
+    { 
+      label: t.serverStatus.experience, 
+      value: serverData?.exp_rate || "9999x", 
+      icon: TrendingUp 
+    },
+    { 
+      label: t.serverStatus.drop, 
+      value: serverData?.drop_rate || "60%", 
+      icon: Zap 
+    },
     {
-      label: "Players Online",
-      value: onlinePlayers.toLocaleString(),
+      label: t.serverStatus.players,
+      value: isLoading ? t.common.loading : (serverData?.players_online.toLocaleString() || "0"),
       icon: Users,
+    },
+    {
+      label: t.serverStatus.aliveBosses,
+      value: isLoading ? t.common.loading : `${serverData?.alive_bosses || 0}/${serverData?.total_bosses || 120}`,
+      icon: Skull,
     },
   ];
 
@@ -48,7 +164,7 @@ export function ServerInfoWidget() {
         {/* Server Status */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-white">Status do Servidor</h3>
+            <h3 className="text-white">{t.serverStatus.title}</h3>
             <div className="flex items-center gap-2">
               <Circle
                 className={`w-3 h-3 ${isOnline ? "fill-green-500 text-green-500" : "fill-red-500 text-red-500"}`}
@@ -56,7 +172,7 @@ export function ServerInfoWidget() {
               <span
                 className={`text-sm ${isOnline ? "text-green-500" : "text-red-500"}`}
               >
-                {isOnline ? "Online" : "Offline"}
+                {isOnline ? t.serverStatus.online : t.serverStatus.offline}
               </span>
             </div>
           </div>

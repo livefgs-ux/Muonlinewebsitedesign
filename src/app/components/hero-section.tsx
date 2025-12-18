@@ -2,12 +2,15 @@ import { Download, Play, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import heroImage from 'figma:asset/7c77bece727042bfc957b9adbcf34e1fa973fbec.png';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
 }
 
 export function HeroSection({ onNavigate }: HeroSectionProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}

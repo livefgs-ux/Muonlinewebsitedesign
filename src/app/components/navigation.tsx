@@ -1,24 +1,27 @@
 import { useState } from 'react';
-import { Menu, X, Swords, Trophy, Download, Users, Calendar, LogOut } from 'lucide-react';
+import { Menu, X, Swords, Trophy, Download, Users, Calendar, Shield, Newspaper } from 'lucide-react';
 import { Button } from './ui/button';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface NavigationProps {
   onNavigate: (section: string) => void;
   currentSection: string;
   isLoggedIn: boolean;
-  onLogin: () => void;
   onLogout: () => void;
+  isAdmin?: boolean;
 }
 
-export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogin, onLogout }: NavigationProps) {
+export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, isAdmin = false }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   const navItems = [
-    { id: 'home', label: 'Início', icon: Swords },
-    { id: 'dashboard', label: 'Dashboard', icon: Users },
-    { id: 'rankings', label: 'Rankings', icon: Trophy },
-    { id: 'events', label: 'Eventos', icon: Calendar },
-    { id: 'downloads', label: 'Downloads', icon: Download },
+    { id: 'home', label: t.nav.home, icon: Swords },
+    { id: 'dashboard', label: t.nav.dashboard, icon: Users },
+    { id: 'rankings', label: t.nav.rankings, icon: Trophy },
+    { id: 'events', label: t.nav.events, icon: Calendar },
+    { id: 'downloads', label: t.nav.downloads, icon: Download },
+    { id: 'news', label: t.nav.news, icon: Newspaper },
   ];
 
   return (
@@ -54,25 +57,20 @@ export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogin, on
                 <span>{item.label}</span>
               </button>
             ))}
-          </div>
-
-          {/* Login/Logout Button */}
-          <div className="hidden md:block">
-            {isLoggedIn ? (
-              <Button
-                onClick={onLogout}
-                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg shadow-red-600/50 hover:shadow-red-600/70 transition-all"
+            
+            {/* AdminCP Button - Only visible for admins */}
+            {isAdmin && (
+              <button
+                onClick={() => onNavigate('admincp')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  currentSection === 'admincp'
+                    ? 'bg-red-500/20 text-red-500 border border-red-500/50'
+                    : 'text-red-400 hover:text-red-500 hover:bg-red-500/10 border border-red-500/30'
+                }`}
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                Deslogar
-              </Button>
-            ) : (
-              <Button
-                onClick={onLogin}
-                className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black shadow-lg shadow-yellow-500/50"
-              >
-                Entrar
-              </Button>
+                <Shield className="w-4 h-4" />
+                <span>AdminCP</span>
+              </button>
             )}
           </div>
 
@@ -107,27 +105,23 @@ export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogin, on
                 <span>{item.label}</span>
               </button>
             ))}
-            {isLoggedIn ? (
-              <Button
+            
+            {/* AdminCP Button Mobile - Only visible for admins */}
+            {isAdmin && (
+              <button
                 onClick={() => {
-                  onLogout();
+                  onNavigate('admincp');
                   setMobileMenuOpen(false);
                 }}
-                className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white"
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all border ${
+                  currentSection === 'admincp'
+                    ? 'bg-red-500/20 text-red-500 border-red-500/50'
+                    : 'text-red-400 hover:bg-red-500/10 border-red-500/30'
+                }`}
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                Deslogar
-              </Button>
-            ) : (
-              <Button
-                onClick={() => {
-                  onLogin();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black"
-              >
-                Entrar
-              </Button>
+                <Shield className="w-5 h-5" />
+                <span>AdminCP</span>
+              </button>
             )}
           </div>
         </div>
