@@ -72,6 +72,18 @@ export interface Translations {
     size: string;
     version: string;
   };
+  // News Section ← NOVO!
+  news: {
+    title: string;
+    subtitle: string;
+    readMore: string;
+    loadMore: string;
+    by: string;
+    publishedOn: string;
+    latestNews: string;
+    noNews: string;
+    viewAllNews: string; // ← ADICIONAR ESTE
+  };
   // Login/Register
   auth: {
     login: string;
@@ -189,6 +201,17 @@ export const translations: Record<Language, Translations> = {
       size: 'Tamanho',
       version: 'Versão',
     },
+    news: {
+      title: 'Notícias',
+      subtitle: 'Fique por dentro de todas as atualizações, eventos e novidades do MeuMU Online',
+      readMore: 'Ler Mais',
+      loadMore: 'Carregar Mais Notícias',
+      by: 'Por',
+      publishedOn: 'Publicado em',
+      latestNews: 'Últimas Notícias',
+      noNews: 'Nenhuma notícia disponível no momento.',
+      viewAllNews: 'Ver Todas as Notícias',
+    },
     auth: {
       login: 'Entrar',
       register: 'Registrar',
@@ -300,6 +323,17 @@ export const translations: Record<Language, Translations> = {
       download: 'Download',
       size: 'Size',
       version: 'Version',
+    },
+    news: {
+      title: 'News',
+      subtitle: 'Stay up to date with all updates, events and news from MeuMU Online',
+      readMore: 'Read More',
+      loadMore: 'Load More News',
+      by: 'By',
+      publishedOn: 'Published on',
+      latestNews: 'Latest News',
+      noNews: 'No news available at the moment.',
+      viewAllNews: 'View All News',
     },
     auth: {
       login: 'Login',
@@ -413,6 +447,17 @@ export const translations: Record<Language, Translations> = {
       size: 'Tamaño',
       version: 'Versión',
     },
+    news: {
+      title: 'Noticias',
+      subtitle: 'Mantente al día con todas las actualizaciones, eventos y noticias de MeuMU Online',
+      readMore: 'Leer Más',
+      loadMore: 'Cargar Más Noticias',
+      by: 'Por',
+      publishedOn: 'Publicado el',
+      latestNews: 'Últimas Noticias',
+      noNews: 'No hay noticias disponibles en este momento.',
+      viewAllNews: 'Ver Todas las Noticias',
+    },
     auth: {
       login: 'Iniciar Sesión',
       register: 'Registrarse',
@@ -524,6 +569,17 @@ export const translations: Record<Language, Translations> = {
       download: 'Herunterladen',
       size: 'Größe',
       version: 'Version',
+    },
+    news: {
+      title: 'Neuigkeiten',
+      subtitle: 'Bleiben Sie auf dem Laufenden über alle Updates, Events und Neuigkeiten von MeuMU Online',
+      readMore: 'Mehr Lesen',
+      loadMore: 'Mehr Nachrichten Laden',
+      by: 'Von',
+      publishedOn: 'Veröffentlicht am',
+      latestNews: 'Neueste Nachrichten',
+      noNews: 'Derzeit keine Nachrichten verfügbar.',
+      viewAllNews: 'Alle Nachrichten anzeigen',
     },
     auth: {
       login: 'Anmelden',
@@ -637,6 +693,17 @@ export const translations: Record<Language, Translations> = {
       size: '大小',
       version: '版本',
     },
+    news: {
+      title: '新闻',
+      subtitle: '了解MeuMU Online的所有更新、活动和新闻',
+      readMore: '阅读更多',
+      loadMore: '加载更多新闻',
+      by: '作',
+      publishedOn: '发布于',
+      latestNews: '最新新闻',
+      noNews: '目前没有可用的新闻。',
+      viewAllNews: '查看所有新闻',
+    },
     auth: {
       login: '登录',
       register: '注册',
@@ -748,6 +815,17 @@ export const translations: Record<Language, Translations> = {
       download: 'Скачать',
       size: 'Размер',
       version: 'Версия',
+    },
+    news: {
+      title: 'Новости',
+      subtitle: 'Будьте в курсе всех обновлений, событий и новостей MeuMU Online',
+      readMore: 'Читать Далее',
+      loadMore: 'Загрузить Еще Новости',
+      by: 'От',
+      publishedOn: 'Опубликовано',
+      latestNews: 'Последние Новости',
+      noNews: 'В данный момент нет доступных новостей.',
+      viewAllNews: 'Просмотреть все новости',
     },
     auth: {
       login: 'Войти',
@@ -861,6 +939,17 @@ export const translations: Record<Language, Translations> = {
       size: 'Laki',
       version: 'Bersyon',
     },
+    news: {
+      title: 'Balita',
+      subtitle: 'Manatiling updated sa lahat ng updates, events at balita ng MeuMU Online',
+      readMore: 'Basahin Pa',
+      loadMore: 'Mag-load ng Higit Pang Balita',
+      by: 'Ni',
+      publishedOn: 'Inilathala noong',
+      latestNews: 'Pinakabagong Balita',
+      noNews: 'Walang available na balita sa ngayon.',
+      viewAllNews: 'Tingnan ang Lahat ng Balita',
+    },
     auth: {
       login: 'Mag-login',
       register: 'Magrehistro',
@@ -972,6 +1061,17 @@ export const translations: Record<Language, Translations> = {
       download: 'Tải Xuống',
       size: 'Kích Thước',
       version: 'Phiên Bản',
+    },
+    news: {
+      title: 'Tin Tức',
+      subtitle: 'Cập nhật tất cả thông tin, sự kiện và tin tức mới nhất từ MeuMU Online',
+      readMore: 'Đọc Thêm',
+      loadMore: 'Tải Thêm Tin Tức',
+      by: 'Bởi',
+      publishedOn: 'Đăng ngày',
+      latestNews: 'Tin Tức Mới Nhất',
+      noNews: 'Hiện tại chưa có tin tức nào.',
+      viewAllNews: 'Xem Tất Cả Tin Tức',
     },
     auth: {
       login: 'Đăng Nhập',

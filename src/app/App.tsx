@@ -12,6 +12,7 @@ import { MusicProvider } from './contexts/music-context';
 import { MusicPlayerWidget } from './components/music-player-widget';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { LanguageSelector } from './components/language-selector';
+import { NewsProvider } from './contexts/NewsContext';
 
 export default function App() {
   const [currentSection, setCurrentSection] = useState('home');
@@ -54,29 +55,32 @@ export default function App() {
     }
   };
 
+  // IMPORTANT: All providers wrap the entire app to ensure hooks work correctly
   return (
     <LanguageProvider>
-      <MusicProvider>
-        <div className="min-h-screen bg-gradient-to-br from-obsidian via-obsidian-light to-obsidian">
-          <Navigation 
-            onNavigate={setCurrentSection} 
-            currentSection={currentSection}
-            isLoggedIn={isLoggedIn}
-            isAdmin={isAdmin}
-            onLogout={handleLogout}
-          />
-          
-          {/* Language Selector - Fixed top right above widgets */}
-          <div className="fixed top-24 right-6 z-40">
-            <LanguageSelector />
+      <NewsProvider>
+        <MusicProvider>
+          <div className="min-h-screen bg-gradient-to-br from-obsidian via-obsidian-light to-obsidian">
+            <Navigation 
+              onNavigate={setCurrentSection} 
+              currentSection={currentSection}
+              isLoggedIn={isLoggedIn}
+              isAdmin={isAdmin}
+              onLogout={handleLogout}
+            />
+            
+            {/* Language Selector - Fixed top right above widgets */}
+            <div className="fixed top-24 right-6 z-40">
+              <LanguageSelector />
+            </div>
+            
+            {renderSection()}
+            
+            <ServerInfoWidget currentSection={currentSection} />
+            <MusicPlayerWidget currentSection={currentSection} />
           </div>
-          
-          {renderSection()}
-          
-          <ServerInfoWidget currentSection={currentSection} />
-          <MusicPlayerWidget currentSection={currentSection} />
-        </div>
-      </MusicProvider>
+        </MusicProvider>
+      </NewsProvider>
     </LanguageProvider>
   );
 }

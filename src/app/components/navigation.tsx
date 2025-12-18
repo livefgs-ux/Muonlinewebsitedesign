@@ -29,7 +29,10 @@ export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, i
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <button 
+            onClick={() => onNavigate('home')}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+          >
             <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-lg flex items-center justify-center shadow-lg shadow-yellow-500/50">
               <Swords className="w-7 h-7 text-black" />
             </div>
@@ -39,7 +42,7 @@ export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, i
               </h1>
               <p className="text-xs text-gray-400">Season 19-2-3 Epic Server</p>
             </div>
-          </div>
+          </button>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">

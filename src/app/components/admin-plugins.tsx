@@ -1,871 +1,470 @@
 import { useState } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Plug,
-  Settings,
+  AlertTriangle,
+  User,
+  Package,
+  Calendar,
   Power,
   Trash2,
-  AlertTriangle,
   CheckCircle,
   XCircle,
-  ChevronRight,
-  Database,
-  Clock,
-  Globe,
-  Upload,
-  Download,
+  RefreshCw,
 } from 'lucide-react';
-
-interface PluginCompatibility {
-  site: boolean;
-  mysql: boolean;
-  cron: boolean;
-  issues: string[];
-}
-
-interface PluginConfig {
-  [key: string]: boolean | string | number;
-}
+import { Card } from './ui/card';
+import { Button } from './ui/button';
 
 interface Plugin {
-  id: string;
+  id: number;
   name: string;
-  version: string;
-  description: string;
   author: string;
-  enabled: boolean;
-  compatibility: PluginCompatibility;
-  config: PluginConfig;
-  requiresCron: boolean;
-  requiresDatabase: boolean;
-  icon: string;
+  version: string;
+  compatibility: string;
+  install_date: number;
+  status: number;
 }
 
-const defaultPlugins: Plugin[] = [
+// Mock plugins - In production, this comes from database
+const mockPlugins: Plugin[] = [
   {
-    id: 'account-lock',
+    id: 1,
     name: 'Account Lock',
-    version: '1.0.0',
-    description: 'Sistema de bloqueio de contas com verificação de segurança',
     author: 'IGCNetwork',
-    enabled: true,
-    compatibility: { site: true, mysql: true, cron: false, issues: [] },
-    config: {
-      enableEmailNotification: true,
-      maxLoginAttempts: 5,
-      lockDuration: 30,
-    },
-    requiresCron: false,
-    requiresDatabase: true,
-    icon: '🔒',
+    version: '1.0.0',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1642435200,
+    status: 1,
   },
   {
-    id: 'change-class',
+    id: 2,
     name: 'Change Class',
-    version: '1.0.0',
-    description: 'Permite aos jogadores trocar de classe via web',
     author: 'MU Team',
-    enabled: true,
-    compatibility: { site: true, mysql: true, cron: false, issues: [] },
-    config: {
-      enableClassChange: true,
-      creditCost: 100,
-      requireLevel: 400,
-      cooldownHours: 24,
-    },
-    requiresCron: false,
-    requiresDatabase: true,
-    icon: '⚔️',
+    version: '1.0.0',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1643040000,
+    status: 1,
   },
   {
-    id: 'event-ranking',
+    id: 3,
     name: 'Event Ranking',
-    version: '1.2.0',
-    description: 'Sistema de ranking para eventos especiais',
     author: 'IGCNetwork',
-    enabled: true,
-    compatibility: { site: true, mysql: true, cron: true, issues: [] },
-    config: {
-      showClass: true,
-      showLevel: true,
-      showGuild: true,
-      updateInterval: 5,
-      topPlayersCount: 100,
-    },
-    requiresCron: true,
-    requiresDatabase: true,
-    icon: '🏆',
+    version: '1.2.0',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1643644800,
+    status: 1,
   },
   {
-    id: 'online-players',
+    id: 4,
     name: 'Online Players',
-    version: '1.2.0',
-    description: 'Exibe jogadores online com detalhes personalizáveis',
     author: 'IGCNetwork',
-    enabled: true,
-    compatibility: { site: true, mysql: true, cron: false, issues: [] },
-    config: {
-      showClass: true,
-      showLevel: true,
-      showLastLocation: true,
-      showMasterLevel: true,
-      combineRegularMasterLevel: true,
-      showGuild: true,
-    },
-    requiresCron: false,
-    requiresDatabase: true,
-    icon: '👥',
+    version: '1.2.0',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1644249600,
+    status: 1,
   },
   {
-    id: 'exchange-resets',
+    id: 5,
     name: 'Exchange Resets',
-    version: '1.0.0',
-    description: 'Sistema de troca de resets por pontos ou créditos',
     author: 'MU Team',
-    enabled: false,
-    compatibility: { site: true, mysql: true, cron: false, issues: [] },
-    config: {
-      enableExchange: true,
-      resetsPerCredit: 10,
-      minimumResets: 50,
-    },
-    requiresCron: false,
-    requiresDatabase: true,
-    icon: '🔄',
-  },
-  {
-    id: 'mu-roulette',
-    name: 'Mu Roulette',
-    version: '1.1.0',
-    description: 'Sistema de roleta para ganhar prêmios',
-    author: 'IGCNetwork',
-    enabled: false,
-    compatibility: { site: true, mysql: true, cron: false, issues: [] },
-    config: {
-      enableRoulette: true,
-      spinCost: 50,
-      jackpotChance: 1,
-    },
-    requiresCron: false,
-    requiresDatabase: true,
-    icon: '🎰',
-  },
-  {
-    id: 'multi-account',
-    name: 'Multi Account',
     version: '1.0.0',
-    description: 'Gerenciamento de múltiplas contas por IP',
-    author: 'IGCNetwork',
-    enabled: true,
-    compatibility: { site: true, mysql: true, cron: false, issues: [] },
-    config: {
-      maxAccountsPerIP: 3,
-      enableIPTracking: true,
-      alertOnExceed: true,
-    },
-    requiresCron: false,
-    requiresDatabase: true,
-    icon: '👤',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1644854400,
+    status: 0,
   },
   {
-    id: 'pvp-rankings',
+    id: 6,
+    name: 'Mu Roulette',
+    author: 'IGCNetwork',
+    version: '1.1.0',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1645459200,
+    status: 0,
+  },
+  {
+    id: 7,
+    name: 'Multi Account',
+    author: 'IGCNetwork',
+    version: '1.0.0',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1646064000,
+    status: 1,
+  },
+  {
+    id: 8,
     name: 'PvP Rankings',
-    version: '1.1.0',
-    description: 'Ranking de jogadores PvP com sistema de pontos',
     author: 'IGCNetwork',
-    enabled: true,
-    compatibility: { site: true, mysql: true, cron: true, issues: [] },
-    config: {
-      showClass: true,
-      showKills: true,
-      showDeaths: true,
-      showKDRatio: true,
-      updateInterval: 10,
-    },
-    requiresCron: true,
-    requiresDatabase: true,
-    icon: '⚔️',
+    version: '1.1.0',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1646668800,
+    status: 1,
   },
   {
-    id: 'paypal-donations',
+    id: 9,
     name: 'Paygol Donations',
+    author: 'IGCNetwork',
     version: '1.2.0',
-    description: 'Sistema de doações via Paygol',
-    author: 'IGCNetwork',
-    enabled: false,
-    compatibility: { site: true, mysql: true, cron: false, issues: [] },
-    config: {
-      enableDonations: true,
-      apiKey: '',
-      secretKey: '',
-      autoDelivery: true,
-    },
-    requiresCron: false,
-    requiresDatabase: true,
-    icon: '💳',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1647273600,
+    status: 0,
   },
   {
-    id: 'vip-membership',
+    id: 10,
     name: 'VIP Membership',
+    author: 'IGCNetwork',
     version: '1.3.0',
-    description: 'Sistema de assinatura VIP com benefícios exclusivos',
-    author: 'IGCNetwork',
-    enabled: false,
-    compatibility: { site: true, mysql: true, cron: true, issues: [] },
-    config: {
-      enableVIP: true,
-      monthlyPrice: 15,
-      expBonus: 50,
-      dropBonus: 30,
-      autoRenewal: true,
-    },
-    requiresCron: true,
-    requiresDatabase: true,
-    icon: '⭐',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1647878400,
+    status: 0,
   },
   {
-    id: 'weekly-lottery',
+    id: 11,
     name: 'Weekly Lottery',
-    version: '2.0.0',
-    description: 'Loteria semanal com prêmios automáticos',
     author: 'IGCNetwork',
-    enabled: false,
-    compatibility: { site: true, mysql: true, cron: true, issues: [] },
-    config: {
-      enableLottery: true,
-      ticketPrice: 100,
-      drawDay: 'Sunday',
-      jackpotPercent: 70,
-    },
-    requiresCron: true,
-    requiresDatabase: true,
-    icon: '🎫',
+    version: '2.0.0',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1648483200,
+    status: 0,
   },
   {
-    id: 'ticket-support',
+    id: 12,
     name: 'Ticket Support System',
-    version: '1.1.0',
-    description: 'Sistema de tickets de suporte ao jogador',
     author: 'IGCNetwork',
-    enabled: true,
-    compatibility: { site: true, mysql: true, cron: false, issues: [] },
-    config: {
-      enableTickets: true,
-      maxOpenTickets: 3,
-      autoCloseAfterDays: 7,
-      emailNotifications: true,
-    },
-    requiresCron: false,
-    requiresDatabase: true,
-    icon: '🎫',
+    version: '1.1.0',
+    compatibility: '1.2.0|1.2.1|1.2.2|1.2.3|1.2.4|1.2.5|1.2.6',
+    install_date: 1649088000,
+    status: 1,
   },
 ];
 
 export function AdminPlugins() {
-  const [plugins, setPlugins] = useState<Plugin[]>(defaultPlugins);
-  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null);
-  const [showInstaller, setShowInstaller] = useState(false);
+  const [plugins, setPlugins] = useState<Plugin[]>(mockPlugins);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error' | 'warning' | null;
+    text: string;
+  }>({ type: null, text: '' });
 
-  const togglePlugin = (id: string) => {
+  // Plugin system status - would come from config in production
+  const pluginSystemEnabled = true;
+  const allowUninstall = true;
+
+  const handleEnable = (id: number) => {
+    console.log('🟢 Enabling plugin ID:', id);
     setPlugins((prev) =>
       prev.map((plugin) =>
-        plugin.id === id ? { ...plugin, enabled: !plugin.enabled } : plugin
+        plugin.id === id ? { ...plugin, status: 1 } : plugin
       )
     );
+    setMessage({ type: 'success', text: 'Plugin enabled successfully!' });
+    setTimeout(() => setMessage({ type: null, text: '' }), 3000);
   };
 
-  const deletePlugin = (id: string) => {
-    if (confirm('🗑️ Tem certeza que deseja remover este plugin? Esta ação não pode ser desfeita.')) {
-      setPlugins((prev) => prev.filter((plugin) => plugin.id !== id));
-      if (selectedPlugin?.id === id) {
-        setSelectedPlugin(null);
-      }
+  const handleDisable = (id: number) => {
+    console.log('🔴 Disabling plugin ID:', id);
+    setPlugins((prev) =>
+      prev.map((plugin) =>
+        plugin.id === id ? { ...plugin, status: 0 } : plugin
+      )
+    );
+    setMessage({ type: 'success', text: 'Plugin disabled successfully!' });
+    setTimeout(() => setMessage({ type: null, text: '' }), 3000);
+  };
+
+  const handleUninstall = (id: number, name: string) => {
+    if (!allowUninstall) {
+      setMessage({ type: 'error', text: 'Plugin uninstall is not allowed.' });
+      return;
     }
+
+    if (!confirm(`Are you sure you want to uninstall "${name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    console.log('🗑️ Uninstalling plugin ID:', id);
+    setPlugins((prev) => prev.filter((plugin) => plugin.id !== id));
+    setMessage({ type: 'success', text: 'Plugin successfully uninstalled.' });
+    console.log('🔄 Rebuilding plugins cache...');
+    setTimeout(() => setMessage({ type: null, text: '' }), 3000);
   };
 
-  const updatePluginConfig = (pluginId: string, key: string, value: any) => {
-    setPlugins((prev) =>
-      prev.map((plugin) =>
-        plugin.id === pluginId
-          ? { ...plugin, config: { ...plugin.config, [key]: value } }
-          : plugin
-      )
-    );
+  const formatDate = (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  };
+
+  const formatCompatibility = (compatibility: string): string => {
+    return compatibility.split('|').join(', ');
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl text-white mb-2">Gerenciamento de Plugins</h1>
-          <p className="text-gray-400">
-            Instale, configure e gerencie plugins do servidor
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            onClick={() => setShowInstaller(!showInstaller)}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+      <div>
+        <h1 className="text-4xl text-white mb-2">Plugin Manager</h1>
+        <p className="text-gray-400">Manage installed plugins</p>
+      </div>
+
+      {/* Plugin System Warning */}
+      {!pluginSystemEnabled && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/50 rounded-xl p-6"
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center border border-orange-500/50 flex-shrink-0">
+              <AlertTriangle className="w-6 h-6 text-orange-400" />
+            </div>
+            <div>
+              <h3 className="text-orange-300 font-semibold mb-2">WARNING</h3>
+              <p className="text-orange-300/80 text-sm">
+                The plugin system is not currently enabled. To enable it please change your{' '}
+                <a
+                  href="?module=website_settings"
+                  className="text-orange-200 underline hover:text-orange-100 transition-colors"
+                >
+                  website settings
+                </a>
+                .
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Messages */}
+      <AnimatePresence>
+        {message.type && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`rounded-xl p-6 border ${
+              message.type === 'success'
+                ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/50'
+                : message.type === 'error'
+                ? 'bg-gradient-to-r from-red-500/20 to-rose-500/20 border-red-500/50'
+                : 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/50'
+            }`}
           >
-            <Upload className="w-4 h-4 mr-2" />
-            Instalar Plugin
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card className="bg-black/70 border-yellow-500/30 p-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-yellow-500/20 p-3 rounded-lg">
-              <Plug className="w-6 h-6 text-yellow-500" />
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Total de Plugins</p>
-              <p className="text-2xl text-white">{plugins.length}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-black/70 border-green-500/30 p-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-green-500/20 p-3 rounded-lg">
-              <CheckCircle className="w-6 h-6 text-green-500" />
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Ativos</p>
-              <p className="text-2xl text-white">
-                {plugins.filter((p) => p.enabled).length}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-black/70 border-blue-500/30 p-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-500/20 p-3 rounded-lg">
-              <Database className="w-6 h-6 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Requerem MySQL</p>
-              <p className="text-2xl text-white">
-                {plugins.filter((p) => p.requiresDatabase).length}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-black/70 border-purple-500/30 p-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-purple-500/20 p-3 rounded-lg">
-              <Clock className="w-6 h-6 text-purple-500" />
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Requerem Cron</p>
-              <p className="text-2xl text-white">
-                {plugins.filter((p) => p.requiresCron).length}
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Plugin Installer */}
-      {showInstaller && <PluginInstaller onClose={() => setShowInstaller(false)} />}
-
-      <div className="grid grid-cols-12 gap-6">
-        {/* Plugins List */}
-        <div className="col-span-5">
-          <Card className="bg-black/70 border-yellow-500/30 p-6">
-            <h3 className="text-xl text-white mb-4 flex items-center gap-2">
-              <Plug className="w-5 h-5 text-yellow-500" />
-              Plugins Instalados
-            </h3>
-            <div className="space-y-2 max-h-[600px] overflow-y-auto">
-              {plugins.map((plugin) => (
-                <button
-                  key={plugin.id}
-                  onClick={() => setSelectedPlugin(plugin)}
-                  className={`w-full text-left p-4 rounded-lg transition-all ${
-                    selectedPlugin?.id === plugin.id
-                      ? 'bg-yellow-500/20 border border-yellow-500/50'
-                      : 'bg-black/50 border border-yellow-500/20 hover:border-yellow-500/40'
+            <div className="flex items-start gap-4">
+              <div
+                className={`w-12 h-12 rounded-lg flex items-center justify-center border flex-shrink-0 ${
+                  message.type === 'success'
+                    ? 'bg-green-500/20 border-green-500/50'
+                    : message.type === 'error'
+                    ? 'bg-red-500/20 border-red-500/50'
+                    : 'bg-yellow-500/20 border-yellow-500/50'
+                }`}
+              >
+                {message.type === 'success' ? (
+                  <CheckCircle className="w-6 h-6 text-green-400" />
+                ) : message.type === 'error' ? (
+                  <XCircle className="w-6 h-6 text-red-400" />
+                ) : (
+                  <AlertTriangle className="w-6 h-6 text-yellow-400" />
+                )}
+              </div>
+              <div className="flex-1">
+                <p
+                  className={`text-sm ${
+                    message.type === 'success'
+                      ? 'text-green-300'
+                      : message.type === 'error'
+                      ? 'text-red-300'
+                      : 'text-yellow-300'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1">
-                      <span className="text-2xl">{plugin.icon}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-white">{plugin.name}</h4>
-                          <span className="px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded text-xs">
-                            v{plugin.version}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {plugin.description}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          {plugin.requiresDatabase && (
-                            <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs flex items-center gap-1">
-                              <Database className="w-3 h-3" />
-                              MySQL
-                            </span>
-                          )}
-                          {plugin.requiresCron && (
-                            <span className="px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              Cron
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          plugin.enabled ? 'bg-green-500' : 'bg-gray-500'
-                        }`}
-                      />
-                      <ChevronRight className="w-4 h-4 text-gray-500" />
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  {message.text}
+                </p>
+              </div>
             </div>
-          </Card>
-        </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {/* Plugin Details/Settings */}
-        <div className="col-span-7">
-          {selectedPlugin ? (
-            <PluginSettings
-              plugin={selectedPlugin}
-              onToggle={() => togglePlugin(selectedPlugin.id)}
-              onDelete={() => deletePlugin(selectedPlugin.id)}
-              onConfigUpdate={(key, value) =>
-                updatePluginConfig(selectedPlugin.id, key, value)
-              }
-            />
-          ) : (
-            <Card className="bg-black/70 border-yellow-500/30 p-12 text-center">
-              <Plug className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg mb-2">
-                Nenhum plugin selecionado
-              </p>
-              <p className="text-gray-500 text-sm">
-                Selecione um plugin da lista para ver suas configurações
-              </p>
-            </Card>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function PluginSettings({
-  plugin,
-  onToggle,
-  onDelete,
-  onConfigUpdate,
-}: {
-  plugin: Plugin;
-  onToggle: () => void;
-  onDelete: () => void;
-  onConfigUpdate: (key: string, value: any) => void;
-}) {
-  const [hasChanges, setHasChanges] = useState(false);
-
-  const handleConfigChange = (key: string, value: any) => {
-    onConfigUpdate(key, value);
-    setHasChanges(true);
-  };
-
-  const handleSave = () => {
-    alert('✅ Configurações salvas com sucesso!');
-    setHasChanges(false);
-  };
-
-  return (
-    <Card className="bg-black/70 border-yellow-500/30 p-6">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between pb-6 border-b border-yellow-500/20">
-          <div className="flex items-start gap-4">
-            <span className="text-4xl">{plugin.icon}</span>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="backdrop-blur-lg bg-blue-500/5 border-blue-500/30 p-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-2xl text-white mb-1">{plugin.name}</h3>
-              <p className="text-gray-400 text-sm mb-2">{plugin.description}</p>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span>v{plugin.version}</span>
-                <span>•</span>
-                <span>por {plugin.author}</span>
-              </div>
+              <p className="text-gray-400 text-sm mb-1">Total Plugins</p>
+              <p className="text-3xl text-blue-500 font-bold">{plugins.length}</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-500/50">
+              <Plug className="w-6 h-6 text-blue-500" />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={onToggle}
-              variant="outline"
-              size="sm"
-              className={
-                plugin.enabled
-                  ? 'border-green-500/50 text-green-500 hover:bg-green-500/10'
-                  : 'border-gray-500/50 text-gray-500 hover:bg-gray-500/10'
-              }
-            >
-              <Power className="w-4 h-4 mr-1" />
-              {plugin.enabled ? 'Ativo' : 'Inativo'}
-            </Button>
-            <Button
-              onClick={onDelete}
-              variant="outline"
-              size="sm"
-              className="border-red-500/50 text-red-500 hover:bg-red-500/10"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
+        </Card>
 
-        {/* Compatibility Check */}
-        <div>
-          <h4 className="text-white mb-3 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-yellow-500" />
-            Verificação de Compatibilidade
-          </h4>
-          <div className="space-y-2">
-            <CompatibilityItem
-              label="Site"
-              compatible={plugin.compatibility.site}
-              icon={<Globe className="w-4 h-4" />}
-            />
-            <CompatibilityItem
-              label="MySQL/MariaDB"
-              compatible={plugin.compatibility.mysql}
-              icon={<Database className="w-4 h-4" />}
-            />
-            <CompatibilityItem
-              label="Cron Jobs"
-              compatible={plugin.compatibility.cron || !plugin.requiresCron}
-              icon={<Clock className="w-4 h-4" />}
-              optional={!plugin.requiresCron}
-            />
-          </div>
-          {plugin.compatibility.issues.length > 0 && (
-            <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
-                <div>
-                  <p className="text-red-400 font-medium mb-2">
-                    Problemas de Compatibilidade:
-                  </p>
-                  <ul className="list-disc list-inside text-sm text-red-300 space-y-1">
-                    {plugin.compatibility.issues.map((issue, index) => (
-                      <li key={index}>{issue}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+        <Card className="backdrop-blur-lg bg-green-500/5 border-green-500/30 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm mb-1">Enabled</p>
+              <p className="text-3xl text-green-500 font-bold">
+                {plugins.filter((p) => p.status === 1).length}
+              </p>
             </div>
-          )}
-        </div>
-
-        {/* Settings */}
-        <div>
-          <h4 className="text-white mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-yellow-500" />
-            Configurações do Plugin
-          </h4>
-          <div className="space-y-4">
-            {Object.entries(plugin.config).map(([key, value]) => (
-              <div key={key} className="flex items-center justify-between p-4 bg-black/50 rounded-lg border border-yellow-500/20">
-                <label className="text-gray-300 capitalize">
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
-                </label>
-                {typeof value === 'boolean' ? (
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name={key}
-                        checked={value === true}
-                        onChange={() => handleConfigChange(key, true)}
-                        className="w-4 h-4 text-yellow-500"
-                      />
-                      <span className="text-white">Yes</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name={key}
-                        checked={value === false}
-                        onChange={() => handleConfigChange(key, false)}
-                        className="w-4 h-4 text-yellow-500"
-                      />
-                      <span className="text-white">No</span>
-                    </label>
-                  </div>
-                ) : typeof value === 'number' ? (
-                  <input
-                    type="number"
-                    value={value}
-                    onChange={(e) =>
-                      handleConfigChange(key, parseInt(e.target.value))
-                    }
-                    className="w-32 bg-black/50 border border-yellow-500/30 rounded px-3 py-2 text-white text-sm"
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    value={value}
-                    onChange={(e) => handleConfigChange(key, e.target.value)}
-                    className="w-64 bg-black/50 border border-yellow-500/30 rounded px-3 py-2 text-white text-sm"
-                  />
-                )}
-              </div>
-            ))}
+            <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center border border-green-500/50">
+              <CheckCircle className="w-6 h-6 text-green-500" />
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* UserCP Links */}
-        {plugin.enabled && (
-          <div className="pt-6 border-t border-yellow-500/20">
-            <h4 className="text-white mb-3">UserCP Links</h4>
-            <p className="text-gray-400 text-sm mb-3">
-              Clique no botão abaixo para adicionar automaticamente os links deste plugin ao menu do UserCP.
-            </p>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              Add UserCP Links
-            </Button>
+        <Card className="backdrop-blur-lg bg-gray-500/5 border-gray-500/30 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm mb-1">Disabled</p>
+              <p className="text-3xl text-gray-500 font-bold">
+                {plugins.filter((p) => p.status === 0).length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-gray-500/20 flex items-center justify-center border border-gray-500/50">
+              <XCircle className="w-6 h-6 text-gray-500" />
+            </div>
           </div>
-        )}
-
-        {/* Save Button */}
-        <div className="flex gap-3 pt-6 border-t border-yellow-500/20">
-          <Button
-            onClick={handleSave}
-            disabled={!hasChanges}
-            className="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-black"
-          >
-            Save Changes
-          </Button>
-        </div>
-
-        {hasChanges && (
-          <p className="text-yellow-500 text-sm text-center">
-            ⚠️ Você tem alterações não salvas
-          </p>
-        )}
+        </Card>
       </div>
-    </Card>
-  );
-}
 
-function CompatibilityItem({
-  label,
-  compatible,
-  icon,
-  optional = false,
-}: {
-  label: string;
-  compatible: boolean;
-  icon: React.ReactNode;
-  optional?: boolean;
-}) {
-  return (
-    <div
-      className={`flex items-center justify-between p-3 rounded-lg border ${
-        compatible
-          ? 'bg-green-500/10 border-green-500/30'
-          : optional
-          ? 'bg-gray-500/10 border-gray-500/30'
-          : 'bg-red-500/10 border-red-500/30'
-      }`}
-    >
-      <div className="flex items-center gap-2">
-        <div
-          className={
-            compatible
-              ? 'text-green-400'
-              : optional
-              ? 'text-gray-400'
-              : 'text-red-400'
-          }
-        >
-          {icon}
-        </div>
-        <span
-          className={
-            compatible
-              ? 'text-green-300'
-              : optional
-              ? 'text-gray-300'
-              : 'text-red-300'
-          }
-        >
-          {label}
-          {optional && ' (Opcional)'}
-        </span>
-      </div>
-      {compatible ? (
-        <CheckCircle className="w-5 h-5 text-green-500" />
-      ) : optional ? (
-        <span className="text-gray-500 text-sm">Não requerido</span>
+      {/* Plugins Table */}
+      {plugins.length > 0 ? (
+        <Card className="backdrop-blur-lg bg-gray-900/50 border-sky-500/30 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-700/50 bg-black/30">
+                  <th className="px-6 py-4 text-left text-gray-400 font-medium">Name</th>
+                  <th className="px-6 py-4 text-left text-gray-400 font-medium">Author</th>
+                  <th className="px-6 py-4 text-left text-gray-400 font-medium">Version</th>
+                  <th className="px-6 py-4 text-left text-gray-400 font-medium">Compatibility</th>
+                  <th className="px-6 py-4 text-left text-gray-400 font-medium">Install Date</th>
+                  <th className="px-6 py-4 text-center text-gray-400 font-medium">Status</th>
+                  <th className="px-6 py-4 text-center text-gray-400 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {plugins.map((plugin, index) => (
+                  <motion.tr
+                    key={plugin.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="border-b border-gray-700/30 hover:bg-white/5 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Plug className="w-4 h-4 text-sky-400" />
+                        <span className="text-white font-medium">{plugin.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-300">{plugin.author}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-300">{plugin.version}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-gray-400 text-sm">
+                        {formatCompatibility(plugin.compatibility)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-300">{formatDate(plugin.install_date)}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {plugin.status === 1 ? (
+                        <span className="inline-flex items-center px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm border border-green-500/50">
+                          enabled
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-3 py-1 bg-gray-500/20 text-gray-400 rounded-full text-sm border border-gray-500/50">
+                          disabled
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        {plugin.status === 1 ? (
+                          <Button
+                            onClick={() => handleDisable(plugin.id)}
+                            className="bg-gray-600 hover:bg-gray-700 text-white text-xs px-3 py-1"
+                          >
+                            disable
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => handleEnable(plugin.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1"
+                          >
+                            enable
+                          </Button>
+                        )}
+                        {allowUninstall && (
+                          <Button
+                            onClick={() => handleUninstall(plugin.id, plugin.name)}
+                            className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1"
+                          >
+                            uninstall
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       ) : (
-        <XCircle className="w-5 h-5 text-red-500" />
+        <Card className="backdrop-blur-lg bg-yellow-500/5 border-yellow-500/30 p-12">
+          <div className="text-center">
+            <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4 opacity-50" />
+            <h3 className="text-xl text-yellow-300 font-semibold mb-2">No Plugins Installed</h3>
+            <p className="text-gray-400">
+              You have not installed any plugin yet. Visit the{' '}
+              <a href="?module=import_plugin" className="text-yellow-400 underline hover:text-yellow-300">
+                Import Plugin
+              </a>{' '}
+              page to install new plugins.
+            </p>
+          </div>
+        </Card>
       )}
-    </div>
-  );
-}
 
-function PluginInstaller({ onClose }: { onClose: () => void }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [checking, setChecking] = useState(false);
-  const [result, setResult] = useState<{
-    compatible: boolean;
-    issues: string[];
-  } | null>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setResult(null);
-    }
-  };
-
-  const checkCompatibility = () => {
-    setChecking(true);
-    // Simular verificação de compatibilidade
-    setTimeout(() => {
-      // Exemplo de verificação aleatória para demo
-      const issues: string[] = [];
-      const random = Math.random();
-
-      if (random < 0.3) {
-        issues.push('Plugin requer tabela "PluginData" que não existe no banco de dados');
-        issues.push('Função "cron_schedule" não está disponível no servidor');
-      }
-
-      setResult({
-        compatible: issues.length === 0,
-        issues,
-      });
-      setChecking(false);
-    }, 2000);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
-      <Card className="bg-black/70 border-blue-500/30 p-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl text-white flex items-center gap-2">
-              <Upload className="w-5 h-5 text-blue-500" />
-              Instalar Novo Plugin
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              ✕
-            </button>
+      {/* Info Card */}
+      <Card className="backdrop-blur-lg bg-blue-500/5 border-blue-500/30 p-6">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center border border-blue-500/50 flex-shrink-0">
+            <Plug className="w-5 h-5 text-blue-400" />
           </div>
-
           <div>
-            <label className="text-gray-400 text-sm mb-2 block">
-              Selecione o arquivo do plugin (.zip)
-            </label>
-            <input
-              type="file"
-              accept=".zip"
-              onChange={handleFileChange}
-              className="w-full bg-black/50 border border-blue-500/30 rounded-lg px-4 py-3 text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-600 file:text-white file:cursor-pointer hover:file:bg-blue-700"
-            />
+            <h3 className="text-white font-semibold mb-2">Plugin Manager Information</h3>
+            <p className="text-blue-300/70 text-sm mb-2">
+              Manage all installed plugins from this page. You can enable, disable, or uninstall plugins.
+            </p>
+            <ul className="text-blue-300/70 text-sm space-y-1 list-disc list-inside">
+              <li><strong>Enable:</strong> Activate the plugin to make it available on your website</li>
+              <li><strong>Disable:</strong> Deactivate the plugin without uninstalling it</li>
+              <li><strong>Uninstall:</strong> Completely remove the plugin from your system</li>
+              <li><strong>Compatibility:</strong> Shows which WebEngine versions the plugin supports</li>
+              <li><strong>Install Date:</strong> When the plugin was first installed</li>
+              <li>After uninstalling, the plugins cache is automatically rebuilt</li>
+            </ul>
           </div>
-
-          {file && !result && (
-            <Button
-              onClick={checkCompatibility}
-              disabled={checking}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {checking ? (
-                <>
-                  <Clock className="w-4 h-4 mr-2 animate-spin" />
-                  Verificando Compatibilidade...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Verificar Compatibilidade
-                </>
-              )}
-            </Button>
-          )}
-
-          {result && (
-            <div
-              className={`p-4 rounded-lg border ${
-                result.compatible
-                  ? 'bg-green-500/10 border-green-500/30'
-                  : 'bg-red-500/10 border-red-500/30'
-              }`}
-            >
-              <div className="flex items-start gap-2 mb-3">
-                {result.compatible ? (
-                  <>
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-                    <div>
-                      <p className="text-green-400 font-medium mb-1">
-                        ✅ Plugin Compatível!
-                      </p>
-                      <p className="text-green-300 text-sm">
-                        O plugin passou em todas as verificações e pode ser instalado com segurança.
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
-                    <div>
-                      <p className="text-red-400 font-medium mb-2">
-                        ❌ Plugin Incompatível
-                      </p>
-                      <p className="text-red-300 text-sm mb-3">
-                        O plugin apresenta os seguintes problemas:
-                      </p>
-                      <ul className="list-disc list-inside text-sm text-red-300 space-y-1">
-                        {result.issues.map((issue, index) => (
-                          <li key={index}>{issue}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {result.compatible && (
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white mt-3">
-                  <Download className="w-4 h-4 mr-2" />
-                  Instalar Plugin
-                </Button>
-              )}
-            </div>
-          )}
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 }

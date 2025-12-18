@@ -103,7 +103,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error('useLanguage must be used within LanguageProvider');
+    // During hot-reload, context might not be available immediately
+    // Return default values to prevent crashes - FIXED v2
+    console.warn('⚠️ useLanguage called outside LanguageProvider - using default language');
+    return {
+      language: 'pt-BR' as Language,
+      setLanguage: () => {},
+      t: translations['pt-BR']
+    };
   }
   return context;
 }
