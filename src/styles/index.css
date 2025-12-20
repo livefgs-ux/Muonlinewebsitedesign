@@ -3,6 +3,13 @@
 @import './theme.css';
 
 /* Dark Medieval Fantasy Custom Styles */
+
+/* 🔒 FIX: Previne o "salto" visual quando a scrollbar aparece/desaparece */
+html {
+  overflow-y: scroll; /* Sempre mostra a scrollbar vertical */
+  scrollbar-gutter: stable; /* Reserva espaço para a scrollbar (navegadores modernos) */
+}
+
 body {
   background-color: #000000;
   color: #ffffff;

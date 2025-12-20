@@ -13,7 +13,7 @@ interface Event {
   nextOccurrence: Date;
 }
 
-export function EventsSection() {
+function EventsSection() {
   const { t, language } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
 
