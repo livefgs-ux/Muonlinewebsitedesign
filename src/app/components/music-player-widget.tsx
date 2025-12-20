@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import { Volume2, VolumeX, Volume1, Play, Pause, SkipForward, SkipBack, Music2, ChevronUp, ChevronDown } from 'lucide-react';
 import { useMusicPlayer } from '../contexts/music-context';
 
@@ -6,7 +6,7 @@ interface MusicPlayerWidgetProps {
   currentSection?: string;
 }
 
-export function MusicPlayerWidget({ currentSection = 'home' }: MusicPlayerWidgetProps) {
+export const MusicPlayerWidget = memo(function MusicPlayerWidget({ currentSection = 'home' }: MusicPlayerWidgetProps) {
   const {
     isPlaying,
     currentTrack,
@@ -22,18 +22,18 @@ export function MusicPlayerWidget({ currentSection = 'home' }: MusicPlayerWidget
   const [isExpanded, setIsExpanded] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
-  // Hide widget in AdminCP - AFTER all hooks are called
-  if (currentSection === 'admincp' || !currentTrack) {
-    return null;
-  }
-
-  const getVolumeIcon = () => {
+  const getVolumeIcon = useCallback(() => {
     if (isMuted || volume === 0) return VolumeX;
     if (volume < 0.5) return Volume1;
     return Volume2;
-  };
+  }, [isMuted, volume]);
 
   const VolumeIcon = getVolumeIcon();
+
+  // Hide widget in AdminCP - MOVED AFTER all hooks are called
+  if (currentSection === 'admincp' || !currentTrack) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -253,4 +253,4 @@ export function MusicPlayerWidget({ currentSection = 'home' }: MusicPlayerWidget
       `}</style>
     </div>
   );
-}
+});

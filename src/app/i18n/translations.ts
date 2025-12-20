@@ -1,5 +1,6 @@
 export type Language = 'pt-BR' | 'en' | 'es' | 'de' | 'zh' | 'ru' | 'fil' | 'vi';
 
+// Translations interface with all supported keys
 export interface Translations {
   // Navigation
   nav: {
@@ -98,6 +99,17 @@ export interface Translations {
     loginButton: string;
     registerButton: string;
     logout: string;
+    welcome: string;
+    welcomeMessage: string;
+    usernamePlaceholder: string;
+    passwordPlaceholder: string;
+    emailPlaceholder: string;
+    confirmPasswordPlaceholder: string;
+    loggingIn: string;
+    registering: string;
+    passwordMismatch: string;
+    passwordTooShort: string;
+    usernameTooShort: string;
   };
   // Dashboard
   dashboard: {
@@ -225,6 +237,17 @@ export const translations: Record<Language, Translations> = {
       loginButton: 'Entrar',
       registerButton: 'Criar Conta',
       logout: 'Sair',
+      welcome: 'Bem-vindo',
+      welcomeMessage: 'Bem-vindo ao MeuMU Online',
+      usernamePlaceholder: 'Digite seu nome de usuário',
+      passwordPlaceholder: 'Digite sua senha',
+      emailPlaceholder: 'Digite seu e-mail',
+      confirmPasswordPlaceholder: 'Confirme sua senha',
+      loggingIn: 'Entrando...',
+      registering: 'Registrando...',
+      passwordMismatch: 'As senhas não coincidem',
+      passwordTooShort: 'A senha deve ter pelo menos 6 caracteres',
+      usernameTooShort: 'O nome de usuário deve ter pelo menos 3 caracteres',
     },
     dashboard: {
       welcome: 'Bem-vindo',
@@ -348,6 +371,17 @@ export const translations: Record<Language, Translations> = {
       loginButton: 'Sign In',
       registerButton: 'Create Account',
       logout: 'Logout',
+      welcome: 'Welcome',
+      welcomeMessage: 'Welcome to MeuMU Online',
+      usernamePlaceholder: 'Enter your username',
+      passwordPlaceholder: 'Enter your password',
+      emailPlaceholder: 'Enter your email',
+      confirmPasswordPlaceholder: 'Confirm your password',
+      loggingIn: 'Logging in...',
+      registering: 'Registering...',
+      passwordMismatch: 'Passwords do not match',
+      passwordTooShort: 'Password must be at least 6 characters long',
+      usernameTooShort: 'Username must be at least 3 characters long',
     },
     dashboard: {
       welcome: 'Welcome',
@@ -471,6 +505,17 @@ export const translations: Record<Language, Translations> = {
       loginButton: 'Entrar',
       registerButton: 'Crear Cuenta',
       logout: 'Salir',
+      welcome: 'Bienvenido',
+      welcomeMessage: 'Bienvenido a MeuMU Online',
+      usernamePlaceholder: 'Ingresa tu nombre de usuario',
+      passwordPlaceholder: 'Ingresa tu contraseña',
+      emailPlaceholder: 'Ingresa tu correo',
+      confirmPasswordPlaceholder: 'Confirma tu contraseña',
+      loggingIn: 'Iniciando sesión...',
+      registering: 'Registrando...',
+      passwordMismatch: 'Las contraseñas no coinciden',
+      passwordTooShort: 'La contraseña debe tener al menos 6 caracteres',
+      usernameTooShort: 'El nombre de usuario debe tener al menos 3 caracteres',
     },
     dashboard: {
       welcome: 'Bienvenido',
@@ -594,6 +639,17 @@ export const translations: Record<Language, Translations> = {
       loginButton: 'Einloggen',
       registerButton: 'Konto Erstellen',
       logout: 'Abmelden',
+      welcome: 'Willkommen',
+      welcomeMessage: 'Willkommen bei MeuMU Online',
+      usernamePlaceholder: 'Geben Sie Ihren Benutzernamen ein',
+      passwordPlaceholder: 'Geben Sie Ihr Passwort ein',
+      emailPlaceholder: 'Geben Sie Ihre E-Mail ein',
+      confirmPasswordPlaceholder: 'Bestätigen Sie Ihr Passwort',
+      loggingIn: 'Anmelden...',
+      registering: 'Registrieren...',
+      passwordMismatch: 'Passwörter stimmen nicht überein',
+      passwordTooShort: 'Das Passwort muss mindestens 6 Zeichen lang sein',
+      usernameTooShort: 'Der Benutzername muss mindestens 3 Zeichen lang sein',
     },
     dashboard: {
       welcome: 'Willkommen',
@@ -717,6 +773,17 @@ export const translations: Record<Language, Translations> = {
       loginButton: '登录',
       registerButton: '创建账户',
       logout: '登出',
+      welcome: '欢迎',
+      welcomeMessage: '欢迎来到 MeuMU Online',
+      usernamePlaceholder: '输入您的用户名',
+      passwordPlaceholder: '输入您的密码',
+      emailPlaceholder: '输入您的邮箱',
+      confirmPasswordPlaceholder: '确认您的密码',
+      loggingIn: '登录中...',
+      registering: '注册中...',
+      passwordMismatch: '密码不匹配',
+      passwordTooShort: '密码必须至少6个字符',
+      usernameTooShort: '用户名必须至少3个字符',
     },
     dashboard: {
       welcome: '欢迎',
@@ -840,6 +907,17 @@ export const translations: Record<Language, Translations> = {
       loginButton: 'Войти',
       registerButton: 'Создать Аккаунт',
       logout: 'Выйти',
+      welcome: 'Добро пожаловать',
+      welcomeMessage: 'Добро пожаловать в MeuMU Online',
+      usernamePlaceholder: 'Введите ваше имя пользователя',
+      passwordPlaceholder: 'Введите ваш пароль',
+      emailPlaceholder: 'Введите вашу электронную почту',
+      confirmPasswordPlaceholder: 'Подтвердите ваш пароль',
+      loggingIn: 'Вход...',
+      registering: 'Регистрация...',
+      passwordMismatch: 'Пароли не совпадают',
+      passwordTooShort: 'Пароль должен быть не менее 6 символов',
+      usernameTooShort: 'Имя пользователя должно быть не менее 3 символов',
     },
     dashboard: {
       welcome: 'Добро пожаловать',
@@ -963,6 +1041,17 @@ export const translations: Record<Language, Translations> = {
       loginButton: 'Mag-sign In',
       registerButton: 'Gumawa ng Account',
       logout: 'Mag-logout',
+      welcome: 'Maligayang pagdating',
+      welcomeMessage: 'Maligayang pagdating sa MeuMU Online',
+      usernamePlaceholder: 'Ilagay ang iyong username',
+      passwordPlaceholder: 'Ilagay ang iyong password',
+      emailPlaceholder: 'Ilagay ang iyong email',
+      confirmPasswordPlaceholder: 'Kumpirmahin ang iyong password',
+      loggingIn: 'Naglologin...',
+      registering: 'Nagreheistro...',
+      passwordMismatch: 'Hindi tugma ang password',
+      passwordTooShort: 'Ang password ay dapat na mayroon sa huling 6 karakter',
+      usernameTooShort: 'Ang username ay dapat na mayroon sa huling 3 karakter',
     },
     dashboard: {
       welcome: 'Maligayang pagdating',
@@ -1086,6 +1175,17 @@ export const translations: Record<Language, Translations> = {
       loginButton: 'Đăng Nhập',
       registerButton: 'Tạo Tài Khoản',
       logout: 'Đăng Xuất',
+      welcome: 'Chào mừng',
+      welcomeMessage: 'Chào mừng đến MeuMU Online',
+      usernamePlaceholder: 'Nhập tên đăng nhập của bạn',
+      passwordPlaceholder: 'Nhập mật khẩu của bạn',
+      emailPlaceholder: 'Nhập email của bạn',
+      confirmPasswordPlaceholder: 'Xác nhận mật khẩu của bạn',
+      loggingIn: 'Đang đăng nhập...',
+      registering: 'Đang đăng ký...',
+      passwordMismatch: 'Mật khẩu không khớp',
+      passwordTooShort: 'Mật khẩu phải có ít nhất 6 ký tự',
+      usernameTooShort: 'Tên đăng nhập phải có ít nhất 3 ký tự',
     },
     dashboard: {
       welcome: 'Chào mừng',

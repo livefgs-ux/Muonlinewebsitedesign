@@ -1,21 +1,24 @@
-import { useState } from 'react';
+import { useState, memo, useCallback, useMemo } from 'react';
 import { Globe } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language, languageNames, languageFlags } from '../i18n/translations';
 
 const languages: Language[] = ['pt-BR', 'en', 'es', 'de', 'zh', 'ru', 'fil', 'vi'];
 
-export function LanguageSelector() {
+export const LanguageSelector = memo(function LanguageSelector() {
   const { language, setLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   
   // Check if language was auto-detected
-  const isAutoDetected = localStorage.getItem('language-auto-detected') === 'true';
+  const isAutoDetected = useMemo(() => 
+    localStorage.getItem('language-auto-detected') === 'true',
+    []
+  );
 
-  const handleLanguageChange = (lang: Language) => {
+  const handleLanguageChange = useCallback((lang: Language) => {
     setLanguage(lang);
     setIsOpen(false);
-  };
+  }, [setLanguage]);
 
   return (
     <div className="relative">
@@ -26,6 +29,9 @@ export function LanguageSelector() {
       >
         <Globe className="w-4 h-4 text-yellow-500 group-hover:rotate-12 transition-transform duration-300" />
         <span className="text-2xl leading-none">{languageFlags[language]}</span>
+        <span className="hidden sm:block text-sm text-gray-300 group-hover:text-yellow-500 transition-colors">
+          {languageNames[language]}
+        </span>
         {isAutoDetected && (
           <span 
             className="hidden md:block text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30"
@@ -108,4 +114,4 @@ export function LanguageSelector() {
       )}
     </div>
   );
-}
+});

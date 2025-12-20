@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Calendar, Clock, Trophy, Swords, Castle } from 'lucide-react';
 import { Card } from './ui/card';
 import { motion } from 'motion/react';
-import { SharedBackground } from './shared-background';
 
 interface Event {
   id: string;
@@ -94,11 +93,10 @@ export function EventsSection() {
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4">
-      {/* Background Image with Overlay */}
-      <SharedBackground />
+    <div className="min-h-screen pt-32 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Background já está em App.tsx - não duplicar! */}
 
-      <div className="max-w-7xl mx-auto relative z-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -218,3 +216,5 @@ export function EventsSection() {
     </div>
   );
 }
+
+export default EventsSection;

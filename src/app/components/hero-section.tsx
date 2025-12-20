@@ -1,9 +1,8 @@
-import { Download, Play, Sparkles } from 'lucide-react';
+import { Download, Play, Sparkles, Crown } from 'lucide-react';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { HomeNewsSection } from './home-news-section';
-import { SharedBackground } from './shared-background';
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
@@ -15,7 +14,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
   return (
     <>
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <SharedBackground />
+        {/* Background já está em App.tsx - não duplicar! */}
 
         {/* Content - Positioned to the left */}
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -103,6 +102,33 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
             />
           </div>
         </motion.div>
+        
+        {/* 🛡️ Botão Flutuante AdminCP - MODO FAKE para testes */}
+        <motion.button
+          onClick={() => onNavigate('admin')}
+          className="fixed bottom-8 right-8 z-50 group"
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ duration: 0.5, delay: 1 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <div className="relative">
+            {/* Glow Effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full blur-xl opacity-50 group-hover:opacity-100 transition-opacity animate-pulse" />
+            
+            {/* Button */}
+            <div className="relative w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center shadow-2xl shadow-amber-500/50 border-2 border-amber-400/50 group-hover:border-amber-300 transition-all">
+              <Crown className="w-8 h-8 text-slate-900 group-hover:rotate-12 transition-transform" />
+            </div>
+            
+            {/* Tooltip */}
+            <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-slate-900/95 backdrop-blur-xl border border-amber-500/30 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              <p className="text-sm text-amber-400 font-bold">🛡️ AdminCP</p>
+              <p className="text-xs text-slate-400">Modo Fake (Testes)</p>
+            </div>
+          </div>
+        </motion.button>
       </div>
       
       {/* Latest News Section - Positioned right after hero for immediate visibility */}
@@ -110,3 +136,5 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
     </>
   );
 }
+
+export default HeroSection;

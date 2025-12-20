@@ -1,53 +1,147 @@
 import { motion } from 'motion/react';
+import { memo } from 'react';
 
-// Imagem de background (anteriormente figma:asset/7c77bece727042bfc957b9adbcf34e1fa973fbec.png)
-// Agora usando caminho local para evitar dependência do Figma
-const heroImage = '/assets/backgrounds/hero-background.png';
+/**
+ * 🎨 SharedBackground - Epic Mu Online Background
+ * 
+ * ✅ Background Image do Mu Online
+ * ✅ Efeitos de partículas e névoa
+ * ✅ Presente em TODAS as páginas
+ * ⚡ OTIMIZADO para performance
+ * 
+ * ⚠️ NUNCA REMOVER ESTE COMPONENTE! ⚠️
+ */
 
-export function SharedBackground() {
+export const SharedBackground = memo(function SharedBackground() {
   return (
     <>
-      {/* Background Image with Overlay */}
+      {/* ========================================
+          BACKGROUND ÉPICO - IMAGEM DO MU ONLINE
+          ======================================== */}
+      
       <div className="fixed inset-0 z-0">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="absolute inset-0"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 z-10" />
-          <img
-            src={heroImage}
-            alt="MU Online Background"
-            className="w-full h-full object-cover object-center"
-          />
-        </motion.div>
+        {/* Imagem de fundo do Mu Online */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(https://i.postimg.cc/1XHKxhv1/8393fd9b_a4f8_4ab5_a5c2_dafceeb7e666.png)',
+            willChange: 'transform',
+          }}
+        />
+        
+        {/* Overlay escuro para melhor contraste com conteúdo */}
+        <div className="absolute inset-0 bg-black/40" />
+        
+        {/* Gradientes sutis para profundidade */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60" />
+        
+        {/* Brilho sutil nas bordas */}
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/10 via-transparent to-amber-900/10" />
       </div>
 
-      {/* Animated Particles */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+      {/* ========================================
+          PARTÍCULAS MÁGICAS FLUTUANTES - REDUZIDAS
+          ======================================== */}
+      
+      {/* Partículas Verdes Animadas */}
+      <div className="fixed inset-0 z-[5] pointer-events-none overflow-hidden">
+        {[...Array(10)].map((_, i) => (
           <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-yellow-500 rounded-full"
+            key={`m-green-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: Math.random() * 4 + 2 + 'px',
+              height: Math.random() * 4 + 2 + 'px',
+              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.9), transparent)',
+              boxShadow: '0 0 15px rgba(16, 185, 129, 0.7)',
+              left: `${Math.random() * 45}%`,
+              willChange: 'transform, opacity',
+            }}
             initial={{
-              x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1920),
-              y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1080),
+              y: typeof window !== 'undefined' ? window.innerHeight + 50 : 1130,
               opacity: 0,
             }}
             animate={{
-              y: [null, Math.random() * -100],
-              opacity: [0, 1, 0],
+              y: -100,
+              opacity: [0, 0.8, 0.8, 0],
+              x: [0, Math.random() * 100 - 50],
             }}
             transition={{
-              duration: 3 + Math.random() * 2,
+              duration: Math.random() * 6 + 5,
               repeat: Infinity,
-              delay: Math.random() * 2,
+              delay: Math.random() * 5,
+              ease: 'easeInOut',
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Partículas Laranjas/Fogo Animadas */}
+      <div className="fixed inset-0 z-[5] pointer-events-none overflow-hidden">
+        {[...Array(10)].map((_, i) => (
+          <motion.div
+            key={`m-orange-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: Math.random() * 5 + 2 + 'px',
+              height: Math.random() * 5 + 2 + 'px',
+              background: i % 2 === 0 
+                ? 'radial-gradient(circle, rgba(245, 158, 11, 0.9), transparent)'
+                : 'radial-gradient(circle, rgba(239, 68, 68, 0.9), transparent)',
+              boxShadow: i % 2 === 0 
+                ? '0 0 15px rgba(245, 158, 11, 0.7)'
+                : '0 0 15px rgba(239, 68, 68, 0.7)',
+              left: `${Math.random() * 45 + 55}%`,
+              willChange: 'transform, opacity',
+            }}
+            initial={{
+              y: typeof window !== 'undefined' ? window.innerHeight + 50 : 1130,
+              opacity: 0,
+            }}
+            animate={{
+              y: -120,
+              opacity: [0, 0.9, 0.9, 0],
+              x: [0, Math.random() * 80 - 40],
+              scale: [0.5, 1.2, 0.5],
+            }}
+            transition={{
+              duration: Math.random() * 5 + 4,
+              repeat: Infinity,
+              delay: Math.random() * 4,
+              ease: 'easeOut',
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Faíscas Douradas */}
+      <div className="fixed inset-0 z-[5] pointer-events-none overflow-hidden">
+        {[...Array(10)].map((_, i) => (
+          <motion.div
+            key={`sparkle-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: Math.random() * 3 + 1 + 'px',
+              height: Math.random() * 3 + 1 + 'px',
+              background: 'radial-gradient(circle, rgba(251, 191, 36, 1), transparent)',
+              boxShadow: '0 0 10px rgba(251, 191, 36, 0.9)',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              willChange: 'opacity',
+            }}
+            animate={{
+              opacity: [0, 1, 0],
+              scale: [0.5, 1, 0.5],
+            }}
+            transition={{
+              duration: Math.random() * 2 + 1,
+              repeat: Infinity,
+              delay: Math.random() * 3,
+              ease: 'easeInOut',
             }}
           />
         ))}
       </div>
     </>
   );
-}
+});

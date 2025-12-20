@@ -1,116 +1,136 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Language, Translations, translations } from '../i18n/translations';
+import { Language, translations, languageNames } from '../i18n/translations';
 
-interface LanguageContextType {
+type LanguageContextType = {
   language: Language;
-  setLanguage: (lang: Language) => void;
-  t: Translations;
-}
+  setLanguage: (language: Language) => void;
+  t: (key: string) => string;
+  languageNames: Record<Language, string>;
+};
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// Function to detect browser language and map to our supported languages
-function detectBrowserLanguage(): Language {
-  // Get browser languages (ordered by preference)
-  const browserLanguages = navigator.languages || [navigator.language];
-  
-  // Mapping of browser language codes to our Language types
-  const languageMap: Record<string, Language> = {
-    'pt': 'pt-BR',
-    'pt-BR': 'pt-BR',
-    'pt-PT': 'pt-BR',
-    'en': 'en',
-    'en-US': 'en',
-    'en-GB': 'en',
-    'es': 'es',
-    'es-ES': 'es',
-    'es-MX': 'es',
-    'de': 'de',
-    'de-DE': 'de',
-    'zh': 'zh',
-    'zh-CN': 'zh',
-    'zh-TW': 'zh',
-    'ru': 'ru',
-    'ru-RU': 'ru',
-    'fil': 'fil',
-    'tl': 'fil', // Tagalog -> Filipino
-    'vi': 'vi',
-    'vi-VN': 'vi',
-  };
+/**
+ * Helper function to get nested properties by dot notation
+ * Example: getNestedValue(obj, 'nav.home') -> obj.nav.home
+ */
+const getNestedValue = (obj: any, path: string): string => {
+  try {
+    const keys = path.split('.');
+    let result = obj;
 
-  // Try to find a matching language
-  for (const browserLang of browserLanguages) {
-    // Try exact match first
-    if (languageMap[browserLang]) {
-      console.log(`🌐 Idioma detectado: ${browserLang} -> ${languageMap[browserLang]}`);
-      return languageMap[browserLang];
+    for (const key of keys) {
+      if (result === undefined || result === null) {
+        return path; // Return the path if we hit undefined
+      }
+      result = result[key];
     }
-    
-    // Try matching just the language code (e.g., "en" from "en-US")
-    const langCode = browserLang.split('-')[0];
-    if (languageMap[langCode]) {
-      console.log(`🌐 Idioma detectado (código): ${langCode} -> ${languageMap[langCode]}`);
-      return languageMap[langCode];
-    }
+
+    return typeof result === 'string' ? result : path;
+  } catch (error) {
+    console.error(`Error getting nested value for path: "${path}"`, error);
+    return path; // Return the path as fallback
+  }
+};
+
+/**
+ * Detect browser language and map to our supported languages
+ */
+const getBrowserLanguage = (): Language => {
+  if (typeof window === 'undefined') return 'pt-BR'; // SSR fallback
+
+  // Try to get saved language from localStorage
+  const savedLanguage = localStorage.getItem('language') as Language;
+  if (savedLanguage && Object.keys(translations).includes(savedLanguage)) {
+    return savedLanguage;
   }
 
-  // Default to Portuguese BR if no match
-  console.log('🌐 Idioma padrão: pt-BR');
+  // Try to match browser language
+  const browserLang = navigator.language || navigator.languages?.[0] || 'pt-BR';
+
+  // Map browser language to supported languages
+  if (browserLang.startsWith('pt')) return 'pt-BR';
+  if (browserLang.startsWith('es')) return 'es';
+  if (browserLang.startsWith('de')) return 'de';
+  if (browserLang.startsWith('zh')) return 'zh';
+  if (browserLang.startsWith('ru')) return 'ru';
+  if (browserLang.startsWith('fil') || browserLang.startsWith('tl')) return 'fil';
+  if (browserLang.startsWith('vi')) return 'vi';
+  if (browserLang.startsWith('en')) return 'en';
+
+  // Default to Portuguese BR
   return 'pt-BR';
-}
+};
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(() => {
-    // Check if user has manually selected a language before
-    const savedLanguage = localStorage.getItem('language');
-    
-    if (savedLanguage) {
-      console.log(`💾 Idioma salvo encontrado: ${savedLanguage}`);
-      return savedLanguage as Language;
-    }
-    
-    // If no saved preference, auto-detect from browser
-    const detectedLanguage = detectBrowserLanguage();
-    console.log(`✨ Auto-detectando idioma do navegador: ${detectedLanguage}`);
-    
-    // Save the detected language
-    localStorage.setItem('language', detectedLanguage);
-    localStorage.setItem('language-auto-detected', 'true');
-    
-    return detectedLanguage;
-  });
+export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+  // Initialize with Portuguese BR to prevent hydration issues
+  const [language, setLanguageState] = useState<Language>('pt-BR');
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // Initialize language on mount (client-side only)
   useEffect(() => {
-    // Save language to localStorage whenever it changes
-    localStorage.setItem('language', language);
-    // Mark that user has manually changed language (not auto-detected anymore)
-    localStorage.setItem('language-auto-detected', 'false');
-  }, [language]);
+    const detectedLanguage = getBrowserLanguage();
+    setLanguageState(detectedLanguage);
+    setIsInitialized(true);
+  }, []);
 
-  const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
+  // When language changes, save to localStorage
+  const setLanguage = (newLanguage: Language) => {
+    console.log(`🔄 Mudando idioma para: ${newLanguage}`);
+    setLanguageState(newLanguage);
+    
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('language', newLanguage);
+      // Mark that user manually changed language
+      localStorage.setItem('language-auto-detected', 'false');
+    }
   };
 
-  const t = translations[language];
+  /**
+   * Translation function using dot notation
+   * Example: t('nav.home') -> translations[language].nav.home
+   */
+  const t = (key: string): string => {
+    try {
+      const translation = getNestedValue(translations[language], key);
+      
+      // Debug mode: log missing translations in development (only after initialization)
+      if (isInitialized && translation === key && process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ Missing translation for key: "${key}" in language: "${language}"`);
+      }
+      
+      return translation || key; // Always return at least the key if translation fails
+    } catch (error) {
+      console.error(`Error translating key: "${key}"`, error);
+      return key; // Fallback to key
+    }
+  };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, languageNames }}>
       {children}
     </LanguageContext.Provider>
   );
-}
+};
 
-export function useLanguage() {
+/**
+ * Hook to use language context
+ * Must be used within a LanguageProvider
+ */
+export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
-  if (!context) {
-    // During hot-reload, context might not be available immediately
-    // Return default values to prevent crashes - FIXED v2
-    console.warn('⚠️ useLanguage called outside LanguageProvider - using default language');
+
+  if (context === undefined) {
+    // During hot-reload or SSR, context might not be available
+    // Return default values to prevent crashes
+    // This is expected during initial load, so we don't warn
     return {
-      language: 'pt-BR' as Language,
+      language: 'pt-BR',
       setLanguage: () => {},
-      t: translations['pt-BR']
+      t: (key: string) => key,
+      languageNames,
     };
   }
+
   return context;
-}
+};

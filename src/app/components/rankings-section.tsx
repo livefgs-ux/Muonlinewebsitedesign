@@ -2,8 +2,7 @@ import { Trophy, Medal, Award, Users, Skull, Flame } from 'lucide-react';
 import { Card } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { motion } from 'motion/react';
-import { SharedBackground } from './shared-background';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 // Mock data
@@ -83,292 +82,287 @@ export function RankingsSection() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4">
-      {/* Background Image with Overlay */}
-      <SharedBackground />
+    <div className="min-h-screen pt-32 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Background já está em App.tsx - não duplicar! */}
 
-      <div className="max-w-7xl mx-auto relative z-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Header */}
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Trophy className="w-8 h-8 text-yellow-500" />
-              <h2 className="text-4xl text-white">{t.rankings.title}</h2>
-            </div>
-            <p className="text-gray-400 text-lg">
-              Veja os melhores jogadores e guilds do servidor
-            </p>
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Trophy className="w-8 h-8 text-yellow-500" />
+            <h2 className="text-4xl text-white">{t('rankings.title')}</h2>
           </div>
+          <p className="text-gray-400 text-lg">
+            Veja os melhores jogadores e guilds do servidor
+          </p>
+        </div>
 
-          {/* Rankings Tabs */}
-          <div className="flex justify-center mb-8">
-            <Tabs defaultValue="resets" className="w-full max-w-4xl">
-              <TabsList className="bg-black/50 border-2 border-yellow-500/30 backdrop-blur-md w-full grid grid-cols-5 h-auto p-1 gap-1">
-                <TabsTrigger 
-                  value="resets" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500/30 data-[state=active]:to-yellow-600/30 data-[state=active]:text-yellow-400 data-[state=active]:border data-[state=active]:border-yellow-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-yellow-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
-                >
-                  <Trophy className="w-4 h-4 mr-1" />
-                  Resets
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="pk" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500/30 data-[state=active]:to-red-600/30 data-[state=active]:text-red-400 data-[state=active]:border data-[state=active]:border-red-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-red-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
-                >
-                  <Medal className="w-4 h-4 mr-1" />
-                  PK
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="guilds" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500/30 data-[state=active]:to-blue-600/30 data-[state=active]:text-blue-400 data-[state=active]:border data-[state=active]:border-blue-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
-                >
-                  <Users className="w-4 h-4 mr-1" />
-                  Guilds
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="events" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-purple-400 data-[state=active]:border data-[state=active]:border-purple-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
-                >
-                  <Flame className="w-4 h-4 mr-1" />
-                  Eventos
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="bosses" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500/30 data-[state=active]:to-orange-600/30 data-[state=active]:text-orange-400 data-[state=active]:border data-[state=active]:border-orange-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
-                >
-                  <Skull className="w-4 h-4 mr-1" />
-                  Bosses
-                </TabsTrigger>
-              </TabsList>
+        {/* Rankings Tabs */}
+        <div className="flex justify-center mb-8">
+          <Tabs defaultValue="resets" className="w-full max-w-4xl">
+            <TabsList className="bg-black/50 border-2 border-yellow-500/30 backdrop-blur-md w-full grid grid-cols-5 h-auto p-1 gap-1">
+              <TabsTrigger 
+                value="resets" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500/30 data-[state=active]:to-yellow-600/30 data-[state=active]:text-yellow-400 data-[state=active]:border data-[state=active]:border-yellow-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-yellow-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
+              >
+                <Trophy className="w-4 h-4 mr-1" />
+                Resets
+              </TabsTrigger>
+              <TabsTrigger 
+                value="pk" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500/30 data-[state=active]:to-red-600/30 data-[state=active]:text-red-400 data-[state=active]:border data-[state=active]:border-red-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-red-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
+              >
+                <Medal className="w-4 h-4 mr-1" />
+                PK
+              </TabsTrigger>
+              <TabsTrigger 
+                value="guilds" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500/30 data-[state=active]:to-blue-600/30 data-[state=active]:text-blue-400 data-[state=active]:border data-[state=active]:border-blue-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
+              >
+                <Users className="w-4 h-4 mr-1" />
+                Guilds
+              </TabsTrigger>
+              <TabsTrigger 
+                value="events" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/30 data-[state=active]:to-purple-600/30 data-[state=active]:text-purple-400 data-[state=active]:border data-[state=active]:border-purple-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
+              >
+                <Flame className="w-4 h-4 mr-1" />
+                Eventos
+              </TabsTrigger>
+              <TabsTrigger 
+                value="bosses" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500/30 data-[state=active]:to-orange-600/30 data-[state=active]:text-orange-400 data-[state=active]:border data-[state=active]:border-orange-500/50 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-500/30 text-gray-300 hover:text-white transition-all py-3 px-3 rounded-md text-sm"
+              >
+                <Skull className="w-4 h-4 mr-1" />
+                Bosses
+              </TabsTrigger>
+            </TabsList>
 
-              {/* Top Resets */}
-              <TabsContent value="resets" className="mt-6">
-                <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
-                  <div className="space-y-3">
-                    {topResets.map((player, index) => {
-                      const medal = getRankMedal(player.rank);
-                      return (
-                        <motion.div
-                          key={player.rank}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className={`flex items-center justify-between p-4 rounded-lg border ${
-                            player.rank <= 3
-                              ? `${medal.bg} ${medal.border}`
-                              : 'bg-black/30 border-yellow-500/20'
-                          } hover:scale-102 transition-all`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
-                              <medal.icon className={`w-6 h-6 ${medal.color}`} />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-400 text-sm">#{player.rank}</span>
-                                <h3 className="text-white">{player.name}</h3>
-                              </div>
-                              <p className="text-gray-400 text-sm">{player.class}</p>
-                            </div>
+            {/* Top Resets */}
+            <TabsContent value="resets" className="mt-6">
+              <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
+                <div className="space-y-3">
+                  {topResets.map((player, index) => {
+                    const medal = getRankMedal(player.rank);
+                    return (
+                      <motion.div
+                        key={player.rank}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className={`flex items-center justify-between p-4 rounded-lg border ${
+                          player.rank <= 3
+                            ? `${medal.bg} ${medal.border}`
+                            : 'bg-black/30 border-yellow-500/20'
+                        } hover:scale-102 transition-all`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
+                            <medal.icon className={`w-6 h-6 ${medal.color}`} />
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl text-yellow-500">{player.resets}</div>
-                            <p className="text-gray-400 text-sm">Resets</p>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-400 text-sm">#{player.rank}</span>
+                              <h3 className="text-white">{player.name}</h3>
+                            </div>
+                            <p className="text-gray-400 text-sm">{player.class}</p>
                           </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              </TabsContent>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl text-yellow-500">{player.resets}</div>
+                          <p className="text-gray-400 text-sm">Resets</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </TabsContent>
 
-              {/* Top PK */}
-              <TabsContent value="pk" className="mt-6">
-                <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
-                  <div className="space-y-3">
-                    {topPK.map((player, index) => {
-                      const medal = getRankMedal(player.rank);
-                      const kd = (player.kills / player.deaths).toFixed(2);
-                      return (
-                        <motion.div
-                          key={player.rank}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className={`flex items-center justify-between p-4 rounded-lg border ${
-                            player.rank <= 3
-                              ? `${medal.bg} ${medal.border}`
-                              : 'bg-black/30 border-yellow-500/20'
-                          } hover:scale-102 transition-all`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
-                              <medal.icon className={`w-6 h-6 ${medal.color}`} />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-400 text-sm">#{player.rank}</span>
-                                <h3 className="text-white">{player.name}</h3>
-                              </div>
-                              <p className="text-gray-400 text-sm">{player.class}</p>
-                            </div>
+            {/* Top PK */}
+            <TabsContent value="pk" className="mt-6">
+              <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
+                <div className="space-y-3">
+                  {topPK.map((player, index) => {
+                    const medal = getRankMedal(player.rank);
+                    const kd = (player.kills / player.deaths).toFixed(2);
+                    return (
+                      <motion.div
+                        key={player.rank}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className={`flex items-center justify-between p-4 rounded-lg border ${
+                          player.rank <= 3
+                            ? `${medal.bg} ${medal.border}`
+                            : 'bg-black/30 border-yellow-500/20'
+                        } hover:scale-102 transition-all`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
+                            <medal.icon className={`w-6 h-6 ${medal.color}`} />
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl text-red-500">{player.kills.toLocaleString()}</div>
-                            <p className="text-gray-400 text-sm">Kills | K/D: {kd}</p>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-400 text-sm">#{player.rank}</span>
+                              <h3 className="text-white">{player.name}</h3>
+                            </div>
+                            <p className="text-gray-400 text-sm">{player.class}</p>
                           </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              </TabsContent>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl text-red-500">{player.kills.toLocaleString()}</div>
+                          <p className="text-gray-400 text-sm">Kills | K/D: {kd}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </TabsContent>
 
-              {/* Top Guilds */}
-              <TabsContent value="guilds" className="mt-6">
-                <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
-                  <div className="space-y-3">
-                    {topGuilds.map((guild, index) => {
-                      const medal = getRankMedal(guild.rank);
-                      return (
-                        <motion.div
-                          key={guild.rank}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className={`flex items-center justify-between p-4 rounded-lg border ${
-                            guild.rank <= 3
-                              ? `${medal.bg} ${medal.border}`
-                              : 'bg-black/30 border-yellow-500/20'
-                          } hover:scale-102 transition-all`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
-                              <medal.icon className={`w-6 h-6 ${medal.color}`} />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-400 text-sm">#{guild.rank}</span>
-                                <h3 className="text-white">{guild.name}</h3>
-                              </div>
-                              <p className="text-gray-400 text-sm">
-                                Mestre: {guild.master} | {guild.members} membros
-                              </p>
-                            </div>
+            {/* Top Guilds */}
+            <TabsContent value="guilds" className="mt-6">
+              <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
+                <div className="space-y-3">
+                  {topGuilds.map((guild, index) => {
+                    const medal = getRankMedal(guild.rank);
+                    return (
+                      <motion.div
+                        key={guild.rank}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className={`flex items-center justify-between p-4 rounded-lg border ${
+                          guild.rank <= 3
+                            ? `${medal.bg} ${medal.border}`
+                            : 'bg-black/30 border-yellow-500/20'
+                        } hover:scale-102 transition-all`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
+                            <medal.icon className={`w-6 h-6 ${medal.color}`} />
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl text-yellow-500">{guild.score.toLocaleString()}</div>
-                            <p className="text-gray-400 text-sm">Pontos</p>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-400 text-sm">#{guild.rank}</span>
+                              <h3 className="text-white">{guild.name}</h3>
+                            </div>
+                            <p className="text-gray-400 text-sm">
+                              Mestre: {guild.master} | {guild.members} membros
+                            </p>
                           </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              </TabsContent>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl text-yellow-500">{guild.score.toLocaleString()}</div>
+                          <p className="text-gray-400 text-sm">Pontos</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </TabsContent>
 
-              {/* Top Events */}
-              <TabsContent value="events" className="mt-6">
-                <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
-                  <div className="space-y-3">
-                    {topEvents.map((event, index) => {
-                      const medal = getRankMedal(event.rank);
-                      return (
-                        <motion.div
-                          key={event.rank}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className={`flex items-center justify-between p-4 rounded-lg border ${
-                            event.rank <= 3
-                              ? `${medal.bg} ${medal.border}`
-                              : 'bg-black/30 border-yellow-500/20'
-                          } hover:scale-102 transition-all`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
-                              <medal.icon className={`w-6 h-6 ${medal.color}`} />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-400 text-sm">#{event.rank}</span>
-                                <h3 className="text-white">{event.name}</h3>
-                              </div>
-                              <p className="text-gray-400 text-sm">{event.class}</p>
-                            </div>
+            {/* Top Events */}
+            <TabsContent value="events" className="mt-6">
+              <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
+                <div className="space-y-3">
+                  {topEvents.map((event, index) => {
+                    const medal = getRankMedal(event.rank);
+                    return (
+                      <motion.div
+                        key={event.rank}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className={`flex items-center justify-between p-4 rounded-lg border ${
+                          event.rank <= 3
+                            ? `${medal.bg} ${medal.border}`
+                            : 'bg-black/30 border-yellow-500/20'
+                        } hover:scale-102 transition-all`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
+                            <medal.icon className={`w-6 h-6 ${medal.color}`} />
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl text-purple-500">{event.points.toLocaleString()}</div>
-                            <p className="text-gray-400 text-sm">Pontos | Vitórias: {event.wins}</p>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-400 text-sm">#{event.rank}</span>
+                              <h3 className="text-white">{event.name}</h3>
+                            </div>
+                            <p className="text-gray-400 text-sm">{event.class}</p>
                           </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              </TabsContent>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl text-purple-500">{event.points.toLocaleString()}</div>
+                          <p className="text-gray-400 text-sm">Pontos | Vitórias: {event.wins}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </TabsContent>
 
-              {/* Top Boss Kills */}
-              <TabsContent value="bosses" className="mt-6">
-                <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
-                  <div className="space-y-3">
-                    {topBossKills.map((boss, index) => {
-                      const medal = getRankMedal(boss.rank);
-                      return (
-                        <motion.div
-                          key={boss.rank}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className={`flex items-center justify-between p-4 rounded-lg border ${
-                            boss.rank <= 3
-                              ? `${medal.bg} ${medal.border}`
-                              : 'bg-black/30 border-yellow-500/20'
-                          } hover:scale-102 transition-all`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
-                              <medal.icon className={`w-6 h-6 ${medal.color}`} />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-400 text-sm">#{boss.rank}</span>
-                                <h3 className="text-white">{boss.name}</h3>
-                              </div>
-                              <p className="text-gray-400 text-sm">{boss.class}</p>
-                            </div>
+            {/* Top Boss Kills */}
+            <TabsContent value="bosses" className="mt-6">
+              <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 overflow-hidden">
+                <div className="space-y-3">
+                  {topBossKills.map((boss, index) => {
+                    const medal = getRankMedal(boss.rank);
+                    return (
+                      <motion.div
+                        key={boss.rank}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className={`flex items-center justify-between p-4 rounded-lg border ${
+                          boss.rank <= 3
+                            ? `${medal.bg} ${medal.border}`
+                            : 'bg-black/30 border-yellow-500/20'
+                        } hover:scale-102 transition-all`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 ${medal.bg} rounded-lg flex items-center justify-center border ${medal.border}`}>
+                            <medal.icon className={`w-6 h-6 ${medal.color}`} />
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl text-orange-500">{boss.kills.toLocaleString()}</div>
-                            <p className="text-gray-400 text-sm">Bosses: {boss.bosses}</p>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-400 text-sm">#{boss.rank}</span>
+                              <h3 className="text-white">{boss.name}</h3>
+                            </div>
+                            <p className="text-gray-400 text-sm">{boss.class}</p>
                           </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl text-orange-500">{boss.kills.toLocaleString()}</div>
+                          <p className="text-gray-400 text-sm">Bosses: {boss.bosses}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
 
-          {/* Update Notice */}
-          <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 mt-8">
-            <div className="flex items-center gap-3">
-              <Trophy className="w-6 h-6 text-yellow-500" />
-              <div>
-                <h3 className="text-white mb-1">Rankings Atualizados em Tempo Real</h3>
-                <p className="text-gray-400 text-sm">
-                  Os rankings são atualizados automaticamente a cada 5 minutos diretamente do banco de dados do servidor.
-                </p>
-              </div>
+        {/* Update Notice */}
+        <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 mt-8">
+          <div className="flex items-center gap-3">
+            <Trophy className="w-6 h-6 text-yellow-500" />
+            <div>
+              <h3 className="text-white mb-1">Rankings Atualizados em Tempo Real</h3>
+              <p className="text-gray-400 text-sm">
+                Os rankings são atualizados automaticamente a cada 5 minutos diretamente do banco de dados do servidor.
+              </p>
             </div>
-          </Card>
-        </motion.div>
+          </div>
+        </Card>
       </div>
     </div>
   );
 }
+
+export default RankingsSection;

@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { Menu, X, Swords, Trophy, Download, Users, Calendar, Shield, Newspaper } from 'lucide-react';
+import { useState, memo, useMemo } from 'react';
+import { Menu, X, Swords, Trophy, Download, Users, Calendar, Shield, Newspaper, Crown } from 'lucide-react';
 import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
-import { LanguageSelector } from './language-selector';
 
 interface NavigationProps {
   onNavigate: (section: string) => void;
@@ -12,18 +11,18 @@ interface NavigationProps {
   isAdmin?: boolean;
 }
 
-export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, isAdmin = false }: NavigationProps) {
+export const Navigation = memo(function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, isAdmin = false }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
 
-  const navItems = [
-    { id: 'home', label: t.nav.home, icon: Swords },
-    { id: 'dashboard', label: t.nav.dashboard, icon: Users },
-    { id: 'rankings', label: t.nav.rankings, icon: Trophy },
-    { id: 'events', label: t.nav.events, icon: Calendar },
-    { id: 'downloads', label: t.nav.downloads, icon: Download },
-    { id: 'news', label: t.nav.news, icon: Newspaper },
-  ];
+  const navItems = useMemo(() => [
+    { id: 'home', label: t('nav.home'), icon: Swords },
+    { id: 'dashboard', label: t('nav.dashboard'), icon: Users },
+    { id: 'rankings', label: t('nav.rankings'), icon: Trophy },
+    { id: 'events', label: t('nav.events'), icon: Calendar },
+    { id: 'downloads', label: t('nav.downloads'), icon: Download },
+    { id: 'news', label: t('nav.news'), icon: Newspaper },
+  ], [t]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-black/30 border-b border-yellow-500/20">
@@ -78,21 +77,13 @@ export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, i
             )}
           </div>
 
-          {/* Right Side: Language Selector + Mobile Menu */}
-          <div className="flex items-center gap-3">
-            {/* Language Selector - Always visible on desktop */}
-            <div className="hidden md:block">
-              <LanguageSelector />
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden text-white p-2"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-white p-2"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
       </div>
 
@@ -100,11 +91,6 @@ export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, i
       {mobileMenuOpen && (
         <div className="md:hidden backdrop-blur-lg bg-black/90 border-t border-yellow-500/20">
           <div className="px-4 py-4 space-y-2">
-            {/* Language Selector for Mobile - At top */}
-            <div className="mb-4 pb-4 border-b border-yellow-500/20">
-              <LanguageSelector />
-            </div>
-
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -145,4 +131,4 @@ export function Navigation({ onNavigate, currentSection, isLoggedIn, onLogout, i
       )}
     </nav>
   );
-}
+});

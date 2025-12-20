@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useMemo } from "react";
 import {
   Server,
   Users,
@@ -31,7 +31,7 @@ interface ServerData {
   updated_at: string;
 }
 
-export function ServerInfoWidget({ currentSection = 'home' }: ServerInfoWidgetProps) {
+export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection = 'home' }: ServerInfoWidgetProps) {
   const [isOnline, setIsOnline] = useState(true);
   const [serverData, setServerData] = useState<ServerData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -113,45 +113,45 @@ export function ServerInfoWidget({ currentSection = 'home' }: ServerInfoWidgetPr
     // Fetch immediately
     fetchServerInfo();
 
-    // Fetch every 30 seconds
-    const interval = setInterval(fetchServerInfo, 30000);
+    // Fetch every 60 seconds (increased from 30 for better performance)
+    const interval = setInterval(fetchServerInfo, 60000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Hide widget in AdminCP and Dashboard - AFTER hooks
-  const hiddenSections = ['admincp', 'dashboard'];
-  if (hiddenSections.includes(currentSection)) {
-    return null;
-  }
-
-  const serverInfo = [
+  const serverInfo = useMemo(() => [
     { 
-      label: t.common.season.split(' ')[0], // "Season"
+      label: t('common.season').split(' ')[0], // "Season"
       value: serverData?.season.split(' - ')[0] || "Season 19-2-3", 
       icon: Server 
     },
     { 
-      label: t.serverStatus.experience, 
+      label: t('serverStatus.experience'), 
       value: serverData?.exp_rate || "9999x", 
       icon: TrendingUp 
     },
     { 
-      label: t.serverStatus.drop, 
+      label: t('serverStatus.drop'), 
       value: serverData?.drop_rate || "60%", 
       icon: Zap 
     },
     {
-      label: t.serverStatus.players,
-      value: isLoading ? t.common.loading : (serverData?.players_online.toLocaleString() || "0"),
+      label: t('serverStatus.players'),
+      value: isLoading ? t('common.loading') : (serverData?.players_online.toLocaleString() || "0"),
       icon: Users,
     },
     {
-      label: t.serverStatus.aliveBosses,
-      value: isLoading ? t.common.loading : `${serverData?.alive_bosses || 0}/${serverData?.total_bosses || 120}`,
+      label: t('serverStatus.aliveBosses'),
+      value: isLoading ? t('common.loading') : `${serverData?.alive_bosses || 0}/${serverData?.total_bosses || 120}`,
       icon: Skull,
     },
-  ];
+  ], [t, serverData, isLoading]);
+
+  // Hide widget in AdminCP and Dashboard - MOVED AFTER all hooks
+  const hiddenSections = ['admincp', 'dashboard'];
+  if (hiddenSections.includes(currentSection)) {
+    return null;
+  }
 
   return (
     <motion.div
@@ -164,7 +164,7 @@ export function ServerInfoWidget({ currentSection = 'home' }: ServerInfoWidgetPr
         {/* Server Status */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-white">{t.serverStatus.title}</h3>
+            <h3 className="text-white">{t('serverStatus.title')}</h3>
             <div className="flex items-center gap-2">
               <Circle
                 className={`w-3 h-3 ${isOnline ? "fill-green-500 text-green-500" : "fill-red-500 text-red-500"}`}
@@ -172,7 +172,7 @@ export function ServerInfoWidget({ currentSection = 'home' }: ServerInfoWidgetPr
               <span
                 className={`text-sm ${isOnline ? "text-green-500" : "text-red-500"}`}
               >
-                {isOnline ? t.serverStatus.online : t.serverStatus.offline}
+                {isOnline ? t('serverStatus.online') : t('serverStatus.offline')}
               </span>
             </div>
           </div>
@@ -245,4 +245,4 @@ export function ServerInfoWidget({ currentSection = 'home' }: ServerInfoWidgetPr
       </Card>
     </motion.div>
   );
-}
+});

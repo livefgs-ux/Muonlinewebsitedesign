@@ -35,11 +35,11 @@ export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Newspaper className="w-8 h-8 text-yellow-500" />
             <h2 className="text-4xl md:text-5xl text-white">
-              {t.news.latestNews}
+              {t('news.latestNews')}
             </h2>
           </div>
           <p className="text-gray-400 text-lg">
-            {t.news.subtitle}
+            {t('news.subtitle')}
           </p>
         </motion.div>
 
@@ -104,7 +104,7 @@ export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
                     variant="outline"
                     className="w-full border-yellow-500/30 bg-yellow-500/5 text-yellow-500 hover:bg-yellow-500/10 group/btn"
                   >
-                    {t.news.readMore}
+                    {t('news.readMore')}
                     <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                   </Button>
                 </div>
@@ -125,7 +125,7 @@ export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
             className="group bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black px-8 py-4 text-lg shadow-lg shadow-yellow-500/30"
           >
             <Newspaper className="w-5 h-5 mr-2" />
-            {t.news.viewAllNews}
+            {t('news.viewAllNews')}
             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
         </motion.div>

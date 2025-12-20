@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { useNews } from '../contexts/NewsContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { SharedBackground } from './shared-background';
 
 export function NewsSection() {
   const { news } = useNews();
@@ -21,31 +20,28 @@ export function NewsSection() {
   const newsItems = news.filter(item => item.publishTo?.includes('news'));
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-8">
-      {/* Background Image with Overlay */}
-      <SharedBackground />
-
-      <div className="relative z-20">
+    <div className="min-h-screen pt-32 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="max-w-7xl mx-auto mb-12 text-center"
+          className="mb-12 text-center"
         >
           <div className="flex items-center justify-center gap-3 mb-4">
             <Newspaper className="w-12 h-12 text-gold" />
             <h1 className="text-5xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-300 to-gold">
-              {t.news.title}
+              {t('news.title')}
             </h1>
           </div>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            {t.news.subtitle}
+            {t('news.subtitle')}
           </p>
         </motion.div>
 
         {/* News Grid */}
-        <div className="max-w-7xl mx-auto space-y-8">
+        <div className="space-y-8">
           {newsItems.map((news, index) => (
             <motion.div
               key={news.id}
@@ -87,7 +83,7 @@ export function NewsSection() {
                       </div>
                       <div className="flex items-center gap-2 text-gold">
                         <User className="w-4 h-4" />
-                        <span className="text-sm">{t.news.by} {news.author}</span>
+                        <span className="text-sm">{t('news.by')} {news.author}</span>
                       </div>
                     </div>
 
@@ -118,7 +114,7 @@ export function NewsSection() {
 
                     {/* Read More Button */}
                     <Button className="bg-gradient-to-r from-gold to-yellow-600 hover:from-yellow-600 hover:to-gold text-black group-hover:shadow-lg group-hover:shadow-gold/50 transition-all">
-                      {t.news.readMore}
+                      {t('news.readMore')}
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </div>
@@ -134,7 +130,7 @@ export function NewsSection() {
             size="lg"
             className="bg-gradient-to-r from-ethereal to-sky-600 hover:from-sky-600 hover:to-ethereal text-white px-12"
           >
-            {t.news.loadMore}
+            {t('news.loadMore')}
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
@@ -142,3 +138,5 @@ export function NewsSection() {
     </div>
   );
 }
+
+export default NewsSection;

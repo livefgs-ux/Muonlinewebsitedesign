@@ -6,10 +6,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { motion } from 'motion/react';
-
-// Imagens locais (anteriormente figma:asset)
-const heroImage = '/assets/backgrounds/hero-background.png';
-const characterExample = '/assets/images/character-example.png';
+import characterExample from 'figma:asset/0481c7d9f941d688b911f1c81a92c821fe1a50e8.png';
 
 // Mock data
 const mockUser = {
@@ -217,8 +214,8 @@ export function DashboardSection({ onLoginSuccess, isLoggedIn: isLoggedInProp, o
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen pt-32 pb-20 px-4">
-        <div className="max-w-md mx-auto">
+      <div className="min-h-screen pt-32 pb-20">
+        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -278,16 +275,7 @@ export function DashboardSection({ onLoginSuccess, isLoggedIn: isLoggedInProp, o
 
   return (
     <div className="min-h-screen pt-32 pb-20 px-4">
-      {/* Background Image with Overlay */}
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 z-10" />
-        <img
-          src={heroImage}
-          alt="MU Online Background"
-          className="w-full h-full object-cover object-center"
-        />
-      </div>
+      {/* Background já está em App.tsx - não duplicar! */}
 
       <div className="max-w-7xl mx-auto relative z-20">
         <motion.div
@@ -839,3 +827,5 @@ export function DashboardSection({ onLoginSuccess, isLoggedIn: isLoggedInProp, o
     </div>
   );
 }
+
+export default DashboardSection;

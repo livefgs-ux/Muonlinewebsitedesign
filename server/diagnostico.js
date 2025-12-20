@@ -1,254 +1,288 @@
-// Script de Diagnóstico Completo da Conexão MySQL
-import mysql from 'mysql2/promise';
+/**
+ * 🔍 DIAGNÓSTICO DO SISTEMA - MeuMU Online
+ * 
+ * Este script verifica:
+ * - Conexão com banco de dados
+ * - Estrutura de tabelas
+ * - Variáveis de ambiente
+ * - Configurações do servidor
+ */
+
 import dotenv from 'dotenv';
+import pool from './config/database.js';
 
 dotenv.config();
 
-const config = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT) || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  connectTimeout: 10000 // 10 segundos
-};
+console.log('\n⚔️  MeuMU Online - Season 19-2-3 Épico');
+console.log('🔍 DIAGNÓSTICO DO SISTEMA\n');
+console.log('='.repeat(60));
 
-console.log('═══════════════════════════════════════════════════════════');
-console.log('🔍 DIAGNÓSTICO COMPLETO DA CONEXÃO MYSQL');
-console.log('═══════════════════════════════════════════════════════════\n');
+// Verifica variáveis de ambiente
+async function checkEnvironment() {
+  console.log('\n📋 1. VERIFICANDO VARIÁVEIS DE AMBIENTE...\n');
+  
+  const requiredVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME', 'JWT_SECRET'];
+  let allOk = true;
+  
+  for (const varName of requiredVars) {
+    const value = process.env[varName];
+    if (!value || value === 'sua_senha_aqui' || value === 'sua_chave_secreta_jwt_aqui') {
+      console.log(`   ❌ ${varName} - NÃO CONFIGURADO`);
+      allOk = false;
+    } else {
+      // Oculta senha e JWT_SECRET por segurança
+      if (varName === 'DB_PASSWORD' || varName === 'JWT_SECRET') {
+        console.log(`   ✅ ${varName} - Configurado (****)`);
+      } else {
+        console.log(`   ✅ ${varName} - ${value}`);
+      }
+    }
+  }
+  
+  return allOk;
+}
 
-console.log('📋 CONFIGURAÇÕES DETECTADAS:\n');
-console.log(`   Host: ${config.host}`);
-console.log(`   Porta: ${config.port}`);
-console.log(`   Usuário: ${config.user}`);
-console.log(`   Senha: ${config.password ? '***' + config.password.slice(-3) : '⚠️  VAZIA'}`);
-console.log(`   Database 1: ${process.env.DB_NAME || 'não configurado'}`);
-console.log(`   Database 2: ${process.env.DB_NAME_WEB || 'não configurado'}\n`);
-
-async function testConnection() {
-  let connection;
-
+// Testa conexão com banco
+async function checkDatabaseConnection() {
+  console.log('\n📡 2. TESTANDO CONEXÃO COM BANCO DE DADOS...\n');
+  
   try {
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('PASSO 1: Testando conexão com o servidor MySQL');
-    console.log('═══════════════════════════════════════════════════════════\n');
+    const connection = await pool.getConnection();
+    console.log('   ✅ Conexão estabelecida com sucesso!');
     
-    console.log(`🔌 Conectando em ${config.host}:${config.port}...`);
+    // Testa query simples
+    const [result] = await connection.query('SELECT VERSION() as version');
+    console.log(`   ℹ️  MySQL/MariaDB versão: ${result[0].version}`);
     
-    connection = await mysql.createConnection(config);
-    
-    console.log('✅ CONEXÃO ESTABELECIDA COM SUCESSO!\n');
-
-    // Verifica versão do MySQL
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('PASSO 2: Verificando versão do MySQL');
-    console.log('═══════════════════════════════════════════════════════════\n');
-    
-    const [versionResult] = await connection.query('SELECT VERSION() as version');
-    console.log(`✅ Versão MySQL: ${versionResult[0].version}\n`);
-
-    // Lista todos os bancos de dados
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('PASSO 3: Listando bancos de dados disponíveis');
-    console.log('═══════════════════════════════════════════════════════════\n');
-    
-    const [databases] = await connection.query('SHOW DATABASES');
-    console.log('📁 Bancos de dados encontrados:');
-    databases.forEach(db => {
-      const dbName = db.Database || db.SCHEMA_NAME;
-      const isTarget = dbName === 'muonline' || dbName === 'webmu';
-      console.log(`   ${isTarget ? '🎯' : '  '} ${dbName}`);
-    });
-    console.log('');
-
-    // Verifica se os bancos necessários existem
-    const dbNames = databases.map(db => db.Database || db.SCHEMA_NAME);
-    const hasMuonline = dbNames.includes('muonline');
-    const hasWebmu = dbNames.includes('webmu');
-
-    if (!hasMuonline && !hasWebmu) {
-      console.log('⚠️  ATENÇÃO: Nenhum dos bancos "muonline" ou "webmu" foi encontrado!');
-      console.log('   Bancos disponíveis:', dbNames.join(', '));
-      console.log('\n💡 Você pode estar usando outro nome. Veja a lista acima.\n');
-    }
-
-    // Testa banco "muonline"
-    if (hasMuonline) {
-      console.log('═══════════════════════════════════════════════════════════');
-      console.log('PASSO 4: Testando banco "muonline"');
-      console.log('═══════════════════════════════════════════════════════════\n');
-      
-      await connection.query('USE muonline');
-      
-      // Lista tabelas
-      const [tables] = await connection.query('SHOW TABLES');
-      console.log(`✅ Banco "muonline" acessado com sucesso!`);
-      console.log(`📊 Total de tabelas: ${tables.length}\n`);
-      
-      console.log('🔍 Procurando tabelas importantes do MU Online:\n');
-      
-      const tableNames = tables.map(t => Object.values(t)[0]);
-      
-      // Tabelas esperadas
-      const expectedTables = [
-        'MEMB_INFO',
-        'MEMB_STAT', 
-        'Character',
-        'Guild',
-        'AccountCharacter',
-        'warehouse'
-      ];
-
-      for (const tableName of expectedTables) {
-        const exists = tableNames.some(t => t.toLowerCase() === tableName.toLowerCase());
-        console.log(`   ${exists ? '✅' : '❌'} ${tableName}`);
-        
-        if (exists) {
-          // Conta registros
-          const actualTableName = tableNames.find(t => t.toLowerCase() === tableName.toLowerCase());
-          try {
-            const [countResult] = await connection.query(`SELECT COUNT(*) as total FROM \`${actualTableName}\``);
-            console.log(`      └─ ${countResult[0].total} registros`);
-          } catch (err) {
-            console.log(`      └─ Erro ao contar: ${err.message}`);
-          }
-        }
-      }
-      console.log('');
-
-      // Testa players online
-      const onlineTableExists = tableNames.some(t => t.toLowerCase() === 'memb_stat');
-      if (onlineTableExists) {
-        const actualTableName = tableNames.find(t => t.toLowerCase() === 'memb_stat');
-        try {
-          console.log('🎮 Testando query de players online...');
-          const [onlineResult] = await connection.query(
-            `SELECT COUNT(*) as total FROM \`${actualTableName}\` WHERE ConnectStat = 1`
-          );
-          console.log(`   ✅ Players online: ${onlineResult[0].total}\n`);
-        } catch (err) {
-          console.log(`   ⚠️  Erro: ${err.message}`);
-          console.log(`   💡 A tabela existe mas pode ter estrutura diferente\n`);
-        }
-      }
-
-      // Testa ranking
-      const charTableExists = tableNames.some(t => t.toLowerCase() === 'character');
-      if (charTableExists) {
-        const actualTableName = tableNames.find(t => t.toLowerCase() === 'character');
-        try {
-          console.log('🏆 Testando query de ranking...');
-          const [rankResult] = await connection.query(
-            `SELECT Name, cLevel FROM \`${actualTableName}\` ORDER BY cLevel DESC LIMIT 3`
-          );
-          console.log(`   ✅ Top 3 players:`);
-          rankResult.forEach((player, i) => {
-            console.log(`      ${i + 1}. ${player.Name} - Level ${player.cLevel}`);
-          });
-          console.log('');
-        } catch (err) {
-          console.log(`   ⚠️  Erro: ${err.message}`);
-          console.log(`   💡 Tentando com estrutura alternativa...\n`);
-          
-          // Tenta descobrir estrutura
-          try {
-            const [columns] = await connection.query(`SHOW COLUMNS FROM \`${actualTableName}\``);
-            console.log(`   📋 Colunas da tabela Character:`);
-            columns.slice(0, 10).forEach(col => {
-              console.log(`      - ${col.Field} (${col.Type})`);
-            });
-            console.log('');
-          } catch (e) {
-            console.log(`   ❌ Não foi possível listar colunas\n`);
-          }
-        }
-      }
-    }
-
-    // Testa banco "webmu"
-    if (hasWebmu) {
-      console.log('═══════════════════════════════════════════════════════════');
-      console.log('PASSO 5: Testando banco "webmu"');
-      console.log('═══════════════════════════════════════════════════════════\n');
-      
-      await connection.query('USE webmu');
-      
-      const [webTables] = await connection.query('SHOW TABLES');
-      console.log(`✅ Banco "webmu" acessado com sucesso!`);
-      console.log(`📊 Total de tabelas: ${webTables.length}\n`);
-      
-      if (webTables.length > 0) {
-        console.log('📋 Primeiras 10 tabelas:');
-        webTables.slice(0, 10).forEach(t => {
-          console.log(`   - ${Object.values(t)[0]}`);
-        });
-        console.log('');
-      }
-    }
-
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('✅ DIAGNÓSTICO CONCLUÍDO COM SUCESSO!');
-    console.log('═══════════════════════════════════════════════════════════\n');
-    
-    console.log('🎯 PRÓXIMOS PASSOS:\n');
-    console.log('   1. Anote o nome correto dos bancos de dados');
-    console.log('   2. Verifique se as tabelas importantes existem');
-    console.log('   3. Execute: npm run server');
-    console.log('   4. Teste a API: http://localhost:3001/api/stats/online\n');
-
+    connection.release();
+    return true;
   } catch (error) {
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('❌ ERRO NA CONEXÃO');
-    console.log('═══════════════════════════════════════════════════════════\n');
-    
-    console.log(`🔴 Tipo: ${error.code || 'UNKNOWN'}`);
-    console.log(`📝 Mensagem: ${error.message}\n`);
-
-    console.log('🔍 POSSÍVEIS CAUSAS:\n');
-
-    if (error.code === 'ECONNREFUSED') {
-      console.log('❌ MySQL não está aceitando conexões');
-      console.log('   Soluções:');
-      console.log('   1. Verifique se MySQL está rodando no servidor:');
-      console.log('      sudo systemctl status mysql');
-      console.log('   2. Verifique se a porta 3306 está aberta:');
-      console.log('      sudo netstat -tlnp | grep 3306');
-      console.log('   3. Verifique bind-address no /etc/mysql/my.cnf');
-      console.log('      bind-address = 0.0.0.0  (permite conexões remotas)');
-    } else if (error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND') {
-      console.log('❌ Não consegue alcançar o servidor');
-      console.log('   Soluções:');
-      console.log('   1. Verifique se o IP está correto: ' + config.host);
-      console.log('   2. Teste ping ao servidor:');
-      console.log(`      ping ${config.host}`);
-      console.log('   3. Verifique firewall no servidor VPS:');
-      console.log('      sudo ufw status');
-      console.log('      sudo ufw allow 3306/tcp');
-    } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-      console.log('❌ Usuário ou senha incorretos');
-      console.log('   Soluções:');
-      console.log('   1. Verifique credenciais no arquivo .env');
-      console.log('   2. Teste login manual:');
-      console.log(`      mysql -h ${config.host} -u ${config.user} -p`);
-      console.log('   3. Verifique permissões do usuário no MySQL:');
-      console.log(`      GRANT ALL PRIVILEGES ON *.* TO '${config.user}'@'%';`);
-      console.log('      FLUSH PRIVILEGES;');
-    } else if (error.code === 'ER_BAD_DB_ERROR') {
-      console.log('❌ Banco de dados não existe');
-      console.log('   Soluções:');
-      console.log('   1. Verifique nome do banco no .env');
-      console.log('   2. Liste bancos disponíveis:');
-      console.log('      SHOW DATABASES;');
-    }
-
-    console.log('\n📖 Documentação completa: GUIA_CONEXAO_MYSQL.md\n');
-    process.exit(1);
-
-  } finally {
-    if (connection) {
-      await connection.end();
-      console.log('🔌 Conexão encerrada.\n');
-    }
+    console.log('   ❌ ERRO ao conectar:', error.message);
+    console.log('\n   💡 Dicas:');
+    console.log('      - Verifique se o MySQL está rodando');
+    console.log('      - Confirme as credenciais no arquivo .env');
+    console.log('      - Teste manualmente: mysql -u sa -p -h localhost MuOnline');
+    return false;
   }
 }
 
-testConnection();
+// Verifica estrutura de tabelas
+async function checkTables() {
+  console.log('\n📊 3. VERIFICANDO ESTRUTURA DE TABELAS...\n');
+  
+  const requiredTables = [
+    'MEMB_INFO',
+    'MEMB_STAT',
+    'Character',
+    'Guild',
+    'GuildMember'
+  ];
+  
+  let allTablesOk = true;
+  
+  try {
+    for (const tableName of requiredTables) {
+      try {
+        const [rows] = await pool.query(`SELECT COUNT(*) as count FROM ${tableName}`);
+        console.log(`   ✅ ${tableName.padEnd(20)} - ${rows[0].count} registros`);
+      } catch (error) {
+        console.log(`   ❌ ${tableName.padEnd(20)} - NÃO ENCONTRADA`);
+        allTablesOk = false;
+      }
+    }
+    
+    return allTablesOk;
+  } catch (error) {
+    console.log('   ❌ Erro ao verificar tabelas:', error.message);
+    return false;
+  }
+}
+
+// Verifica estrutura de colunas importantes
+async function checkColumns() {
+  console.log('\n🔧 4. VERIFICANDO COLUNAS IMPORTANTES...\n');
+  
+  try {
+    // Verifica coluna de resets
+    const [charColumns] = await pool.query(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_NAME = 'Character' 
+      AND COLUMN_NAME IN ('Resets', 'resets', 'MasterResets')
+    `);
+    
+    if (charColumns.length > 0) {
+      charColumns.forEach(col => {
+        console.log(`   ✅ Character.${col.COLUMN_NAME} - Encontrada`);
+      });
+    } else {
+      console.log('   ⚠️  Coluna "Resets" não encontrada na tabela Character');
+      console.log('      O sistema de reset pode não funcionar corretamente.');
+    }
+    
+    // Verifica coluna de status online
+    const [statColumns] = await pool.query(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_NAME = 'MEMB_STAT' 
+      AND COLUMN_NAME = 'ConnectStat'
+    `);
+    
+    if (statColumns.length > 0) {
+      console.log(`   ✅ MEMB_STAT.ConnectStat - Encontrada`);
+    } else {
+      console.log('   ⚠️  Coluna "ConnectStat" não encontrada na tabela MEMB_STAT');
+      console.log('      Contagem de players online pode não funcionar.');
+    }
+    
+    return true;
+  } catch (error) {
+    console.log('   ❌ Erro ao verificar colunas:', error.message);
+    return false;
+  }
+}
+
+// Testa consultas de exemplo
+async function testSampleQueries() {
+  console.log('\n🧪 5. TESTANDO CONSULTAS DE EXEMPLO...\n');
+  
+  try {
+    // Conta total de contas
+    const [accounts] = await pool.query('SELECT COUNT(*) as total FROM MEMB_INFO');
+    console.log(`   ✅ Total de contas registradas: ${accounts[0].total}`);
+    
+    // Conta total de personagens
+    const [chars] = await pool.query('SELECT COUNT(*) as total FROM Character');
+    console.log(`   ✅ Total de personagens: ${chars[0].total}`);
+    
+    // Conta players online
+    const [online] = await pool.query('SELECT COUNT(*) as total FROM MEMB_STAT WHERE ConnectStat = 1');
+    console.log(`   ✅ Players online no momento: ${online[0].total}`);
+    
+    // Top 3 characters por level
+    const [topChars] = await pool.query(`
+      SELECT Name, cLevel, COALESCE(Resets, 0) as resets 
+      FROM Character 
+      WHERE CtlCode = 0 
+      ORDER BY cLevel DESC 
+      LIMIT 3
+    `);
+    
+    console.log('\n   🏆 Top 3 Characters por Nível:');
+    topChars.forEach((char, idx) => {
+      console.log(`      ${idx + 1}. ${char.Name} - Lvl ${char.cLevel} (${char.resets} resets)`);
+    });
+    
+    return true;
+  } catch (error) {
+    console.log('   ❌ Erro ao executar consultas:', error.message);
+    return false;
+  }
+}
+
+// Verifica configurações de segurança
+async function checkSecurity() {
+  console.log('\n🔐 6. VERIFICANDO CONFIGURAÇÕES DE SEGURANÇA...\n');
+  
+  const isProduction = process.env.NODE_ENV === 'production';
+  const sslEnabled = process.env.SSL_ENABLED === 'true';
+  const jwtSecret = process.env.JWT_SECRET;
+  
+  if (isProduction) {
+    console.log('   ℹ️  Modo: PRODUÇÃO');
+    
+    if (sslEnabled) {
+      console.log('   ✅ SSL/HTTPS habilitado');
+    } else {
+      console.log('   ⚠️  SSL/HTTPS desabilitado - RECOMENDADO EM PRODUÇÃO');
+    }
+  } else {
+    console.log('   ℹ️  Modo: DESENVOLVIMENTO');
+  }
+  
+  if (jwtSecret && jwtSecret.length >= 32) {
+    console.log('   ✅ JWT_SECRET configurado com comprimento adequado');
+  } else {
+    console.log('   ⚠️  JWT_SECRET muito curto ou não configurado');
+    console.log('      Execute: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+  }
+  
+  return true;
+}
+
+// Relatório final
+async function showSummary(results) {
+  console.log('\n' + '='.repeat(60));
+  console.log('\n📝 RESUMO DO DIAGNÓSTICO\n');
+  
+  const totalTests = results.length;
+  const passedTests = results.filter(r => r.passed).length;
+  const successRate = ((passedTests / totalTests) * 100).toFixed(0);
+  
+  results.forEach(result => {
+    const icon = result.passed ? '✅' : '❌';
+    console.log(`   ${icon} ${result.name}`);
+  });
+  
+  console.log(`\n   Taxa de Sucesso: ${successRate}%`);
+  
+  if (successRate === '100') {
+    console.log('\n   🎉 TUDO PRONTO! O sistema está configurado corretamente.');
+    console.log('   Execute "npm run dev:all" para iniciar o servidor.\n');
+  } else {
+    console.log('\n   ⚠️  ATENÇÃO! Alguns problemas foram encontrados.');
+    console.log('   Corrija-os antes de iniciar o servidor.\n');
+  }
+  
+  console.log('='.repeat(60) + '\n');
+}
+
+// Executa todos os testes
+async function runDiagnostics() {
+  const results = [];
+  
+  try {
+    // 1. Variáveis de ambiente
+    const envOk = await checkEnvironment();
+    results.push({ name: 'Variáveis de Ambiente', passed: envOk });
+    
+    // 2. Conexão com banco
+    const dbOk = await checkDatabaseConnection();
+    results.push({ name: 'Conexão com Banco de Dados', passed: dbOk });
+    
+    if (!dbOk) {
+      console.log('\n❌ Não é possível continuar sem conexão com o banco.\n');
+      await showSummary(results);
+      process.exit(1);
+    }
+    
+    // 3. Tabelas
+    const tablesOk = await checkTables();
+    results.push({ name: 'Estrutura de Tabelas', passed: tablesOk });
+    
+    // 4. Colunas
+    const columnsOk = await checkColumns();
+    results.push({ name: 'Colunas Importantes', passed: columnsOk });
+    
+    // 5. Consultas de teste
+    const queriesOk = await testSampleQueries();
+    results.push({ name: 'Consultas de Teste', passed: queriesOk });
+    
+    // 6. Segurança
+    const securityOk = await checkSecurity();
+    results.push({ name: 'Configurações de Segurança', passed: securityOk });
+    
+    // Relatório final
+    await showSummary(results);
+    
+  } catch (error) {
+    console.error('\n❌ ERRO CRÍTICO:', error);
+    console.log('\nEntre em contato com o suporte técnico.\n');
+  } finally {
+    await pool.end();
+    process.exit(0);
+  }
+}
+
+// Inicia diagnóstico
+runDiagnostics();

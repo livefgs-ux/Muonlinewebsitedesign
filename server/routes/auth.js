@@ -1,226 +1,288 @@
-// Rotas de Autenticação - MU Online
-import express from 'express';
-import db from '../config/database.js';
-import crypto from 'crypto';
+// Rotas de autenticação seguras (Login, Registro, Logout)
+import express from "express";
+import cookieParser from "cookie-parser";
+import pool from "../config/database.js";
+import { hashPassword, verifyPassword } from "../utils/hash.js";
+import { generateToken, verifyToken } from "../middleware/auth.js";
+import { validateInput } from "../middleware/security.js";
 
 const router = express.Router();
+router.use(cookieParser());
 
-// Função para hash de senha (ajustar conforme o MU Online usa)
-// MU Online geralmente usa MD5 ou SHA256
-function hashPassword(password) {
-  // Ajuste conforme seu servidor MU Online
-  // Alguns usam MD5, outros SHA256, outros SHA1
-  return crypto.createHash('md5').update(password).digest('hex').toUpperCase();
-}
-
-// POST /api/auth/login - Login de usuário
-router.post('/login', async (req, res) => {
+// ===== REGISTRO DE NOVA CONTA =====
+router.post("/register", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    let { username, password, email } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Username e password são obrigatórios'
-      });
-    }
+    // Decodifica os valores que foram escapados pelo middleware de segurança
+    username = username?.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
+    password = password?.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
+    email = email?.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
 
-    // Hash da senha (ajustar conforme seu MU)
-    const hashedPassword = hashPassword(password);
-
-    // Buscar usuário na tabela MEMB_INFO
-    const [users] = await db.query(
-      `SELECT 
-        memb___id as username,
-        memb_name as name,
-        mail_addr as email,
-        bloc_code as blocked,
-        ctl1_code as adminLevel,
-        AccountLevel as accountLevel
-      FROM MEMB_INFO 
-      WHERE memb___id = ? AND memb__pwd = ?`,
-      [username, hashedPassword]
-    );
-
-    if (users.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: 'Usuário ou senha incorretos'
-      });
-    }
-
-    const user = users[0];
-
-    // Verificar se a conta está bloqueada
-    if (user.blocked === 1) {
-      return res.status(403).json({
-        success: false,
-        message: 'Conta bloqueada. Entre em contato com o suporte.'
-      });
-    }
-
-    // Verificar privilégios de admin
-    // Ajustar conforme a estrutura do seu banco
-    // Alguns servidores usam ctl1_code >= 8 para admin
-    // Outros usam AccountLevel >= 2
-    const isAdmin = user.adminLevel >= 8 || user.accountLevel >= 2;
-
-    // Buscar personagens do usuário
-    const [characters] = await db.query(
-      `SELECT 
-        Name as name,
-        cLevel as level,
-        Class as class,
-        resets,
-        Money as zen
-      FROM Character 
-      WHERE AccountID = ?
-      ORDER BY cLevel DESC`,
-      [username]
-    );
-
-    // Retornar dados do usuário
-    res.json({
-      success: true,
-      data: {
-        user: {
-          username: user.username,
-          name: user.name,
-          email: user.email,
-          isAdmin: isAdmin,
-          adminLevel: user.adminLevel || 0,
-          accountLevel: user.accountLevel || 0
-        },
-        characters: characters,
-        // Token simples (em produção use JWT)
-        token: Buffer.from(`${username}:${Date.now()}`).toString('base64')
-      }
-    });
-
-  } catch (error) {
-    console.error('❌ Erro no login:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao processar login',
-      error: error.message
-    });
-  }
-});
-
-// POST /api/auth/register - Registro de nova conta
-router.post('/register', async (req, res) => {
-  try {
-    const { username, password, email, name } = req.body;
-
-    // Validações
+    // Validações de entrada
     if (!username || !password || !email) {
-      return res.status(400).json({
+      return res.status(400).json({ 
         success: false,
-        message: 'Username, password e email são obrigatórios'
+        error: "Campos obrigatórios: username, password e email." 
       });
     }
 
-    // Verificar se username já existe
-    const [existingUser] = await db.query(
-      'SELECT memb___id FROM MEMB_INFO WHERE memb___id = ?',
+    // Valida username
+    const usernameValidation = validateInput(username, 'username');
+    if (!usernameValidation.valid) {
+      return res.status(400).json({ 
+        success: false,
+        error: usernameValidation.error 
+      });
+    }
+
+    // Valida senha
+    const passwordValidation = validateInput(password, 'password');
+    if (!passwordValidation.valid) {
+      return res.status(400).json({ 
+        success: false,
+        error: passwordValidation.error 
+      });
+    }
+
+    // Valida email
+    const emailValidation = validateInput(email, 'email');
+    if (!emailValidation.valid) {
+      return res.status(400).json({ 
+        success: false,
+        error: emailValidation.error 
+      });
+    }
+
+    // Verifica se username já existe
+    const [existingUser] = await pool.query(
+      "SELECT memb___id FROM MEMB_INFO WHERE memb___id = ?", 
       [username]
     );
 
     if (existingUser.length > 0) {
-      return res.status(409).json({
+      return res.status(400).json({ 
         success: false,
-        message: 'Username já está em uso'
+        error: "Este username já está em uso. Escolha outro." 
       });
     }
 
-    // Hash da senha
-    const hashedPassword = hashPassword(password);
-
-    // Inserir nova conta
-    await db.query(
-      `INSERT INTO MEMB_INFO 
-      (memb___id, memb__pwd, memb_name, mail_addr, bloc_code, ctl1_code, AccountLevel) 
-      VALUES (?, ?, ?, ?, 0, 0, 0)`,
-      [username, hashedPassword, name || username, email]
+    // Verifica se email já existe
+    const [existingEmail] = await pool.query(
+      "SELECT mail_addr FROM MEMB_INFO WHERE mail_addr = ?", 
+      [email]
     );
 
-    res.json({
-      success: true,
-      message: 'Conta criada com sucesso!',
-      data: {
-        username: username
-      }
+    if (existingEmail.length > 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Este email já está cadastrado." 
+      });
+    }
+
+    // Gera hash seguro da senha
+    const hashedPassword = await hashPassword(password);
+
+    // Insere nova conta no banco de dados
+    await pool.query(
+      `INSERT INTO MEMB_INFO 
+       (memb___id, memb__pwd, memb_name, mail_addr, bloc_code, ctl1_code) 
+       VALUES (?, ?, ?, ?, 0, 0)`,
+      [username, hashedPassword, username, email]
+    );
+
+    console.log(`✅ Nova conta criada: ${username} (${email})`);
+
+    res.json({ 
+      success: true, 
+      message: "Conta registrada com sucesso! Você já pode fazer login." 
     });
 
-  } catch (error) {
-    console.error('❌ Erro no registro:', error);
-    res.status(500).json({
+  } catch (err) {
+    console.error("Erro no registro:", err);
+    res.status(500).json({ 
       success: false,
-      message: 'Erro ao criar conta',
-      error: error.message
+      error: "Erro interno ao criar conta. Tente novamente." 
     });
   }
 });
 
-// GET /api/auth/verify - Verificar se usuário é admin
-router.get('/verify', async (req, res) => {
+// ===== LOGIN =====
+router.post("/login", async (req, res) => {
   try {
-    const { username } = req.query;
+    let { username, password } = req.body;
 
-    if (!username) {
-      return res.status(400).json({
+    // Decodifica valores escapados
+    username = username?.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
+    password = password?.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
+
+    if (!username || !password) {
+      return res.status(400).json({ 
         success: false,
-        message: 'Username é obrigatório'
+        error: "Username e senha são obrigatórios." 
       });
     }
 
-    // Buscar dados do usuário
-    const [users] = await db.query(
-      `SELECT 
-        ctl1_code as adminLevel,
-        AccountLevel as accountLevel,
-        bloc_code as blocked
-      FROM MEMB_INFO 
-      WHERE memb___id = ?`,
+    // Busca dados do usuário no banco
+    const [rows] = await pool.query(
+      `SELECT memb___id, memb__pwd, mail_addr, bloc_code, ctl1_code 
+       FROM MEMB_INFO 
+       WHERE memb___id = ?`,
       [username]
     );
 
-    if (users.length === 0) {
-      return res.status(404).json({
+    if (rows.length === 0) {
+      // Retorna mensagem genérica para não revelar se usuário existe
+      return res.status(401).json({ 
         success: false,
-        message: 'Usuário não encontrado'
+        error: "Username ou senha incorretos." 
       });
     }
 
-    const user = users[0];
-    const isAdmin = user.adminLevel >= 8 || user.accountLevel >= 2;
+    const user = rows[0];
 
-    res.json({
-      success: true,
-      data: {
-        isAdmin: isAdmin,
-        adminLevel: user.adminLevel || 0,
-        accountLevel: user.accountLevel || 0,
-        blocked: user.blocked === 1
+    // Verifica se conta está bloqueada
+    if (user.bloc_code === 1) {
+      return res.status(403).json({ 
+        success: false,
+        error: "Conta bloqueada. Entre em contato com a administração." 
+      });
+    }
+
+    // Verifica a senha
+    const isPasswordValid = await verifyPassword(password, user.memb__pwd);
+
+    if (!isPasswordValid) {
+      console.warn(`❌ Tentativa de login falha - User: ${username}, IP: ${req.ip}`);
+      return res.status(401).json({ 
+        success: false,
+        error: "Username ou senha incorretos." 
+      });
+    }
+
+    // Captura IP e User-Agent para segurança
+    const ip = req.ip || req.connection.remoteAddress;
+    const ua = req.headers["user-agent"] || '';
+
+    // Determina role do usuário (admin_role no MU pode ser diferente dependendo do servidor)
+    const role = user.ctl1_code >= 1 ? 'admin' : 'user';
+
+    // Gera token JWT
+    const token = generateToken({
+      username: user.memb___id,
+      accountId: user.memb___id, // Pode usar memb_guid se disponível
+      role: role,
+      ip: ip,
+      ua: ua
+    });
+
+    // Define cookie seguro com o token
+    res.cookie("token", token, {
+      httpOnly: true, // Não acessível via JavaScript (previne XSS)
+      sameSite: "strict", // Previne CSRF
+      secure: process.env.SSL_ENABLED === "true", // Apenas HTTPS em produção
+      maxAge: 12 * 60 * 60 * 1000, // 12 horas
+    });
+
+    console.log(`✅ Login bem-sucedido - User: ${username}, IP: ${ip}, Role: ${role}`);
+
+    res.json({ 
+      success: true, 
+      message: "Login efetuado com sucesso!",
+      user: {
+        username: user.memb___id,
+        email: user.mail_addr,
+        role: role
       }
     });
 
-  } catch (error) {
-    console.error('❌ Erro ao verificar admin:', error);
-    res.status(500).json({
+  } catch (err) {
+    console.error("Erro no login:", err);
+    res.status(500).json({ 
       success: false,
-      message: 'Erro ao verificar privilégios',
-      error: error.message
+      error: "Erro interno ao efetuar login. Tente novamente." 
     });
   }
 });
 
-// POST /api/auth/logout - Logout
-router.post('/logout', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Logout realizado com sucesso'
-  });
+// ===== LOGOUT =====
+router.post("/logout", (req, res) => {
+  try {
+    // Remove o cookie do token
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.SSL_ENABLED === "true"
+    });
+
+    console.log(`🔒 Logout efetuado - IP: ${req.ip}`);
+
+    res.json({ 
+      success: true, 
+      message: "Logout efetuado com sucesso." 
+    });
+
+  } catch (err) {
+    console.error("Erro no logout:", err);
+    res.status(500).json({ 
+      success: false,
+      error: "Erro ao efetuar logout." 
+    });
+  }
+});
+
+// ===== VERIFICAR SESSÃO =====
+// Rota protegida que verifica se o usuário está autenticado
+router.get("/verify", verifyToken, async (req, res) => {
+  try {
+    // Se passou pelo middleware verifyToken, o usuário está autenticado
+    const username = req.user.username;
+
+    // Busca dados atualizados do usuário
+    const [rows] = await pool.query(
+      `SELECT memb___id, mail_addr, bloc_code, ctl1_code 
+       FROM MEMB_INFO 
+       WHERE memb___id = ?`,
+      [username]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ 
+        success: false,
+        error: "Usuário não encontrado." 
+      });
+    }
+
+    const user = rows[0];
+
+    // Verifica se conta foi bloqueada após o login
+    if (user.bloc_code === 1) {
+      res.clearCookie("token");
+      return res.status(403).json({ 
+        success: false,
+        error: "Conta bloqueada." 
+      });
+    }
+
+    const role = user.ctl1_code >= 1 ? 'admin' : 'user';
+
+    res.json({ 
+      success: true,
+      authenticated: true,
+      user: {
+        username: user.memb___id,
+        email: user.mail_addr,
+        role: role
+      }
+    });
+
+  } catch (err) {
+    console.error("Erro ao verificar sessão:", err);
+    res.status(500).json({ 
+      success: false,
+      error: "Erro ao verificar autenticação." 
+    });
+  }
 });
 
 export default router;

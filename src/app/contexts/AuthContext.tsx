@@ -1,185 +1,152 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_CONFIG, getApiUrl, getAuthHeaders } from '../config/api';
 
 interface User {
   username: string;
-  name: string;
   email: string;
   isAdmin: boolean;
-  adminLevel: number;
-  accountLevel: number;
-}
-
-interface Character {
-  name: string;
-  level: number;
-  class: number;
-  resets: number;
-  zen: number;
+  accountId: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  characters: Character[];
-  isAuthenticated: boolean;
-  isAdmin: boolean;
+  isLoggedIn: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
-  register: (username: string, password: string, email: string, name?: string) => Promise<{ success: boolean; message?: string }>;
-  logout: () => void;
-  verifyAdmin: (username: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<{ success: boolean; message: string }>;
+  register: (username: string, email: string, password: string) => Promise<{ success: boolean; message: string }>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [characters, setCharacters] = useState<Character[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Carregar usuário do localStorage ao iniciar
+  // Verificar se há token salvo ao carregar
   useEffect(() => {
-    const loadUser = () => {
-      try {
-        const storedUser = localStorage.getItem('muonline_user');
-        const storedToken = localStorage.getItem('muonline_token');
-        const storedCharacters = localStorage.getItem('muonline_characters');
-
-        if (storedUser && storedToken) {
-          setUser(JSON.parse(storedUser));
-          if (storedCharacters) {
-            setCharacters(JSON.parse(storedCharacters));
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao carregar usuário:', error);
-        localStorage.removeItem('muonline_user');
-        localStorage.removeItem('muonline_token');
-        localStorage.removeItem('muonline_characters');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUser();
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_VERIFY), {
+        headers: getAuthHeaders(token)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      } else {
+        // Token inválido
+        localStorage.removeItem('auth_token');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
+      localStorage.removeItem('auth_token');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const login = async (username: string, password: string) => {
     try {
-      setIsLoading(true);
-
-      const response = await fetch('http://localhost:3001/api/auth/login', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_LOGIN), {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password })
       });
 
       const data = await response.json();
 
-      if (!data.success) {
-        return { success: false, message: data.message };
+      if (response.ok) {
+        localStorage.setItem('auth_token', data.token);
+        setUser(data.user);
+        return { success: true, message: 'Login realizado com sucesso!' };
+      } else {
+        return { success: false, message: data.message || 'Erro ao fazer login' };
       }
-
-      // Salvar dados no state e localStorage
-      setUser(data.data.user);
-      setCharacters(data.data.characters);
-
-      localStorage.setItem('muonline_user', JSON.stringify(data.data.user));
-      localStorage.setItem('muonline_token', data.data.token);
-      localStorage.setItem('muonline_characters', JSON.stringify(data.data.characters));
-
-      return { success: true };
-
     } catch (error) {
       console.error('Erro no login:', error);
-      return { 
-        success: false, 
-        message: 'Erro ao conectar com o servidor. Verifique se o backend está rodando.' 
-      };
-    } finally {
-      setIsLoading(false);
+      return { success: false, message: 'Erro de conexão com o servidor' };
     }
   };
 
-  const register = async (username: string, password: string, email: string, name?: string) => {
+  const register = async (username: string, email: string, password: string) => {
     try {
-      setIsLoading(true);
-
-      const response = await fetch('http://localhost:3001/api/auth/register', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_REGISTER), {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username, password, email, name }),
+        body: JSON.stringify({ username, email, password })
       });
 
       const data = await response.json();
 
-      if (!data.success) {
-        return { success: false, message: data.message };
+      if (response.ok) {
+        return { success: true, message: 'Conta criada com sucesso! Faça login.' };
+      } else {
+        return { success: false, message: data.message || 'Erro ao criar conta' };
       }
-
-      return { success: true, message: data.message };
-
     } catch (error) {
       console.error('Erro no registro:', error);
-      return { 
-        success: false, 
-        message: 'Erro ao conectar com o servidor. Verifique se o backend está rodando.' 
-      };
-    } finally {
-      setIsLoading(false);
+      return { success: false, message: 'Erro de conexão com o servidor' };
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setCharacters([]);
-    localStorage.removeItem('muonline_user');
-    localStorage.removeItem('muonline_token');
-    localStorage.removeItem('muonline_characters');
-  };
-
-  const verifyAdmin = async (username: string): Promise<boolean> => {
+  const logout = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/auth/verify?username=${username}`);
-      const data = await response.json();
-
-      if (data.success) {
-        return data.data.isAdmin;
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_LOGOUT), {
+          method: 'POST',
+          headers: getAuthHeaders(token)
+        });
       }
-
-      return false;
     } catch (error) {
-      console.error('Erro ao verificar admin:', error);
-      return false;
+      console.error('Erro no logout:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      setUser(null);
     }
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        characters,
-        isAuthenticated: !!user,
-        isAdmin: user?.isAdmin || false,
-        isLoading,
-        login,
-        register,
-        logout,
-        verifyAdmin,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const refreshUser = async () => {
+    await checkAuth();
+  };
+
+  const value = {
+    user,
+    isLoggedIn: !!user,
+    isLoading,
+    login,
+    register,
+    logout,
+    refreshUser
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
+
+// Hook para obter o token
+export function useAuthToken() {
+  return localStorage.getItem('auth_token');
 }
