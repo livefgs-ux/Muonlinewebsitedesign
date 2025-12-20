@@ -158,9 +158,10 @@ export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection 
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed right-6 top-24 z-40 hidden lg:block"
+      className="fixed right-6 top-24 z-30 hidden xl:block pointer-events-auto"
+      style={{ maxWidth: '280px' }}
     >
-      <Card className="backdrop-blur-lg bg-black/70 border-yellow-500/30 p-6 w-64">
+      <Card className="backdrop-blur-lg bg-black/70 border-yellow-500/30 p-6 w-64 shadow-2xl shadow-black/50">
         {/* Server Status */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">

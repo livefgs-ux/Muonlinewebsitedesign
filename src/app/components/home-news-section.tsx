@@ -23,8 +23,8 @@ export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
   }
 
   return (
-    <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-obsidian-light to-obsidian">
-      <div className="max-w-7xl mx-auto">
+    <section className="relative py-20 px-4 bg-gradient-to-b from-obsidian-light to-obsidian">
+      <div className="max-w-7xl mx-auto relative z-20">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

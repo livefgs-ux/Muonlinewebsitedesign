@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_CONFIG, getApiUrl, getAuthHeaders } from '../config/api';
 
-interface User {
+export interface User {
   username: string;
   email: string;
   isAdmin: boolean;
@@ -16,6 +16,7 @@ interface AuthContextType {
   register: (username: string, email: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  loginFake: (userData: User) => void; // 🧪 TESTE - Login sem validação
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,10 +48,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Token inválido
         localStorage.removeItem('auth_token');
+        setUser(null);
       }
     } catch (error) {
-      console.error('Erro ao verificar autenticação:', error);
+      // Erro de rede ou servidor offline - não mostra erro ao usuário
+      // apenas remove o token inválido
+      console.log('⚠️ Não foi possível verificar autenticação - servidor pode estar offline');
       localStorage.removeItem('auth_token');
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -125,6 +130,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await checkAuth();
   };
 
+  const loginFake = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('auth_token', 'fake_token');
+  };
+
   const value = {
     user,
     isLoggedIn: !!user,
@@ -132,7 +142,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     register,
     logout,
-    refreshUser
+    refreshUser,
+    loginFake
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -26,10 +26,10 @@ export function SiteEditorSection() {
 
       <Tabs defaultValue="home" className="w-full">
         <TabsList className="bg-slate-900/60 border border-amber-500/20">
-          <TabsTrigger value="home">Home</TabsTrigger>
-          <TabsTrigger value="downloads">Downloads</TabsTrigger>
-          <TabsTrigger value="footer">Footer</TabsTrigger>
-          <TabsTrigger value="theme">Tema</TabsTrigger>
+          <TabsTrigger value="home" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">Home</TabsTrigger>
+          <TabsTrigger value="downloads" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">Downloads</TabsTrigger>
+          <TabsTrigger value="footer" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">Footer</TabsTrigger>
+          <TabsTrigger value="theme" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">Tema</TabsTrigger>
         </TabsList>
 
         <TabsContent value="home" className="mt-6">

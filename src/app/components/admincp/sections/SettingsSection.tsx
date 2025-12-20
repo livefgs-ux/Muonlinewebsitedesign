@@ -25,10 +25,10 @@ export function SettingsSection() {
 
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="bg-slate-900/60 border border-amber-500/20">
-          <TabsTrigger value="general">Geral</TabsTrigger>
-          <TabsTrigger value="database">Banco de Dados</TabsTrigger>
-          <TabsTrigger value="security">Segurança</TabsTrigger>
-          <TabsTrigger value="notifications">Notificações</TabsTrigger>
+          <TabsTrigger value="general" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">Geral</TabsTrigger>
+          <TabsTrigger value="database" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">Banco de Dados</TabsTrigger>
+          <TabsTrigger value="security" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">Segurança</TabsTrigger>
+          <TabsTrigger value="notifications" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">Notificações</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="mt-6">

@@ -20,8 +20,8 @@ export function NewsSection() {
   const newsItems = news.filter(item => item.publishTo?.includes('news'));
 
   return (
-    <div className="min-h-screen pt-32 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen pt-32 pb-20 px-4">
+      <div className="max-w-7xl mx-auto relative z-20">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

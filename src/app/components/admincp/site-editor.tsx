@@ -12,7 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { toast } from 'sonner';
-import { Palette, Globe, Image, Layout, Save, RefreshCw } from 'lucide-react';
+import { Palette, Globe, Image, Layout, Save, RefreshCw, Zap, Info, Upload, CheckCircle, XCircle } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface SiteConfig {
   [key: string]: string | boolean;
@@ -23,6 +24,7 @@ interface SiteEditorProps {
 }
 
 export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -51,6 +53,15 @@ export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
     metaDescription: 'Melhor servidor de Mu Online - Season 19-2-3',
     metaKeywords: 'mu online, muonline, servidor mu, season 19'
   });
+
+  // Visual customization states
+  const [customBackground, setCustomBackground] = useState<string | null>(
+    localStorage.getItem('admin_customBackground')
+  );
+  const [particleColor, setParticleColor] = useState<string>(
+    localStorage.getItem('admin_particleColor') || '#FFB800'
+  );
+  const [backgroundPreview, setBackgroundPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (!fakeMode) {
@@ -186,6 +197,60 @@ export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
     }
   };
 
+  // Visual customization handlers
+  const handleBackgroundUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('❌ Formato inválido! Use apenas JPG, PNG ou WebP');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('❌ Imagem muito grande! Tamanho máximo: 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string;
+      setBackgroundPreview(imageUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveBackground = () => {
+    if (backgroundPreview) {
+      localStorage.setItem('admin_customBackground', backgroundPreview);
+      setCustomBackground(backgroundPreview);
+      toast.success('✅ Background salvo com sucesso! Recarregue a página para ver as mudanças.');
+      setBackgroundPreview(null);
+    }
+  };
+
+  const handleRemoveBackground = () => {
+    localStorage.removeItem('admin_customBackground');
+    setCustomBackground(null);
+    setBackgroundPreview(null);
+    toast.success('✅ Background padrão restaurado! Recarregue a página para ver as mudanças.');
+  };
+
+  const handleSaveParticleColor = () => {
+    localStorage.setItem('admin_particleColor', particleColor);
+    toast.success('✅ Cor das partículas salva! Recarregue a página para ver as mudanças.');
+  };
+
+  const handleResetParticleColor = () => {
+    const defaultColor = '#FFB800';
+    setParticleColor(defaultColor);
+    localStorage.setItem('admin_particleColor', defaultColor);
+    toast.success('✅ Cor padrão restaurada! Recarregue a página para ver as mudanças.');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -213,20 +278,24 @@ export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
       </div>
 
       <Tabs defaultValue="home" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-black/40 backdrop-blur-sm border border-amber-500/20">
-          <TabsTrigger value="home" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-5 bg-black/40 backdrop-blur-sm border border-amber-500/20">
+          <TabsTrigger value="home" className="flex items-center gap-2 data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">
             <Layout className="w-4 h-4" />
             Home Banner
           </TabsTrigger>
-          <TabsTrigger value="social" className="flex items-center gap-2">
+          <TabsTrigger value="social" className="flex items-center gap-2 data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">
             <Globe className="w-4 h-4" />
             Redes Sociais
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
+          <TabsTrigger value="visual" className="flex items-center gap-2 data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">
+            <Zap className="w-4 h-4" />
+            Aparência
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2 data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">
             <Palette className="w-4 h-4" />
             Configurações
           </TabsTrigger>
-          <TabsTrigger value="preview" className="flex items-center gap-2">
+          <TabsTrigger value="preview" className="flex items-center gap-2 data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">
             <Image className="w-4 h-4" />
             Preview
           </TabsTrigger>
@@ -386,6 +455,174 @@ export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
                 <Save className="w-4 h-4 mr-2" />
                 {saving ? 'Salvando...' : 'Salvar Redes Sociais'}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Visual Customization Tab */}
+        <TabsContent value="visual" className="space-y-4">
+          <Card className="bg-black/60 backdrop-blur-sm border-amber-500/30">
+            <CardHeader>
+              <CardTitle className="text-amber-400 flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                Personalização Visual Global
+              </CardTitle>
+              <CardDescription>
+                🎨 Personalize background e partículas do site (apenas para Administradores)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              
+              {/* Background Image Upload Section */}
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <Info className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-blue-300 space-y-1">
+                    <p className="font-semibold">📸 Especificações da Imagem de Background:</p>
+                    <ul className="list-disc list-inside space-y-0.5 ml-2">
+                      <li><strong>Formatos aceitos:</strong> JPG, PNG, WebP</li>
+                      <li><strong>Resolução recomendada:</strong> 1920x1080px (Full HD) ou superior</li>
+                      <li><strong>Tamanho máximo:</strong> 5MB</li>
+                      <li><strong>Proporção:</strong> 16:9 (widescreen) - ideal para telas modernas</li>
+                      <li><strong>Qualidade:</strong> 80-90% (equilíbrio entre qualidade e tamanho)</li>
+                      <li><strong>Dica:</strong> Use imagens escuras para melhor contraste com o texto</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="custom-background" className="flex items-center gap-2 text-base">
+                    <Upload className="w-4 h-4" />
+                    Upload de Background Customizado
+                  </Label>
+                  <Input
+                    id="custom-background"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleBackgroundUpload}
+                    className="bg-black/40 border-amber-500/20 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-amber-500 file:text-black file:font-semibold hover:file:bg-amber-400 file:cursor-pointer"
+                  />
+                </div>
+
+                {backgroundPreview && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-400 font-semibold">Preview do Background:</p>
+                    <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-amber-500/50 shadow-xl">
+                      <img 
+                        src={backgroundPreview} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                        <p className="text-white font-semibold flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-emerald-400" />
+                          Preview - Seu novo background
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button 
+                        onClick={handleSaveBackground}
+                        className="flex-1 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Salvar Background
+                      </Button>
+                      <Button 
+                        onClick={() => setBackgroundPreview(null)}
+                        variant="outline"
+                        className="border-red-500/40 text-red-400 hover:bg-red-500/10"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {customBackground && !backgroundPreview && (
+                  <div className="space-y-3 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                    <p className="text-sm text-emerald-400 flex items-center gap-2 font-semibold">
+                      <CheckCircle className="w-5 h-5" />
+                      Background customizado ativo
+                    </p>
+                    <Button 
+                      onClick={handleRemoveBackground}
+                      variant="outline"
+                      className="border-red-500/40 text-red-400 hover:bg-red-500/10"
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Restaurar Background Padrão
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Particle Color Customization Section */}
+              <div className="border-t border-amber-500/20 pt-6 space-y-4">
+                <div className="space-y-3">
+                  <Label htmlFor="particle-color" className="flex items-center gap-2 text-base">
+                    <Zap className="w-4 h-4" />
+                    Cor das Partículas Flutuantes
+                  </Label>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="relative flex-1">
+                      <Input
+                        id="particle-color"
+                        type="color"
+                        value={particleColor}
+                        onChange={(e) => setParticleColor(e.target.value)}
+                        className="w-full h-12 rounded-md cursor-pointer border-2 border-amber-500/30 bg-black/40"
+                      />
+                      <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                        <span className="text-sm font-mono text-gray-400 bg-black/60 px-2 py-1 rounded">
+                          {particleColor}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div 
+                      className="w-16 h-12 rounded-md border-2 border-amber-500/30 shadow-lg"
+                      style={{ backgroundColor: particleColor }}
+                    />
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 flex items-center gap-2">
+                    <Info className="w-3 h-3" />
+                    💡 Cor padrão: #FFB800 (Dourado Épico)
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleSaveParticleColor}
+                    className="flex-1 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 flex items-center justify-center gap-2"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Salvar Cor das Partículas
+                  </Button>
+                  <Button 
+                    onClick={handleResetParticleColor}
+                    variant="outline"
+                    className="border-amber-500/30 hover:bg-amber-500/10"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Resetar
+                  </Button>
+                </div>
+              </div>
+
+              {/* Info Box */}
+              <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <p className="text-sm text-amber-300 flex items-start gap-2">
+                  <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>
+                    <strong>Nota:</strong> As alterações serão salvas no <code className="bg-black/40 px-1 py-0.5 rounded">localStorage</code> do navegador. 
+                    Para ver as mudanças aplicadas, <strong>recarregue a página</strong> após salvar.
+                  </span>
+                </p>
+              </div>
+
             </CardContent>
           </Card>
         </TabsContent>

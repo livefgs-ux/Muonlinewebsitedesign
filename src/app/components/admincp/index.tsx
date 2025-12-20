@@ -7,6 +7,7 @@ export { SystemManagement } from './system-management';
 export { AdminSecurityAudit } from './admin-security-audit';
 export { AdminLiveDefense } from './admin-live-defense';
 export { AdminAdaptiveFirewall } from './admin-adaptive-firewall';
+export { AdminSecurityDashboard } from './admin-security-dashboard';
 
 // Other AdminCP Components
 export { AdminCPLayout } from './AdminCPLayout';

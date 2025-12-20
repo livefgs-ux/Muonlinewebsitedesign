@@ -6,11 +6,12 @@ import { AdminLogViewer } from "./admin-log-viewer";
 import { AdminSecurityAudit } from "./admin-security-audit";
 import { AdminLiveDefense } from "./admin-live-defense";
 import { AdminAdaptiveFirewall } from "./admin-adaptive-firewall";
+import { AdminSecurityDashboard } from "./admin-security-dashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Activity, Database, FileText, TestTube, Shield, ShieldAlert, Brain } from "lucide-react";
+import { Activity, Database, FileText, TestTube, Shield, ShieldAlert, Brain, Sparkles } from "lucide-react";
 
 export function SystemManagement() {
-  const [activeTab, setActiveTab] = useState("diagnostics");
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
     <div className="w-full space-y-6">
@@ -19,15 +20,23 @@ export function SystemManagement() {
           System Management
         </h1>
         <p className="text-gray-400">
-          Diagnósticos, backups, testes, logs, segurança e firewall adaptativo com IA do sistema MU Online
+          Dashboard unificado, diagnósticos, backups, segurança e defesa com IA do sistema MU Online
         </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-7 bg-black/60 border border-[#FFB800]/20 p-1">
+        <TabsList className="grid w-full grid-cols-8 bg-black/60 border border-[#FFB800]/20 p-1">
+          <TabsTrigger 
+            value="dashboard"
+            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-slate-200 data-[state=inactive]:text-slate-200"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="hidden md:inline">Dashboard</span>
+          </TabsTrigger>
+
           <TabsTrigger 
             value="diagnostics"
-            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#FFB800] data-[state=active]:to-[#FF8800] data-[state=active]:text-black"
+            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#FFB800] data-[state=active]:to-[#FF8800] data-[state=active]:text-black text-slate-200 data-[state=inactive]:text-slate-200"
           >
             <Activity className="w-4 h-4" />
             <span className="hidden md:inline">Diagnostics</span>
@@ -35,7 +44,7 @@ export function SystemManagement() {
           
           <TabsTrigger 
             value="backup"
-            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#FFB800] data-[state=active]:to-[#FF8800] data-[state=active]:text-black"
+            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#FFB800] data-[state=active]:to-[#FF8800] data-[state=active]:text-black text-slate-200 data-[state=inactive]:text-slate-200"
           >
             <Database className="w-4 h-4" />
             <span className="hidden md:inline">Backup</span>
@@ -43,7 +52,7 @@ export function SystemManagement() {
           
           <TabsTrigger 
             value="dbtest"
-            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#FFB800] data-[state=active]:to-[#FF8800] data-[state=active]:text-black"
+            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#FFB800] data-[state=active]:to-[#FF8800] data-[state=active]:text-black text-slate-200 data-[state=inactive]:text-slate-200"
           >
             <TestTube className="w-4 h-4" />
             <span className="hidden md:inline">DB Test</span>
@@ -51,7 +60,7 @@ export function SystemManagement() {
           
           <TabsTrigger 
             value="logs"
-            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#FFB800] data-[state=active]:to-[#FF8800] data-[state=active]:text-black"
+            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#FFB800] data-[state=active]:to-[#FF8800] data-[state=active]:text-black text-slate-200 data-[state=inactive]:text-slate-200"
           >
             <FileText className="w-4 h-4" />
             <span className="hidden md:inline">Logs</span>
@@ -59,7 +68,7 @@ export function SystemManagement() {
 
           <TabsTrigger 
             value="security"
-            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white text-slate-200 data-[state=inactive]:text-slate-200"
           >
             <Shield className="w-4 h-4" />
             <span className="hidden md:inline">Security</span>
@@ -67,7 +76,7 @@ export function SystemManagement() {
 
           <TabsTrigger 
             value="defense"
-            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-orange-600 data-[state=active]:text-white text-slate-200 data-[state=inactive]:text-slate-200"
           >
             <ShieldAlert className="w-4 h-4" />
             <span className="hidden md:inline">Defense</span>
@@ -75,7 +84,7 @@ export function SystemManagement() {
 
           <TabsTrigger 
             value="adaptive"
-            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white"
+            className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white text-slate-200 data-[state=inactive]:text-slate-200"
           >
             <Brain className="w-4 h-4" />
             <span className="hidden md:inline">AI Firewall</span>
@@ -83,6 +92,10 @@ export function SystemManagement() {
         </TabsList>
 
         <div className="mt-6">
+          <TabsContent value="dashboard" className="space-y-6">
+            <AdminSecurityDashboard />
+          </TabsContent>
+
           <TabsContent value="diagnostics" className="space-y-6">
             <AdminDiagnostics />
           </TabsContent>

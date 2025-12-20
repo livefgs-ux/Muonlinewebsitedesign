@@ -318,31 +318,31 @@ export function ResetSystem() {
 
       {/* Confirmation Dialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent className="bg-slate-900 border-purple-500/30">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-purple-400 flex items-center gap-2">
+            <AlertDialogTitle className="flex items-center gap-2">
               <RefreshCw className="size-5" />
               {t.dashboard?.confirmReset || 'Confirmar Reset'}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-300">
+            <AlertDialogDescription>
               {t.dashboard?.resetWarning || 'Você está prestes a realizar um reset. Seu personagem voltará ao nível 1, mas manterá seus resets e ganhará bônus permanentes.'}
-              <div className="mt-4 p-3 rounded-lg bg-amber-950/30 border border-amber-500/30">
-                <p className="text-amber-400 text-sm font-semibold">
+              <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-gold/10 to-amber-500/10 border border-gold/30 backdrop-blur-sm">
+                <p className="text-gold font-semibold">
                   {t.dashboard?.resetCharacter || 'Personagem'}: {character?.name}
                 </p>
-                <p className="text-slate-400 text-sm mt-1">
+                <p className="text-ethereal text-sm mt-2">
                   {t.dashboard?.currentResets || 'Resets'}: {character?.resets} → {(character?.resets || 0) + 1}
                 </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600 hover:bg-slate-800">
+            <AlertDialogCancel className="border-gray-600 hover:bg-gray-800 text-gray-300 hover:text-white">
               {t.common?.cancel || 'Cancelar'}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmReset}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold shadow-lg shadow-purple-500/50"
             >
               {t.common?.confirm || 'Confirmar'}
             </AlertDialogAction>

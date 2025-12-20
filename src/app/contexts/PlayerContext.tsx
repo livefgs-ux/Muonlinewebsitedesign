@@ -59,6 +59,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const refreshCharacters = async () => {
     const token = localStorage.getItem('auth_token');
     if (!token) return;
+    
+    // 🧪 Se for token fake (teste), não faz requisição
+    if (token === 'fake_token') {
+      console.log('⚠️ Modo de teste ativo - usando dados mockados');
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -80,7 +87,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error) {
-      console.error('Erro ao carregar personagens:', error);
+      console.log('⚠️ Não foi possível carregar personagens - servidor pode estar offline');
+      // Não mostra erro ao usuário, apenas loga
     } finally {
       setIsLoading(false);
     }

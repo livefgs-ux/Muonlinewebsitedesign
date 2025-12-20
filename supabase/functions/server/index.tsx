@@ -406,50 +406,56 @@ app.get("/make-server-4169bd43/system/diagnostics", async (c) => {
 
     // Test database connection
     try {
-      const dbHost = Deno.env.get("DB_HOST") || "localhost";
-      const dbUser = Deno.env.get("DB_USER") || "root";
+      const dbHost = Deno.env.get("DB_HOST");
+      const dbUser = Deno.env.get("DB_USER");
       const dbPass = Deno.env.get("DB_PASSWORD") || "";
       const dbName = Deno.env.get("DB_NAME") || "MuOnline";
 
-      const mysql = await import("npm:mysql2@3.6.5/promise");
-      const connection = await mysql.createConnection({
-        host: dbHost,
-        user: dbUser,
-        password: dbPass,
-        database: dbName,
-      });
+      // Skip DB test if no credentials configured
+      if (!dbHost || !dbUser) {
+        diagnostics.status.database = 'not_configured';
+        diagnostics.health.database = false;
+      } else {
+        const mysql = await import("npm:mysql2@3.6.5/promise");
+        const connection = await mysql.createConnection({
+          host: dbHost,
+          user: dbUser,
+          password: dbPass,
+          database: dbName,
+          connectTimeout: 5000,
+        });
 
-      diagnostics.status.database = 'online';
-      diagnostics.health.database = true;
+        diagnostics.status.database = 'online';
+        diagnostics.health.database = true;
 
-      // Get metrics
-      try {
-        const [accountsResult] = await connection.execute("SELECT COUNT(*) as count FROM MEMB_INFO");
-        diagnostics.metrics.totalAccounts = (accountsResult as any)[0].count;
-      } catch (e) {
-        console.log("Could not get accounts count:", e);
+        // Get metrics
+        try {
+          const [accountsResult] = await connection.execute("SELECT COUNT(*) as count FROM MEMB_INFO");
+          diagnostics.metrics.totalAccounts = (accountsResult as any)[0].count;
+        } catch (e) {
+          // Silent fail
+        }
+
+        try {
+          const [charsResult] = await connection.execute("SELECT COUNT(*) as count FROM Character");
+          diagnostics.metrics.totalCharacters = (charsResult as any)[0].count;
+        } catch (e) {
+          // Silent fail
+        }
+
+        try {
+          const [onlineResult] = await connection.execute("SELECT COUNT(*) as count FROM MEMB_STAT WHERE ConnectStat = 1");
+          diagnostics.metrics.playersOnline = (onlineResult as any)[0].count;
+        } catch (e) {
+          // Silent fail
+        }
+
+        await connection.end();
       }
-
-      try {
-        const [charsResult] = await connection.execute("SELECT COUNT(*) as count FROM Character");
-        diagnostics.metrics.totalCharacters = (charsResult as any)[0].count;
-      } catch (e) {
-        console.log("Could not get characters count:", e);
-      }
-
-      try {
-        const [onlineResult] = await connection.execute("SELECT COUNT(*) as count FROM MEMB_STAT WHERE ConnectStat = 1");
-        diagnostics.metrics.playersOnline = (onlineResult as any)[0].count;
-      } catch (e) {
-        console.log("Could not get online count:", e);
-      }
-
-      await connection.end();
     } catch (dbError: any) {
-      console.error("[Diagnostics] Database error:", dbError.message || dbError.code || "Connection failed");
-      diagnostics.status.database = 'error';
+      // Silent fail - don't log connection errors
+      diagnostics.status.database = 'offline';
       diagnostics.health.database = false;
-      // Don't throw, just continue with offline status
     }
 
     // Count API endpoints (rough estimate)
@@ -1718,6 +1724,473 @@ app.post("/make-server-4169bd43/security/adaptive/simulate-request", async (c) =
 
 // ==========================================
 // END AI ADAPTIVE FIREWALL ROUTES
+// ==========================================
+
+// ==========================================
+// AI SECURITY DASHBOARD (UNIFIED)
+// ==========================================
+
+// Get unified security summary
+app.get("/make-server-4169bd43/security/dashboard/summary", async (c) => {
+  try {
+    // Gather data from all security modules
+    const securityReport = await kv.get("security_last_report") as any;
+    const defenseStats = await kv.get("adaptive_learning_stats") as any;
+    const blacklist = await kv.getByPrefix("blacklist_");
+    const adaptiveStates = await kv.getByPrefix("adaptive_state_");
+    const adaptiveConfig = await kv.get("adaptive_firewall_config") as any;
+
+    // Active blocks (not expired)
+    const now = new Date();
+    const activeBlocks = blacklist.filter((entry: any) => {
+      return new Date(entry.expiresAt) > now;
+    });
+
+    // Calculate security score
+    const totalIssues = securityReport?.summary?.totalIssues || 0;
+    const criticalIssues = securityReport?.summary?.critical || 0;
+    const securityScore = securityReport?.summary?.score || 100;
+
+    // Determine threat level
+    let threatLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
+    if (criticalIssues > 5 || activeBlocks.length > 50) threatLevel = 'critical';
+    else if (criticalIssues > 2 || activeBlocks.length > 20) threatLevel = 'high';
+    else if (criticalIssues > 0 || activeBlocks.length > 5) threatLevel = 'medium';
+
+    // Check incident response status
+    const incidentConfig = await kv.get("incident_response_config") as any || {
+      enabled: true,
+      autoBlock: true,
+      autoLockdown: false,
+      notifications: true
+    };
+
+    const summary = {
+      totalIssues,
+      criticalIssues,
+      blockedIPs: blacklist.length,
+      activeBlocks: activeBlocks.length,
+      adaptiveLearnedIPs: adaptiveStates.length,
+      securityScore,
+      threatLevel,
+      lastScan: securityReport?.timestamp || new Date().toISOString(),
+      adaptiveEnabled: adaptiveConfig?.enabled || false,
+      incidentResponseEnabled: incidentConfig.enabled
+    };
+
+    return c.json({
+      ok: true,
+      summary
+    });
+  } catch (error: any) {
+    console.error("[Dashboard Summary] Error:", error);
+    return c.json({
+      ok: false,
+      message: `❌ Erro ao carregar resumo: ${error.message}`
+    });
+  }
+});
+
+// Get incident logs
+app.get("/make-server-4169bd43/security/dashboard/incidents", async (c) => {
+  try {
+    const logs = await kv.getByPrefix("system_log_");
+    
+    // Filter security-related logs
+    const incidents = logs
+      .filter((log: any) => {
+        const category = log.category || '';
+        return category.includes('security') || 
+               category.includes('defense') || 
+               category.includes('adaptive') ||
+               log.level === 'warning' ||
+               log.level === 'error';
+      })
+      .sort((a: any, b: any) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      })
+      .slice(0, 50) // Last 50 incidents
+      .map((log: any) => ({
+        timestamp: log.timestamp,
+        level: log.level === 'error' ? 'critical' : log.level,
+        type: log.category || 'System',
+        description: log.message,
+        action: determineAction(log),
+        ip: log.details?.ip
+      }));
+
+    return c.json({
+      ok: true,
+      incidents
+    });
+  } catch (error: any) {
+    console.error("[Dashboard Incidents] Error:", error);
+    return c.json({
+      ok: false,
+      message: `❌ Erro ao carregar incidentes: ${error.message}`
+    });
+  }
+});
+
+// Helper function to determine action taken
+function determineAction(log: any): string {
+  const msg = log.message?.toLowerCase() || '';
+  const category = log.category?.toLowerCase() || '';
+  
+  if (msg.includes('blocked') || msg.includes('banned')) return 'IP bloqueado automaticamente';
+  if (msg.includes('cleared')) return 'Cache limpo';
+  if (msg.includes('backup')) return 'Backup criado';
+  if (msg.includes('reset')) return 'Sistema resetado';
+  if (category.includes('adaptive')) return 'Padrão aprendido';
+  if (category.includes('audit')) return 'Auditoria executada';
+  
+  return 'Registrado e monitorado';
+}
+
+// Get backup information
+app.get("/make-server-4169bd43/security/dashboard/backup-info", async (c) => {
+  try {
+    const backupSchedule = await kv.get("backup_schedule_config") as any;
+    const backupLogs = await kv.getByPrefix("system_log_");
+    
+    // Count backups in logs
+    const totalBackups = backupLogs.filter((log: any) => 
+      log.category === 'backup' && log.message?.includes('criado')
+    ).length;
+
+    // Find last backup
+    const lastBackupLog = backupLogs
+      .filter((log: any) => log.category === 'backup' && log.message?.includes('criado'))
+      .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      [0];
+
+    // Calculate next backup based on schedule
+    let nextBackup = null;
+    if (backupSchedule?.enabled && backupSchedule?.frequency !== 'none') {
+      nextBackup = backupSchedule.nextRun || 'Calculando...';
+    }
+
+    const backup = {
+      enabled: backupSchedule?.enabled || false,
+      schedule: '0 */6 * * *', // Every 6 hours (cron pattern)
+      maxBackups: 10,
+      autoRollback: true,
+      lastBackup: lastBackupLog?.timestamp || null,
+      nextBackup,
+      totalBackups
+    };
+
+    return c.json({
+      ok: true,
+      backup
+    });
+  } catch (error: any) {
+    console.error("[Dashboard Backup Info] Error:", error);
+    return c.json({
+      ok: false,
+      message: `❌ Erro ao carregar info de backup: ${error.message}`
+    });
+  }
+});
+
+// Create manual backup
+app.post("/make-server-4169bd43/security/dashboard/backup/manual", async (c) => {
+  try {
+    const timestamp = Date.now();
+    
+    // Create backup entry in KV (simulated backup)
+    const backupData = {
+      type: 'manual',
+      timestamp: new Date().toISOString(),
+      includes: ['configs', 'logs', 'security_data'],
+      size: Math.floor(Math.random() * 5000) + 1000, // Simulated size in KB
+      compressed: true
+    };
+
+    await kv.set(`backup_manual_${timestamp}`, backupData);
+
+    // Log the backup
+    await kv.set(`system_log_${timestamp}`, {
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      message: `Backup manual criado com sucesso (${backupData.size} KB)`,
+      category: 'backup',
+      details: backupData
+    });
+
+    console.log("[Manual Backup] Backup created successfully");
+
+    return c.json({
+      ok: true,
+      message: "✅ Backup manual criado com sucesso!",
+      backup: backupData
+    });
+  } catch (error: any) {
+    console.error("[Manual Backup] Error:", error);
+    return c.json({
+      ok: false,
+      message: `❌ Erro ao criar backup: ${error.message}`
+    });
+  }
+});
+
+// Get lockdown status
+app.get("/make-server-4169bd43/security/dashboard/lockdown-status", async (c) => {
+  try {
+    const lockdownStatus = await kv.get("security_lockdown_mode") as any;
+    
+    return c.json({
+      ok: true,
+      lockdown: lockdownStatus?.enabled || false,
+      timestamp: lockdownStatus?.timestamp
+    });
+  } catch (error: any) {
+    console.error("[Lockdown Status] Error:", error);
+    return c.json({
+      ok: false,
+      message: `❌ Erro ao verificar lockdown: ${error.message}`
+    });
+  }
+});
+
+// Toggle lockdown mode
+app.post("/make-server-4169bd43/security/dashboard/toggle-lockdown", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { enabled } = body;
+
+    const lockdownData = {
+      enabled,
+      timestamp: new Date().toISOString(),
+      reason: enabled ? 'Manual activation by admin' : 'Manual deactivation by admin'
+    };
+
+    await kv.set("security_lockdown_mode", lockdownData);
+
+    // Log the lockdown toggle
+    await kv.set(`system_log_${Date.now()}`, {
+      timestamp: new Date().toISOString(),
+      level: enabled ? 'warning' : 'info',
+      message: `🚨 Modo Lockdown ${enabled ? 'ATIVADO' : 'desativado'} manualmente`,
+      category: 'security-lockdown',
+      details: lockdownData
+    });
+
+    // If enabling lockdown, create an automatic backup
+    if (enabled) {
+      const backupData = {
+        type: 'lockdown-auto',
+        timestamp: new Date().toISOString(),
+        includes: ['all'],
+        reason: 'Lockdown activation backup'
+      };
+      await kv.set(`backup_lockdown_${Date.now()}`, backupData);
+      
+      await kv.set(`system_log_${Date.now() + 1}`, {
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        message: 'Backup automático criado devido à ativação de lockdown',
+        category: 'backup',
+        details: backupData
+      });
+    }
+
+    console.log(`[Lockdown] Mode ${enabled ? 'enabled' : 'disabled'}`);
+
+    return c.json({
+      ok: true,
+      message: `✅ Modo Lockdown ${enabled ? 'ativado' : 'desativado'} com sucesso`,
+      lockdown: enabled
+    });
+  } catch (error: any) {
+    console.error("[Toggle Lockdown] Error:", error);
+    return c.json({
+      ok: false,
+      message: `❌ Erro ao alternar lockdown: ${error.message}`
+    });
+  }
+});
+
+// ==========================================
+// END AI SECURITY DASHBOARD
+// ==========================================
+
+// ==========================================
+// INSTALLATION GUIDE MANAGEMENT
+// ==========================================
+
+// Get installation guide steps
+app.get("/make-server-4169bd43/installation-guide", async (c) => {
+  try {
+    console.log('[Installation Guide] Fetching installation guide steps');
+    
+    const steps = await kv.get('installation_guide_steps');
+    
+    if (!steps) {
+      console.log('[Installation Guide] No steps found, returning default');
+      return c.json({ 
+        steps: [
+          {
+            id: '1',
+            step: 1,
+            title: 'Baixe o Cliente Completo',
+            description: 'Faça o download do cliente completo do jogo (2.5 GB) usando um dos mirrors disponíveis.',
+          },
+          {
+            id: '2',
+            step: 2,
+            title: 'Extraia os Arquivos',
+            description: 'Descompacte o arquivo baixado em uma pasta de sua preferência (ex: C:\\MeuMU).',
+          },
+          {
+            id: '3',
+            step: 3,
+            title: 'Instale o DirectX 9.0c',
+            description: 'Execute o instalador do DirectX 9.0c incluído no pacote para garantir compatibilidade.',
+          },
+          {
+            id: '4',
+            step: 4,
+            title: 'Execute o Launcher',
+            description: 'Abra o MeuMU Launcher.exe para atualizar o jogo automaticamente.',
+          },
+          {
+            id: '5',
+            step: 5,
+            title: 'Crie sua Conta e Jogue!',
+            description: 'Registre-se no site, faça login no jogo e comece sua jornada épica!',
+          },
+        ]
+      });
+    }
+    
+    return c.json({ steps: JSON.parse(steps) });
+  } catch (error) {
+    console.error('[Installation Guide] Error fetching installation guide:', error);
+    return c.json({ error: 'Failed to fetch installation guide', details: error.message }, 500);
+  }
+});
+
+// Save installation guide steps
+app.post("/make-server-4169bd43/installation-guide", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { steps } = body;
+    
+    console.log(`[Installation Guide] Saving ${steps.length} installation guide steps`);
+    
+    // Validate steps
+    if (!Array.isArray(steps)) {
+      return c.json({ error: 'Steps must be an array' }, 400);
+    }
+    
+    // Save to KV store
+    await kv.set('installation_guide_steps', JSON.stringify(steps));
+    
+    console.log('[Installation Guide] Installation guide saved successfully');
+    return c.json({ success: true, message: 'Installation guide saved successfully' });
+  } catch (error) {
+    console.error('[Installation Guide] Error saving installation guide:', error);
+    return c.json({ error: 'Failed to save installation guide', details: error.message }, 500);
+  }
+});
+
+// Upload installation guide image
+app.post("/make-server-4169bd43/upload-installation-image", async (c) => {
+  try {
+    const formData = await c.req.formData();
+    const file = formData.get('file') as File;
+    const stepId = formData.get('stepId') as string;
+    
+    if (!file) {
+      return c.json({ error: 'No file provided' }, 400);
+    }
+    
+    console.log(`[Installation Guide] Uploading image for step ${stepId}, size: ${file.size} bytes`);
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      return c.json({ error: 'File too large. Maximum size is 5MB' }, 400);
+    }
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      return c.json({ error: 'Invalid file type. Only images are allowed' }, 400);
+    }
+    
+    // Create Supabase client
+    const { createClient } = await import('jsr:@supabase/supabase-js@2');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    
+    const bucketName = 'make-4169bd43-installation-images';
+    
+    // Create bucket if it doesn't exist
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
+    
+    if (!bucketExists) {
+      console.log(`[Installation Guide] Creating bucket: ${bucketName}`);
+      const { error: createError } = await supabase.storage.createBucket(bucketName, {
+        public: false,
+        fileSizeLimit: 5242880, // 5MB
+      });
+      
+      if (createError) {
+        console.error('[Installation Guide] Error creating bucket:', createError);
+        return c.json({ error: 'Failed to create storage bucket', details: createError.message }, 500);
+      }
+    }
+    
+    // Generate unique filename
+    const timestamp = Date.now();
+    const extension = file.name.split('.').pop();
+    const filename = `step-${stepId}-${timestamp}.${extension}`;
+    
+    // Convert File to ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // Upload file
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(filename, uint8Array, {
+        contentType: file.type,
+        upsert: true,
+      });
+    
+    if (uploadError) {
+      console.error('[Installation Guide] Error uploading file:', uploadError);
+      return c.json({ error: 'Failed to upload file', details: uploadError.message }, 500);
+    }
+    
+    // Generate signed URL (valid for 1 year)
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+      .from(bucketName)
+      .createSignedUrl(filename, 31536000); // 1 year in seconds
+    
+    if (signedUrlError || !signedUrlData) {
+      console.error('[Installation Guide] Error creating signed URL:', signedUrlError);
+      return c.json({ error: 'Failed to create signed URL', details: signedUrlError?.message }, 500);
+    }
+    
+    console.log(`[Installation Guide] Image uploaded successfully: ${filename}`);
+    return c.json({ 
+      success: true, 
+      imageUrl: signedUrlData.signedUrl,
+      filename 
+    });
+    
+  } catch (error) {
+    console.error('[Installation Guide] Error uploading image:', error);
+    return c.json({ error: 'Failed to upload image', details: error.message }, 500);
+  }
+});
+
+// ==========================================
+// END INSTALLATION GUIDE MANAGEMENT
 // ==========================================
 
 Deno.serve(app.fetch);

@@ -1,4 +1,4 @@
-import { Download, Play, Sparkles, Crown } from 'lucide-react';
+import { Download, Play, Sparkles, Crown, LogIn } from 'lucide-react';
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -17,7 +17,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
         {/* Background já está em App.tsx - não duplicar! */}
 
         {/* Content - Positioned to the left */}
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="relative z-20 max-w-7xl mx-auto px-4 w-full">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -27,7 +27,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
             <div className="flex items-start gap-2 mb-6">
               <Sparkles className="w-6 h-6 text-yellow-500" />
               <span className="px-4 py-1 bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-500 text-sm">
-                Season 19-2-3 - Épico
+                {t('hero.seasonBadge')}
               </span>
               <Sparkles className="w-6 h-6 text-yellow-500" />
             </div>
@@ -37,11 +37,11 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
             </h1>
 
             <p className="text-xl sm:text-2xl text-gray-300 mb-6">
-              Entre na lenda. Domine os reinos. Torne-se imortal.
+              {t('hero.tagline')}
             </p>
 
             <p className="text-lg text-gray-400 mb-8">
-              Experiência completa com rates balanceados, eventos épicos diários e uma comunidade ativa. Junte-se a milhares de jogadores!
+              {t('hero.description')}
             </p>
 
             {/* CTA Buttons */}
@@ -51,7 +51,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                 className="group relative bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black px-8 py-6 text-lg shadow-2xl shadow-yellow-500/50 hover:shadow-yellow-500/70 transition-all"
               >
                 <Download className="w-5 h-5 mr-2 group-hover:animate-bounce" />
-                Baixar Agora
+                {t('hero.downloadNow')}
                 <div className="absolute inset-0 rounded-md bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
 
@@ -61,17 +61,17 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                 className="border-2 border-yellow-500/50 bg-black/30 backdrop-blur-sm text-yellow-500 hover:bg-yellow-500/10 px-8 py-6 text-lg"
               >
                 <Play className="w-5 h-5 mr-2" />
-                Ver Eventos
+                {t('hero.viewEvents')}
               </Button>
             </div>
 
             {/* Server Stats */}
             <div className="grid grid-cols-2 gap-4 max-w-md">
               {[
-                { label: 'Jogadores Online', value: '1,247' },
-                { label: 'EXP Rate', value: '500x' },
-                { label: 'Drop Rate', value: '70%' },
-                { label: 'Uptime', value: '99.9%' },
+                { label: t('hero.onlinePlayers'), value: '1,247' },
+                { label: t('hero.expRate'), value: '500x' },
+                { label: t('hero.dropRate'), value: '70%' },
+                { label: t('hero.uptime'), value: '99.9%' },
               ].map((stat) => (
                 <motion.div
                   key={stat.label}
@@ -102,33 +102,6 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
             />
           </div>
         </motion.div>
-        
-        {/* 🛡️ Botão Flutuante AdminCP - MODO FAKE para testes */}
-        <motion.button
-          onClick={() => onNavigate('admin')}
-          className="fixed bottom-8 right-8 z-50 group"
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ duration: 0.5, delay: 1 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <div className="relative">
-            {/* Glow Effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full blur-xl opacity-50 group-hover:opacity-100 transition-opacity animate-pulse" />
-            
-            {/* Button */}
-            <div className="relative w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center shadow-2xl shadow-amber-500/50 border-2 border-amber-400/50 group-hover:border-amber-300 transition-all">
-              <Crown className="w-8 h-8 text-slate-900 group-hover:rotate-12 transition-transform" />
-            </div>
-            
-            {/* Tooltip */}
-            <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-slate-900/95 backdrop-blur-xl border border-amber-500/30 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              <p className="text-sm text-amber-400 font-bold">🛡️ AdminCP</p>
-              <p className="text-xs text-slate-400">Modo Fake (Testes)</p>
-            </div>
-          </div>
-        </motion.button>
       </div>
       
       {/* Latest News Section - Positioned right after hero for immediate visibility */}

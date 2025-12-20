@@ -36,10 +36,10 @@ export const MusicPlayerWidget = memo(function MusicPlayerWidget({ currentSectio
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 right-6 z-30 pointer-events-none">
       {/* Widget compacto */}
       {!isExpanded && (
-        <div className="relative">
+        <div className="relative pointer-events-auto">
           <button
             onClick={() => setIsExpanded(true)}
             className="group relative bg-gradient-to-br from-obsidian/95 to-obsidian-light/95 backdrop-blur-md border border-gold/20 rounded-full p-4 shadow-2xl hover:shadow-gold/20 transition-all duration-300 hover:scale-105"

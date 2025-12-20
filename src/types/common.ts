@@ -36,7 +36,7 @@ export interface Character {
   id: number;
   name: string;
   class: string;
-  classCode: number;
+  classCode?: number;
   level: number;
   resets: number;
   masterResets: number;
@@ -63,7 +63,7 @@ export interface Activity {
   timestamp: string;
   action: string;
   icon: string;
-  type: string;
+  type?: string;
   details?: string;
 }
 
@@ -168,9 +168,9 @@ export interface Stats {
   wcoin: number;
   goblinPoints: number;
   zen: number;
-  vipLevel: number;
-  totalResets: number;
-  totalMasterResets: number;
+  vipLevel?: number;
+  totalResets?: number;
+  totalMasterResets?: number;
 }
 
 // ===== EVENTS =====

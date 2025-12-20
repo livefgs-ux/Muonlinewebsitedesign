@@ -4,7 +4,7 @@ import {
   Crown, Users, Swords, FileText, Settings, LogOut, Menu,
   X, ChevronRight, Search, Bell, UserCircle2, Database,
   Calendar, Award, Activity, Ban, Shield, TrendingUp,
-  BarChart3, Boxes, Layout, ScrollText, Clock, DollarSign
+  BarChart3, Boxes, Layout, ScrollText, Clock, DollarSign, Eye
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -20,6 +20,8 @@ import { LogsSection } from './sections/LogsSection';
 import { SiteEditorSection } from './sections/SiteEditorSection';
 import { CronsSection } from './sections/CronsSection';
 import { BansSection } from './sections/BansSection';
+import { TestModesSection } from './sections/TestModesSection';
+import { InstallationGuideSection } from './sections/InstallationGuideSection';
 import DonationsPanel from '../admin/DonationsPanel';
 import SecurityPanel from '../admin/SecurityPanel';
 import CronJobsPanel from '../admin/CronJobsPanel';
@@ -28,6 +30,7 @@ import { SystemManagement } from './system-management';
 interface AdminCPLayoutProps {
   adminData: any;
   onLogout: () => void;
+  onNavigate?: (section: string) => void;
 }
 
 /**
@@ -41,7 +44,7 @@ interface AdminCPLayoutProps {
  * - Responsivo e otimizado
  */
 
-export function AdminCPLayout({ adminData, onLogout }: AdminCPLayoutProps) {
+export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeModule, setActiveModule] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
@@ -153,6 +156,22 @@ export function AdminCPLayout({ adminData, onLogout }: AdminCPLayoutProps) {
       color: 'text-yellow-400',
       bgColor: 'bg-yellow-500/10',
       permission: 'viewAccounts'
+    },
+    {
+      id: 'test-modes',
+      name: 'Modos de Teste',
+      icon: Eye,
+      color: 'text-lime-400',
+      bgColor: 'bg-lime-500/10',
+      permission: 'viewAccounts'
+    },
+    {
+      id: 'installation-guide',
+      name: 'Guia de Instalação',
+      icon: FileText,
+      color: 'text-gray-400',
+      bgColor: 'bg-gray-500/10',
+      permission: 'viewAccounts'
     }
   ], []);
 
@@ -192,6 +211,10 @@ export function AdminCPLayout({ adminData, onLogout }: AdminCPLayoutProps) {
         return <BansSection />;
       case 'system':
         return <SystemManagement />;
+      case 'test-modes':
+        return <TestModesSection onNavigate={onNavigate} />;
+      case 'installation-guide':
+        return <InstallationGuideSection />;
       default:
         return <DashboardSection />;
     }
@@ -259,7 +282,10 @@ export function AdminCPLayout({ adminData, onLogout }: AdminCPLayoutProps) {
               return (
                 <motion.button
                   key={module.id}
-                  onClick={() => setActiveModule(module.id)}
+                  onClick={() => {
+                    setActiveModule(module.id);
+                    if (onNavigate) onNavigate(module.id);
+                  }}
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
                   className={`
@@ -267,7 +293,7 @@ export function AdminCPLayout({ adminData, onLogout }: AdminCPLayoutProps) {
                     transition-all duration-200 relative overflow-hidden
                     ${isActive 
                       ? `${module.bgColor} border border-${module.color.replace('text-', '')}/30 text-white shadow-lg` 
-                      : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+                      : 'bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 hover:text-white border border-slate-700/50'
                     }
                     ${!sidebarOpen && 'justify-center'}
                   `}
@@ -281,7 +307,7 @@ export function AdminCPLayout({ adminData, onLogout }: AdminCPLayoutProps) {
                     />
                   )}
                   
-                  <Icon className={`w-5 h-5 ${isActive ? module.color : ''} relative z-10`} />
+                  <Icon className={`w-5 h-5 ${isActive ? module.color : 'text-slate-300'} relative z-10`} />
                   
                   {sidebarOpen && (
                     <>

@@ -118,11 +118,17 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
 
             <CardContent>
               <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-black/60">
-                  <TabsTrigger value="login" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400">
+                <TabsList className="grid w-full grid-cols-2 bg-black/60 mb-4">
+                  <TabsTrigger 
+                    value="login" 
+                    className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400 data-[state=active]:border-amber-500/50 text-gray-200 hover:text-white transition-colors"
+                  >
                     {t('auth.login')}
                   </TabsTrigger>
-                  <TabsTrigger value="register" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400">
+                  <TabsTrigger 
+                    value="register" 
+                    className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400 data-[state=active]:border-amber-500/50 text-gray-200 hover:text-white transition-colors"
+                  >
                     {t('auth.register')}
                   </TabsTrigger>
                 </TabsList>

@@ -359,7 +359,7 @@ export function DashboardSection({ onLoginSuccess, isLoggedIn: isLoggedInProp, o
 
           {/* Character Details */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="bg-black/50 border border-yellow-500/30">
+            <TabsList className="bg-black/50 border border-yellow-500/30 w-full justify-start">
               <TabsTrigger 
                 value="account" 
                 className="data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-500 data-[state=inactive]:text-gray-300"

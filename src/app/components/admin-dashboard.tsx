@@ -16,6 +16,7 @@ import { AdminCPLayout } from './admincp/AdminCPLayout';
 interface AdminDashboardProps {
   adminData: any;
   onLogout: () => void;
+  onNavigate?: (section: string) => void;
 }
 
 /**
@@ -23,7 +24,9 @@ interface AdminDashboardProps {
  * Com dados MOCK realistas para testes
  */
 
-export function AdminDashboard({ adminData, onLogout }: AdminDashboardProps) {
+export function AdminDashboard({ adminData, onLogout, onNavigate }: AdminDashboardProps) {
   // Usar o novo layout SPA
-  return <AdminCPLayout adminData={adminData} onLogout={onLogout} />;
+  return <AdminCPLayout adminData={adminData} onLogout={onLogout} onNavigate={onNavigate} />;
 }
+
+export default AdminDashboard;
