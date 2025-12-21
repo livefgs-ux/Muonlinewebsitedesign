@@ -1,7 +1,7 @@
 <?php
 /**
  * MeuMU Online - Instalador Backend
- * Processa a instalação do sistema
+ * Processa a instalação do sistema com 2 databases
  */
 
 header('Content-Type: application/json');
@@ -25,6 +25,30 @@ function respond($success, $message, $extra = []) {
     exit;
 }
 
+function checkPermissions() {
+    $errors = [];
+    
+    // Verificar pasta backend-nodejs
+    $backendPath = __DIR__ . '/../backend-nodejs';
+    if (!is_dir($backendPath)) {
+        $errors[] = "Pasta 'backend-nodejs' não encontrada";
+    } elseif (!is_writable($backendPath)) {
+        $errors[] = "Pasta 'backend-nodejs' não tem permissão de escrita";
+    }
+    
+    // Verificar raiz do projeto
+    $rootPath = __DIR__ . '/..';
+    if (!is_writable($rootPath)) {
+        $errors[] = "Pasta raiz do projeto não tem permissão de escrita";
+    }
+    
+    return [
+        'success' => empty($errors),
+        'errors' => $errors,
+        'instructions' => empty($errors) ? null : 'Execute: chmod -R 775 ' . realpath($rootPath)
+    ];
+}
+
 function testDatabaseConnection($host, $port, $database, $user, $password) {
     try {
         $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
@@ -39,15 +63,64 @@ function testDatabaseConnection($host, $port, $database, $user, $password) {
     }
 }
 
+function createDatabaseIfNotExists($host, $port, $user, $password, $dbName) {
+    try {
+        // Conectar sem especificar database
+        $dsn = "mysql:host={$host};port={$port};charset=utf8mb4";
+        $pdo = new PDO($dsn, $user, $password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
+        
+        // Criar database se não existir
+        $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        
+        return ['success' => true];
+    } catch (PDOException $e) {
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
+}
+
+function executeSchemaSQL($pdo, $sqlFile) {
+    try {
+        $sql = file_get_contents($sqlFile);
+        
+        // Dividir por statements (separados por ;)
+        $statements = array_filter(
+            array_map('trim', explode(';', $sql)),
+            function($stmt) {
+                return !empty($stmt) && 
+                       !preg_match('/^\s*--/', $stmt) && 
+                       !preg_match('/^\s*\/\*/', $stmt);
+            }
+        );
+        
+        foreach ($statements as $statement) {
+            if (!empty($statement)) {
+                $pdo->exec($statement);
+            }
+        }
+        
+        return ['success' => true];
+    } catch (PDOException $e) {
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
+}
+
 function createEnvFile($data) {
     $envContent = "# MeuMU Online - Configuração do Backend\n";
     $envContent .= "# Gerado automaticamente pelo instalador\n\n";
-    $envContent .= "# Database\n";
-    $envContent .= "DB_HOST={$data['database']['db_host']}\n";
-    $envContent .= "DB_PORT={$data['database']['db_port']}\n";
-    $envContent .= "DB_NAME={$data['database']['db_name']}\n";
-    $envContent .= "DB_USER={$data['database']['db_user']}\n";
-    $envContent .= "DB_PASSWORD={$data['database']['db_password']}\n\n";
+    $envContent .= "# Database MU (Read Only)\n";
+    $envContent .= "DB_MU_HOST={$data['database']['db_host']}\n";
+    $envContent .= "DB_MU_PORT={$data['database']['db_port']}\n";
+    $envContent .= "DB_MU_NAME={$data['database']['db_mu']}\n";
+    $envContent .= "DB_MU_USER={$data['database']['db_user']}\n";
+    $envContent .= "DB_MU_PASSWORD={$data['database']['db_password']}\n\n";
+    $envContent .= "# Database Web (Read + Write)\n";
+    $envContent .= "DB_WEB_HOST={$data['database']['db_host']}\n";
+    $envContent .= "DB_WEB_PORT={$data['database']['db_port']}\n";
+    $envContent .= "DB_WEB_NAME={$data['database']['db_web']}\n";
+    $envContent .= "DB_WEB_USER={$data['database']['db_user']}\n";
+    $envContent .= "DB_WEB_PASSWORD={$data['database']['db_password']}\n\n";
     $envContent .= "# JWT\n";
     $envContent .= "JWT_SECRET=" . bin2hex(random_bytes(32)) . "\n\n";
     $envContent .= "# Server\n";
@@ -64,11 +137,19 @@ function createConfigFile($data) {
     $configContent = "<?php\n";
     $configContent .= "// MeuMU Online - Configuração\n";
     $configContent .= "// Gerado automaticamente pelo instalador\n\n";
-    $configContent .= "define('DB_HOST', '{$data['database']['db_host']}');\n";
-    $configContent .= "define('DB_PORT', '{$data['database']['db_port']}');\n";
-    $configContent .= "define('DB_NAME', '{$data['database']['db_name']}');\n";
-    $configContent .= "define('DB_USER', '{$data['database']['db_user']}');\n";
-    $configContent .= "define('DB_PASSWORD', '{$data['database']['db_password']}');\n\n";
+    $configContent .= "// Database MU (Read Only)\n";
+    $configContent .= "define('DB_MU_HOST', '{$data['database']['db_host']}');\n";
+    $configContent .= "define('DB_MU_PORT', '{$data['database']['db_port']}');\n";
+    $configContent .= "define('DB_MU_NAME', '{$data['database']['db_mu']}');\n";
+    $configContent .= "define('DB_MU_USER', '{$data['database']['db_user']}');\n";
+    $configContent .= "define('DB_MU_PASSWORD', '{$data['database']['db_password']}');\n\n";
+    $configContent .= "// Database Web (Read + Write)\n";
+    $configContent .= "define('DB_WEB_HOST', '{$data['database']['db_host']}');\n";
+    $configContent .= "define('DB_WEB_PORT', '{$data['database']['db_port']}');\n";
+    $configContent .= "define('DB_WEB_NAME', '{$data['database']['db_web']}');\n";
+    $configContent .= "define('DB_WEB_USER', '{$data['database']['db_user']}');\n";
+    $configContent .= "define('DB_WEB_PASSWORD', '{$data['database']['db_password']}');\n\n";
+    $configContent .= "// Site\n";
     $configContent .= "define('SITE_URL', '{$data['backend']['site_url']}');\n";
     $configContent .= "define('BACKEND_PORT', '3001');\n";
     $configContent .= "define('BACKEND_MODE', '{$data['backend']['mode']}');\n";
@@ -111,95 +192,110 @@ function startBackend($mode) {
     }
 }
 
-function createAdminUser($data) {
-    $db = $data['database'];
-    $admin = $data['admin'];
-    
-    $result = testDatabaseConnection($db['db_host'], $db['db_port'], $db['db_name'], $db['db_user'], $db['db_password']);
-    if (!$result['success']) {
-        return ['success' => false, 'error' => $result['error']];
-    }
-    
-    $pdo = $result['pdo'];
-    
-    try {
-        // Verificar se tabela MEMB_INFO existe
-        $stmt = $pdo->query("SHOW TABLES LIKE 'MEMB_INFO'");
-        if ($stmt->rowCount() === 0) {
-            return ['success' => false, 'error' => 'Tabela MEMB_INFO não encontrada'];
-        }
-        
-        // Hash da senha (MD5 para compatibilidade com MU Online)
-        $password = md5($admin['admin_password']);
-        
-        // Inserir admin (ou atualizar se já existir)
-        $stmt = $pdo->prepare("
-            INSERT INTO MEMB_INFO (memb___id, memb__pwd, mail_addr, bloc_code, ctl1_code)
-            VALUES (?, ?, ?, 0, 8)
-            ON DUPLICATE KEY UPDATE
-                memb__pwd = VALUES(memb__pwd),
-                mail_addr = VALUES(mail_addr),
-                ctl1_code = 8
-        ");
-        
-        $stmt->execute([
-            $admin['admin_user'],
-            $password,
-            $admin['admin_email']
-        ]);
-        
-        return ['success' => true];
-    } catch (PDOException $e) {
-        return ['success' => false, 'error' => $e->getMessage()];
-    }
-}
-
 // Processar ações
 switch ($action) {
+    case 'check_permissions':
+        $permissions = checkPermissions();
+        respond($permissions['success'], 
+            $permissions['success'] ? 'Permissões OK' : 'Permissões insuficientes',
+            $permissions
+        );
+        break;
+    
     case 'test_database':
-        $result = testDatabaseConnection(
-            $data['db_host'],
-            $data['db_port'],
-            $data['db_name'],
-            $data['db_user'],
-            $data['db_password']
+        $db = $data;
+        
+        // Testar database MU
+        $resultMU = testDatabaseConnection(
+            $db['db_host'],
+            $db['db_port'],
+            $db['db_mu'],
+            $db['db_user'],
+            $db['db_password']
         );
         
-        if ($result['success']) {
-            respond(true, 'Conexão estabelecida com sucesso!');
-        } else {
-            respond(false, $result['error']);
+        if (!$resultMU['success']) {
+            respond(false, 'Erro ao conectar database MU: ' . $resultMU['error']);
         }
+        
+        // Verificar se tabela accounts existe
+        try {
+            $pdo = $resultMU['pdo'];
+            $stmt = $pdo->query("SHOW TABLES LIKE 'accounts'");
+            if ($stmt->rowCount() === 0) {
+                respond(false, 'Tabela "accounts" não encontrada no database MU');
+            }
+        } catch (PDOException $e) {
+            respond(false, 'Erro ao verificar tabelas: ' . $e->getMessage());
+        }
+        
+        // Database Web não precisa existir (será criada)
+        respond(true, 'Conexão estabelecida com sucesso! Database MU verificado.');
         break;
         
     case 'install':
-        // 1. Criar arquivo .env
+        // 1. Verificar permissões
+        $permissions = checkPermissions();
+        if (!$permissions['success']) {
+            respond(false, 'Permissões insuficientes', $permissions);
+        }
+        
+        // 2. Criar database Web se não existir
+        $createWebDB = createDatabaseIfNotExists(
+            $data['database']['db_host'],
+            $data['database']['db_port'],
+            $data['database']['db_user'],
+            $data['database']['db_password'],
+            $data['database']['db_web']
+        );
+        
+        if (!$createWebDB['success']) {
+            respond(false, 'Erro ao criar database Web: ' . $createWebDB['error']);
+        }
+        
+        // 3. Conectar ao database Web e executar schema
+        $resultWeb = testDatabaseConnection(
+            $data['database']['db_host'],
+            $data['database']['db_port'],
+            $data['database']['db_web'],
+            $data['database']['db_user'],
+            $data['database']['db_password']
+        );
+        
+        if (!$resultWeb['success']) {
+            respond(false, 'Erro ao conectar database Web: ' . $resultWeb['error']);
+        }
+        
+        // 4. Executar schema SQL
+        $schemaFile = __DIR__ . '/webmu_schema.sql';
+        $schemaResult = executeSchemaSQL($resultWeb['pdo'], $schemaFile);
+        
+        if (!$schemaResult['success']) {
+            respond(false, 'Erro ao criar tabelas: ' . $schemaResult['error']);
+        }
+        
+        // 5. Criar arquivo .env
         if (!createEnvFile($data)) {
             respond(false, 'Erro ao criar arquivo .env');
         }
         
-        // 2. Criar config.php
+        // 6. Criar config.php
         if (!createConfigFile($data)) {
             respond(false, 'Erro ao criar arquivo config.php');
         }
         
-        // 3. Criar usuário admin
-        $adminResult = createAdminUser($data);
-        if (!$adminResult['success']) {
-            respond(false, 'Erro ao criar admin: ' . $adminResult['error']);
-        }
-        
-        // 4. Iniciar backend
+        // 7. Iniciar backend
         $backendResult = startBackend($data['backend']['mode']);
         if (!$backendResult['success']) {
             respond(false, 'Erro ao iniciar backend: ' . $backendResult['error']);
         }
         
-        // 5. Criar arquivo .installed para evitar reinstalação
+        // 8. Criar arquivo .installed para evitar reinstalação
         file_put_contents(__DIR__ . '/.installed', date('Y-m-d H:i:s'));
         
         respond(true, 'Instalação concluída com sucesso!', [
-            'backend_mode' => $backendResult['mode']
+            'backend_mode' => $backendResult['mode'],
+            'database_web_created' => true
         ]);
         break;
         

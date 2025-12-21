@@ -313,10 +313,6 @@
                 </div>
                 <div class="step" data-step="4">
                     <div class="step-number">4</div>
-                    <div class="step-label">Admin</div>
-                </div>
-                <div class="step" data-step="5">
-                    <div class="step-number">5</div>
                     <div class="step-label">Concluído</div>
                 </div>
             </div>
@@ -352,8 +348,19 @@
             <div id="step-2" class="step-content hidden">
                 <h2>🗄️ Configuração do Database</h2>
                 <p style="margin: 20px 0; color: rgba(255,255,255,0.8);">
-                    Configure a conexão com o banco de dados MariaDB/MySQL do seu servidor MU Online.
+                    Configure a conexão com os 2 bancos de dados: <strong>muonline</strong> (servidor MU) e <strong>webmu</strong> (site).
                 </p>
+                
+                <div class="alert alert-info" style="margin-bottom: 20px;">
+                    <span>ℹ️</span>
+                    <div>
+                        <strong>2 Databases necessárias:</strong>
+                        <ul style="margin-top: 8px; padding-left: 20px;">
+                            <li><strong>muonline</strong>: Database do servidor MU (somente leitura)</li>
+                            <li><strong>webmu</strong>: Database do site (será criada automaticamente se não existir)</li>
+                        </ul>
+                    </div>
+                </div>
                 
                 <div id="db-error" class="alert alert-error hidden"></div>
                 <div id="db-success" class="alert alert-success hidden"></div>
@@ -370,9 +377,21 @@
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Nome do Database</label>
-                        <input type="text" name="db_name" value="MuOnline" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Database do MU (muonline)</label>
+                            <input type="text" name="db_mu" value="muonline" required>
+                            <small style="color: rgba(255,255,255,0.5); display: block; margin-top: 4px;">
+                                Database com accounts, character_info, etc.
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label>Database do Site (webmu)</label>
+                            <input type="text" name="db_web" value="webmu" required>
+                            <small style="color: rgba(255,255,255,0.5); display: block; margin-top: 4px;">
+                                Database para notícias, votos, etc. (criada automaticamente)
+                            </small>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -402,10 +421,17 @@
             
             <!-- Step 3: Backend -->
             <div id="step-3" class="step-content hidden">
-                <h2>🚀 Configuração do Backend</h2>
+                <h2>🚀 Configuração Final</h2>
                 <p style="margin: 20px 0; color: rgba(255,255,255,0.8);">
-                    Escolha como o backend Node.js será executado.
+                    Escolha como o backend Node.js será executado e finalize a instalação.
                 </p>
+                
+                <div class="alert alert-info" style="margin-bottom: 20px;">
+                    <span>ℹ️</span>
+                    <div>
+                        <strong>Admin do site:</strong> Use uma conta do MU com <code>web_admin = 1</code> na tabela <code>accounts</code>. Não é necessário criar admin separado!
+                    </div>
+                </div>
                 
                 <div class="form-group">
                     <label>Modo de Execução:</label>
@@ -443,54 +469,15 @@
                     <button class="btn btn-secondary" onclick="prevStep()">
                         ← Voltar
                     </button>
-                    <button class="btn btn-primary" onclick="nextStep()">
-                        Próximo →
+                    <button class="btn btn-primary" onclick="install()">
+                        <span class="loading hidden" id="install-loading"></span>
+                        🚀 Instalar Agora
                     </button>
                 </div>
             </div>
             
-            <!-- Step 4: Admin -->
+            <!-- Step 4: Concluído -->
             <div id="step-4" class="step-content hidden">
-                <h2>👤 Conta de Administrador</h2>
-                <p style="margin: 20px 0; color: rgba(255,255,255,0.8);">
-                    Crie sua conta de administrador para acessar o AdminCP.
-                </p>
-                
-                <form id="admin-form">
-                    <div class="form-group">
-                        <label>Usuário</label>
-                        <input type="text" name="admin_user" value="admin" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" name="admin_email" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Senha</label>
-                        <input type="password" name="admin_password" required minlength="6">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Confirmar Senha</label>
-                        <input type="password" name="admin_password_confirm" required minlength="6">
-                    </div>
-                    
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
-                            ← Voltar
-                        </button>
-                        <button type="button" class="btn btn-primary" onclick="install()">
-                            <span class="loading hidden" id="install-loading"></span>
-                            🚀 Instalar Agora
-                        </button>
-                    </div>
-                </form>
-            </div>
-            
-            <!-- Step 5: Concluído -->
-            <div id="step-5" class="step-content hidden">
                 <div style="text-align: center;">
                     <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
                     <h2>Instalação Concluída!</h2>

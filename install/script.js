@@ -4,13 +4,12 @@
  */
 
 let currentStep = 1;
-const totalSteps = 5;
+const totalSteps = 4;
 
 // Dados do formulário
 let installData = {
     database: {},
-    backend: {},
-    admin: {}
+    backend: {}
 };
 
 // Navegar entre steps
@@ -94,20 +93,7 @@ function saveDatabase() {
 
 // Instalar
 async function install() {
-    const form = document.getElementById('admin-form');
-    const formData = new FormData(form);
-    
-    // Validar senhas
-    const password = formData.get('admin_password');
-    const confirm = formData.get('admin_password_confirm');
-    
-    if (password !== confirm) {
-        alert('As senhas não coincidem!');
-        return;
-    }
-    
     // Coletar dados
-    installData.admin = Object.fromEntries(formData);
     installData.backend = {
         mode: document.querySelector('input[name="backend_mode"]:checked').value,
         site_url: document.getElementById('site_url').value
@@ -135,7 +121,21 @@ async function install() {
         if (result.success) {
             nextStep();
         } else {
-            alert('Erro na instalação: ' + result.message);
+            // Mostrar mensagem de erro detalhada
+            let errorMessage = result.message;
+            
+            if (result.errors && result.errors.length > 0) {
+                errorMessage += '\n\nProblemas encontrados:\n';
+                result.errors.forEach(err => {
+                    errorMessage += '• ' + err + '\n';
+                });
+            }
+            
+            if (result.instructions) {
+                errorMessage += '\n📝 Solução:\n' + result.instructions;
+            }
+            
+            alert('❌ Erro na instalação:\n\n' + errorMessage);
         }
     } catch (error) {
         loading.classList.add('hidden');

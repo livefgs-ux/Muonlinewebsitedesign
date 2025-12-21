@@ -32,6 +32,27 @@ http://seudominio.com/install
 
 ---
 
+## ⚠️ Erro de Permissão?
+
+Se aparecer **"Erro ao criar arquivo .env"**, execute:
+
+### **Linux/VPS:**
+```bash
+chmod +x scripts/fix-permissions.sh
+./scripts/fix-permissions.sh
+```
+
+### **Windows (PowerShell como Admin):**
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process
+.\scripts\fix-permissions.ps1
+```
+
+### **Manual:**
+Leia o arquivo `CORRIGIR_PERMISSOES.txt` com instruções detalhadas.
+
+---
+
 ## 🏗️ Estrutura
 
 ```
