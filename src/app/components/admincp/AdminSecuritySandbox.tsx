@@ -22,7 +22,7 @@ import {
   Trash2,
   TrendingUp
 } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { API_CONFIG } from '../../config/api';
 
 interface SimulationResult {

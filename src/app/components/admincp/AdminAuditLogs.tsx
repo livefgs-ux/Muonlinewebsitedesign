@@ -24,7 +24,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { API_CONFIG } from '../../config/api';
 
 interface AdminLog {

@@ -1,9 +1,7 @@
-import { formatNumber, formatDate, formatRelativeTime, formatLocalizedCurrency } from '../../../utils/formatters';
-import { validateStatPoints } from '../../../utils/validators';
 import { getStatusColor, getIconEmoji } from '../../../utils/status-helpers';
 import type { Character, Activity as ActivityType, Stats } from '../../../types/common';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { API_CONFIG } from '../../config/api';
 
 interface UserInfo {
