@@ -20,9 +20,10 @@ import {
   TrendingDown,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  AlertOctagon
 } from "lucide-react";
-import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
+import { backendUrl, getAuthHeaders } from '../../config/backend';
 
 interface SecuritySummary {
   totalIssues: number;
@@ -76,8 +77,8 @@ export function AdminSecurityDashboard() {
     try {
       // Fetch security summary
       const summaryRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/dashboard/summary`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/summary`,
+        { headers: getAuthHeaders() }
       );
       const summaryData = await summaryRes.json();
       if (summaryData.ok) {
@@ -86,8 +87,8 @@ export function AdminSecurityDashboard() {
 
       // Fetch incident logs
       const incidentsRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/dashboard/incidents`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/incidents`,
+        { headers: getAuthHeaders() }
       );
       const incidentsData = await incidentsRes.json();
       if (incidentsData.ok) {
@@ -96,8 +97,8 @@ export function AdminSecurityDashboard() {
 
       // Fetch backup info
       const backupRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/dashboard/backup-info`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/backup-info`,
+        { headers: getAuthHeaders() }
       );
       const backupData = await backupRes.json();
       if (backupData.ok) {
@@ -106,8 +107,8 @@ export function AdminSecurityDashboard() {
 
       // Fetch lockdown status
       const lockdownRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/dashboard/lockdown-status`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/lockdown-status`,
+        { headers: getAuthHeaders() }
       );
       const lockdownData = await lockdownRes.json();
       if (lockdownData.ok) {
@@ -125,10 +126,10 @@ export function AdminSecurityDashboard() {
     setBackupMsg("Criando backup...");
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/dashboard/backup/manual`,
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/backup/manual`,
         {
           method: 'POST',
-          headers: { "Authorization": `Bearer ${publicAnonKey}` }
+          headers: getAuthHeaders()
         }
       );
       const data = await res.json();
@@ -147,11 +148,11 @@ export function AdminSecurityDashboard() {
 
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/dashboard/toggle-lockdown`,
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/toggle-lockdown`,
         {
           method: 'POST',
           headers: {
-            "Authorization": `Bearer ${publicAnonKey}`,
+            ...getAuthHeaders(),
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ enabled: !lockdownMode })

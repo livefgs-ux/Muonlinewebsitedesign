@@ -12,7 +12,7 @@ import {
   XCircle,
   Filter
 } from "lucide-react";
-import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
+import { backendUrl, getAuthHeaders } from '../../config/backend';
 
 interface LogEntry {
   timestamp: string;
@@ -35,9 +35,9 @@ export function AdminLogViewer() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/logs`,
+        `${backendUrl}/system/logs`,
         {
-          headers: { "Authorization": `Bearer ${publicAnonKey}` }
+          headers: getAuthHeaders()
         }
       );
       const data = await res.json();
@@ -56,10 +56,10 @@ export function AdminLogViewer() {
     
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/logs/clear`,
+        `${backendUrl}/system/logs/clear`,
         {
           method: "DELETE",
-          headers: { "Authorization": `Bearer ${publicAnonKey}` }
+          headers: getAuthHeaders()
         }
       );
       const data = await res.json();

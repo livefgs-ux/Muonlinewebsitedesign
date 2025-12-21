@@ -12,7 +12,7 @@ import {
   AlertCircle,
   XCircle
 } from "lucide-react";
-import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
+import { backendUrl, getAuthHeaders } from '../../config/backend';
 
 interface SystemStatus {
   database: 'online' | 'offline' | 'error';
@@ -47,9 +47,9 @@ export function AdminDiagnostics() {
     try {
       const startTime = performance.now();
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/diagnostics`,
+        `${backendUrl}/system/diagnostics`,
         {
-          headers: { "Authorization": `Bearer ${publicAnonKey}` }
+          headers: getAuthHeaders()
         }
       );
       const endTime = performance.now();

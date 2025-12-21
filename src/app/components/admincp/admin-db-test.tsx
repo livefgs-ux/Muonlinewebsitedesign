@@ -3,7 +3,7 @@ import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Database, CheckCircle, AlertCircle, Loader2, Activity } from "lucide-react";
-import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
+import { backendUrl, getAuthHeaders } from '../../config/backend';
 
 interface ConnectionResult {
   ok: boolean;
@@ -30,11 +30,11 @@ export function AdminDbTest() {
     
     try {
       const startTime = performance.now();
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/test-db`, {
+      const res = await fetch(`${backendUrl}/functions/v1/make-server-4169bd43/system/test-db`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${publicAnonKey}`
+          ...getAuthHeaders()
         },
         body: JSON.stringify({ 
           user: user || undefined, 
@@ -69,11 +69,11 @@ export function AdminDbTest() {
     
     try {
       const startTime = performance.now();
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/test-current-db`, {
+      const res = await fetch(`${backendUrl}/functions/v1/make-server-4169bd43/system/test-current-db`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${publicAnonKey}`
+          ...getAuthHeaders()
         }
       });
       const endTime = performance.now();

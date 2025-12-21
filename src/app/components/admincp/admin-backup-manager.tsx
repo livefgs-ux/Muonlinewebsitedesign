@@ -1,11 +1,9 @@
-import { useState, useEffect } from "react";
-import { Card } from "../ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Download, TestTube, Database, CheckCircle, AlertCircle, Loader2, Clock, Calendar as CalendarIcon, Zap } from "lucide-react";
-import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
+import { backendUrl, getAuthHeaders } from '../../config/backend';
 
 interface ScheduleConfig {
   enabled: boolean;
@@ -37,8 +35,8 @@ export function AdminBackupManager() {
   const loadScheduleConfig = async () => {
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/backup-schedule`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/system/backup-schedule`,
+        { headers: getAuthHeaders() }
       );
       const data = await res.json();
       if (data.ok && data.schedule) {
@@ -56,12 +54,9 @@ export function AdminBackupManager() {
     setIsLoading(true);
     setStatus("Criando backup" + (useGzip ? " comprimido (gzip)" : "") + "...");
     try {
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/backup`, {
+      const res = await fetch(`${backendUrl}/system/backup`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${publicAnonKey}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ 
           directory: dir,
           useGzip 
@@ -85,12 +80,9 @@ export function AdminBackupManager() {
     setIsLoading(true);
     setStatus("Testando configuração de backup...");
     try {
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/test-backup`, {
+      const res = await fetch(`${backendUrl}/system/test-backup`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${publicAnonKey}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ directory: dir }),
       });
       const data = await res.json();
@@ -115,13 +107,10 @@ export function AdminBackupManager() {
       };
 
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/schedule-backup`,
+        `${backendUrl}/system/schedule-backup`,
         {
           method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${publicAnonKey}`
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ 
             directory: dir,
             schedule: scheduleData,
@@ -145,8 +134,8 @@ export function AdminBackupManager() {
 
   const loadBackups = async () => {
     try {
-      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/system/list-backups`, {
-        headers: { "Authorization": `Bearer ${publicAnonKey}` }
+      const res = await fetch(`${backendUrl}/system/list-backups`, {
+        headers: getAuthHeaders()
       });
       const data = await res.json();
       if (data.ok) {

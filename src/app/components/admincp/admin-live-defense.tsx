@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import { 
-  Shield, 
+  ShieldX, 
   ShieldAlert, 
   Ban, 
   Activity, 
@@ -17,7 +17,7 @@ import {
   XCircle,
   CheckCircle
 } from "lucide-react";
-import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
+import { backendUrl, getAuthHeaders } from '../../config/backend';
 
 interface BlacklistEntry {
   ip: string;
@@ -63,8 +63,8 @@ export function AdminLiveDefense() {
     try {
       // Load blacklist
       const blacklistRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/blacklist`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/security/blacklist`,
+        { headers: getAuthHeaders() }
       );
       const blacklistData = await blacklistRes.json();
       if (blacklistData.ok) {
@@ -73,8 +73,8 @@ export function AdminLiveDefense() {
 
       // Load stats
       const statsRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/defense-stats`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/security/defense-stats`,
+        { headers: getAuthHeaders() }
       );
       const statsData = await statsRes.json();
       if (statsData.ok) {
@@ -83,8 +83,8 @@ export function AdminLiveDefense() {
 
       // Load recent activity
       const activityRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/recent-threats`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/security/recent-threats`,
+        { headers: getAuthHeaders() }
       );
       const activityData = await activityRes.json();
       if (activityData.ok) {
@@ -101,13 +101,10 @@ export function AdminLiveDefense() {
     setLoading(true);
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/block-ip`,
+        `${backendUrl}/security/block-ip`,
         {
           method: 'POST',
-          headers: {
-            "Authorization": `Bearer ${publicAnonKey}`,
-            "Content-Type": "application/json"
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             ip: manualIp,
             reason: manualReason || "Manual block by admin"
@@ -132,13 +129,10 @@ export function AdminLiveDefense() {
 
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/unblock-ip`,
+        `${backendUrl}/security/unblock-ip`,
         {
           method: 'POST',
-          headers: {
-            "Authorization": `Bearer ${publicAnonKey}`,
-            "Content-Type": "application/json"
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ ip })
         }
       );
@@ -154,10 +148,10 @@ export function AdminLiveDefense() {
   const handleClearExpired = async () => {
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/clear-expired`,
+        `${backendUrl}/security/clear-expired`,
         {
           method: 'POST',
-          headers: { "Authorization": `Bearer ${publicAnonKey}` }
+          headers: getAuthHeaders()
         }
       );
       const data = await res.json();
@@ -184,7 +178,7 @@ export function AdminLiveDefense() {
       case 'critical': return <ShieldAlert className="w-8 h-8 text-red-400 animate-pulse" />;
       case 'high': return <AlertTriangle className="w-8 h-8 text-orange-400" />;
       case 'medium': return <Activity className="w-8 h-8 text-yellow-400" />;
-      default: return <Shield className="w-8 h-8 text-green-400" />;
+      default: return <ShieldX className="w-8 h-8 text-green-400" />;
     }
   };
 

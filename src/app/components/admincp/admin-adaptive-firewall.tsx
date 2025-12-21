@@ -20,7 +20,7 @@ import {
   RefreshCw,
   Save
 } from "lucide-react";
-import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
+import { backendUrl, getAuthHeaders } from '../../config/backend';
 
 interface FirewallConfig {
   enabled: boolean;
@@ -73,8 +73,8 @@ export function AdminAdaptiveFirewall() {
     try {
       // Load config
       const configRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/adaptive/config`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/adaptive/config`,
+        { headers: getAuthHeaders() }
       );
       const configData = await configRes.json();
       if (configData.ok) {
@@ -86,8 +86,8 @@ export function AdminAdaptiveFirewall() {
 
       // Load stats
       const statsRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/adaptive/stats`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/adaptive/stats`,
+        { headers: getAuthHeaders() }
       );
       const statsData = await statsRes.json();
       if (statsData.ok) {
@@ -96,8 +96,8 @@ export function AdminAdaptiveFirewall() {
 
       // Load behaviors
       const behaviorsRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/adaptive/behaviors`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/adaptive/behaviors`,
+        { headers: getAuthHeaders() }
       );
       const behaviorsData = await behaviorsRes.json();
       if (behaviorsData.ok) {
@@ -114,11 +114,11 @@ export function AdminAdaptiveFirewall() {
     setLoading(true);
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/adaptive/toggle`,
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/adaptive/toggle`,
         {
           method: 'POST',
           headers: {
-            "Authorization": `Bearer ${publicAnonKey}`,
+            ...getAuthHeaders(),
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ enabled })
@@ -141,11 +141,11 @@ export function AdminAdaptiveFirewall() {
     setSaving(true);
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/adaptive/update-config`,
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/adaptive/update-config`,
         {
           method: 'POST',
           headers: {
-            "Authorization": `Bearer ${publicAnonKey}`,
+            ...getAuthHeaders(),
             "Content-Type": "application/json"
           },
           body: JSON.stringify(tempConfig)
@@ -168,10 +168,10 @@ export function AdminAdaptiveFirewall() {
 
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/adaptive/reset`,
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/adaptive/reset`,
         {
           method: 'POST',
-          headers: { "Authorization": `Bearer ${publicAnonKey}` }
+          headers: getAuthHeaders()
         }
       );
       const data = await res.json();

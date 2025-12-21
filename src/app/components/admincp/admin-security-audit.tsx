@@ -5,19 +5,10 @@ import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
 import { 
   Shield, 
-  ShieldAlert, 
-  ShieldCheck, 
-  AlertTriangle, 
-  XCircle, 
-  CheckCircle,
-  Loader2,
-  Download,
-  History,
-  Zap,
-  FileCode,
+  AlertCircle,
   Bug
 } from "lucide-react";
-import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
+import { backendUrl, getAuthHeaders } from '../../config/backend';
 
 interface SecurityIssue {
   type: string;
@@ -62,8 +53,8 @@ export function AdminSecurityAudit() {
   const loadLastReport = async () => {
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/last-report`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/last-report`,
+        { headers: getAuthHeaders() }
       );
       const data = await res.json();
       if (data.ok && data.report) {
@@ -77,8 +68,8 @@ export function AdminSecurityAudit() {
   const loadHistory = async () => {
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/history`,
-        { headers: { "Authorization": `Bearer ${publicAnonKey}` } }
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/history`,
+        { headers: getAuthHeaders() }
       );
       const data = await res.json();
       if (data.ok) {
@@ -93,13 +84,11 @@ export function AdminSecurityAudit() {
     setLoading(true);
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/audit`,
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/audit`,
         { 
           method: 'POST',
-          headers: { 
-            "Authorization": `Bearer ${publicAnonKey}`,
-            "Content-Type": "application/json"
-          }
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ projectId: 'your-project-id' })
         }
       );
       const data = await res.json();
@@ -120,13 +109,10 @@ export function AdminSecurityAudit() {
     setFixingIssues(true);
     try {
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/security/generate-fixes`,
+        `${backendUrl}/functions/v1/make-server-4169bd43/security/generate-fixes`,
         {
           method: 'POST',
-          headers: { 
-            "Authorization": `Bearer ${publicAnonKey}`,
-            "Content-Type": "application/json"
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ reportId: report?.timestamp })
         }
       );
