@@ -71,8 +71,8 @@ $install['step_list'] = array(
 	array('step_3_database.php', 'Database'),
 	array('step_4_tables.php', 'Criar Tabelas'),
 	array('step_5_admin.php', 'Admin (Opcional)'),
-	array('step_6_config.php', 'Configuração'),
-	array('step_7_complete.php', 'Concluído'),
+	array('step_6_config_v2.php', 'Configuração'),
+	array('step_7_complete_v2.php', 'Concluído'),
 );
 
 /**
