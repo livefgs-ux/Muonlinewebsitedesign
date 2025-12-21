@@ -8,8 +8,33 @@
  */
 
 // Base URL da API (Backend Node.js)
-// NOTA: Alterar para o IP/domínio da VPS em produção
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// MODO 1: Produção com proxy reverso (via .htaccess)
+// MODO 2: Produção com porta 3001 exposta diretamente
+// MODO 3: Desenvolvimento local
+
+// Detectar automaticamente qual modo usar
+const getApiBaseUrl = () => {
+  // Variável de ambiente customizada
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Produção
+  if (import.meta.env.MODE === 'production') {
+    // OPÇÃO 1: Proxy reverso via .htaccess (padrão)
+    // Se não funcionar, altere para OPÇÃO 2 descomentar a linha abaixo
+    return '/api';
+    
+    // OPÇÃO 2: API exposta na porta 3001
+    // Descomente a linha abaixo se o proxy não funcionar:
+    // return 'https://meumu.com:3001/api';
+  }
+  
+  // Desenvolvimento
+  return 'http://localhost:3001/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Flag para modo fallback (desenvolvimento)
 const USE_FALLBACK_DATA = false; // Alterar para true se backend não estiver disponível

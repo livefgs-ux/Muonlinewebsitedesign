@@ -2,6 +2,12 @@
 
 Backend Node.js/Express completo para o servidor privado de Mu Online.
 
+**Status:** ✅ Pronto para produção  
+**Versão:** 1.0.0  
+**Última Atualização:** 21/12/2024
+
+---
+
 ## 📋 Requisitos
 
 - **Node.js** >= 18.0.0
@@ -11,7 +17,41 @@ Backend Node.js/Express completo para o servidor privado de Mu Online.
 
 ---
 
-## 🚀 Instalação Rápida
+## ⚡ INÍCIO RÁPIDO (3 Passos)
+
+### **Passo 1: Instalar Dependências**
+
+```bash
+cd /home/meumu.com/public_html/backend-nodejs
+npm install
+```
+
+### **Passo 2: Configurar .env**
+
+**Opção A: Automático (Recomendado)**
+```bash
+chmod +x setup-env.sh
+./setup-env.sh
+```
+
+**Opção B: Manual**
+```bash
+cp .env.template .env
+nano .env
+# Configure DB_PASSWORD e JWT_SECRET
+```
+
+### **Passo 3: Iniciar Backend**
+
+```bash
+npm start
+```
+
+**Pronto!** Backend rodando em `http://localhost:3001`
+
+---
+
+## 🚀 Instalação Completa
 
 ### 1️⃣ Instalar Node.js na VPS
 
@@ -71,7 +111,7 @@ DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=SUA_SENHA_AQUI
-DB_NAME=MuOnline
+DB_NAME=muonline
 
 # JWT Secret (TROCAR POR UMA CHAVE FORTE!)
 JWT_SECRET=GERE_UMA_CHAVE_ALEATORIA_FORTE_COM_MAIS_DE_32_CARACTERES

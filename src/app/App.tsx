@@ -22,6 +22,7 @@ const LoginSection = lazy(() => import('./components/login-section'));
 const PlayerDashboard = lazy(() => import('./components/player-dashboard'));
 const AdminLogin = lazy(() => import('./components/admin-login'));
 const AdminDashboard = lazy(() => import('./components/admin-dashboard'));
+const Setup = lazy(() => import('../pages/Setup')); // 🧙‍♂️ Setup Wizard
 
 // Skeleton loader component
 const SectionLoader = () => (
@@ -119,6 +120,8 @@ function AppContent() {
         return <NewsSection />;
       case 'admin':
         return <AdminLogin onLoginSuccess={handleAdminLoginSuccess} />;
+      case 'setup':
+        return <Setup />;
       default:
         return <HeroSection onNavigate={setCurrentSection} />;
     }

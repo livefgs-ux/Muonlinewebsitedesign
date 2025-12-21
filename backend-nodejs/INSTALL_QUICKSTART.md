@@ -46,7 +46,7 @@ nano .env
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=SUA_SENHA_MARIADB_AQUI
-DB_NAME=MuOnline
+DB_NAME=muonline
 
 JWT_SECRET=Cole_Aqui_Uma_Chave_Aleatoria_De_64_Caracteres
 

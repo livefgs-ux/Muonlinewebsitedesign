@@ -2,7 +2,7 @@
  * Controller de Informações do Servidor
  */
 
-const { executeQuery } = require('../config/database');
+const { executeQuery, testConnection } = require('../config/database');
 const { tables } = require('../config/auth');
 const { successResponse, errorResponse } = require('../utils/helpers');
 
@@ -79,7 +79,6 @@ const getServerStats = async (req, res) => {
  */
 const getHealthStatus = async (req, res) => {
   try {
-    const { testConnection } = require('../config/database');
     const dbConnected = await testConnection();
     
     return res.status(dbConnected ? 200 : 503).json({

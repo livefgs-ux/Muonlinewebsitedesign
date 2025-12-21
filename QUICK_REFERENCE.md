@@ -228,11 +228,10 @@ muonline_admin_users       # Admins
 ### Backend (.env)
 ```env
 # Database
-DB_HOST=localhost
-DB_PORT=3306
+DB_HOST=127.0.0.1
 DB_USER=root
 DB_PASSWORD=sua_senha
-DB_NAME=MuOnline
+DB_NAME=muonline
 
 # Server
 PORT=3001

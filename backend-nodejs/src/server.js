@@ -25,6 +25,7 @@ const wcoinRoutes = require('./routes/wcoin');
 const eventsRoutes = require('./routes/events');
 const adminLogsRoutes = require('./routes/adminLogs');
 const sandboxRoutes = require('./routes/sandbox');
+const setupRoutes = require('./routes/setup'); // Setup Wizard
 
 // Criar app Express
 const app = express();
@@ -84,7 +85,28 @@ app.use(logger);
 // ==================================
 
 // Health check (sem prefixo /api)
-app.get('/health', serverRoutes);
+app.get('/health', async (req, res) => {
+  try {
+    const { testConnection } = require('./config/database');
+    const dbConnected = await testConnection();
+    
+    return res.status(dbConnected ? 200 : 503).json({
+      success: true,
+      status: dbConnected ? 'healthy' : 'unhealthy',
+      message: 'MeuMU Online API está funcionando!',
+      database: dbConnected ? 'connected' : 'disconnected',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    console.error('❌ Erro no health check:', error);
+    return res.status(503).json({
+      success: false,
+      status: 'unhealthy',
+      error: error.message
+    });
+  }
+});
 
 // Rotas principais
 app.use('/api/auth', authRoutes);
@@ -96,6 +118,9 @@ app.use('/api/wcoin', wcoinRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/admin/logs', adminLogsRoutes);
 app.use('/api/sandbox', sandboxRoutes);
+
+// Setup Wizard (sem /api para evitar conflitos)
+app.use('/setup-api', setupRoutes);
 
 // Rota raiz
 app.get('/', (req, res) => {

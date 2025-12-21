@@ -1,17 +1,130 @@
-# 🎮 MeuMU Online - CMS Completo para Servidor Privado
+# 🎮 MeuMU Online - Season 19-2-3 Épico
 
-<div align="center">
+## 🚀 **DEPLOY DE PRODUÇÃO**
 
-![MeuMU Online](https://img.shields.io/badge/Season-19--2--3%20%C3%89pico-FFB800?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-1.0.0-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
+### **Comando único:**
+```bash
+cd /home/meumu.com/public_html
+bash deploy-production.sh
+```
 
-**Sistema completo de gerenciamento para servidores privados de Mu Online**
+**O que faz:**
+1. ✅ `npm run build` - Compila o frontend
+2. ✅ Copia `/dist` para raiz pública
+3. ✅ Remove arquivos de desenvolvimento
+4. ✅ Reinicia servidor web
 
-[Documentação](#-documentação) • [Instalação](#-instalação-rápida) • [Status](#-status-atual)
+**Resultado:** Site acessível em `https://meumu.com`
 
-</div>
+---
+
+## ⚠️ **IMPORTANTE - PRODUÇÃO vs DESENVOLVIMENTO**
+
+### **✅ PRODUÇÃO (CORRETO):**
+```
+https://meumu.com → Apache/Nginx serve /dist compilado
+Backend → PM2 rodando Node.js na porta 3001
+```
+
+### **❌ DESENVOLVIMENTO (NUNCA EM PRODUÇÃO):**
+```
+http://localhost:5173 → Vite dev server
+Expõe .tsx, /src → INSEGURO
+```
+
+**Regra de ouro:**
+> Em produção, o navegador NUNCA deve ver:
+> - Arquivos `.tsx`
+> - Diretório `/src`  
+> - Porta 5173
+> - Vite dev server
+
+---
+
+## 📋 **SCRIPTS DISPONÍVEIS**
+
+| Script | Uso | Comando |
+|--------|-----|---------|
+| `deploy-production.sh` | **Deploy de produção** | `bash deploy-production.sh` |
+| `start.sh` | Menu interativo | `bash start.sh` |
+| `diagnostico.sh` | Diagnóstico do sistema | `bash diagnostico.sh` |
+| `stop.sh` | Parar serviços | `bash stop.sh` |
+
+---
+
+## 🌐 **ACESSAR O SITE**
+
+### **✅ PRODUÇÃO:**
+```
+https://meumu.com
+```
+
+### **🛠️ DESENVOLVIMENTO (apenas local):**
+```bash
+npm run dev
+# Acesse: http://localhost:5173
+```
+
+---
+
+## 📊 **VERIFICAR STATUS**
+
+```bash
+# Backend
+pm2 status
+pm2 logs meumu-backend
+
+# Testar API
+curl http://localhost:3001/health
+
+# Ver arquivos deployados
+ls -la /home/meumu.com/public_html
+```
+
+---
+
+## ✅ **VERIFICAÇÃO PÓS-DEPLOY**
+
+Após o deploy, verifique:
+
+1. **Acesse:** `https://meumu.com`
+2. **F12 → Sources:**
+   - ✅ Deve ver: `/assets/index-XXXXX.js`
+   - ❌ NÃO deve ver: `/src`, `.tsx`
+3. **Console (F12):**
+   - ✅ Sem erros de MIME type
+   - ✅ Sem erros 404
+
+---
+
+## 🐛 **TROUBLESHOOTING**
+
+### **Erro: MIME type "text/html"**
+```bash
+# Causa: index.html de dev está sendo servido
+# Solução:
+cd /home/meumu.com/public_html
+rm index.html
+cp dist/index.html .
+sudo systemctl restart lsws
+```
+
+### **Backend não responde**
+```bash
+# Verificar
+pm2 logs meumu-backend
+
+# Reiniciar
+pm2 restart meumu-backend
+```
+
+---
+
+## 📚 **DOCUMENTAÇÃO COMPLETA**
+
+- [DEPLOY_PRODUCAO.md](./DEPLOY_PRODUCAO.md) - Guia completo de deploy
+- [STATUS_FINAL_21DEC.md](./STATUS_FINAL_21DEC.md) - Status do projeto
+- [BUILD_GUIDE.md](./BUILD_GUIDE.md) - Guia de build
 
 ---
 

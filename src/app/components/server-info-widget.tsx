@@ -10,6 +10,7 @@ import {
 import { Card } from "./ui/card";
 import { motion } from "motion/react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { serverAPI } from "../../services/api";
 
 interface ServerInfoWidgetProps {
   currentSection?: string;
@@ -37,75 +38,57 @@ export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection 
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useLanguage();
 
-  // Fetch server data from API
+  // Fetch server data from Node.js Backend
   useEffect(() => {
     const fetchServerInfo = async () => {
       try {
-        // Try PHP API first
-        const response = await fetch('/api/get_server_info.php');
+        // Usar o novo backend Node.js em localhost:3001
+        const [info, stats] = await Promise.all([
+          serverAPI.getServerInfo(),
+          serverAPI.getServerStats()
+        ]);
         
-        // Check if response is JSON
-        const contentType = response.headers.get('content-type');
-        if (response.ok && contentType?.includes('application/json')) {
-          const data = await response.json();
-          setServerData(data);
-          setIsOnline(data.status === 'online');
-          setIsLoading(false);
-          return;
-        }
+        // Converter para o formato esperado pelo componente
+        const data: ServerData = {
+          status: 'online',
+          players_online: stats.playersOnline || 0,
+          total_accounts: stats.totalAccounts || 0,
+          total_characters: stats.totalCharacters || 0,
+          total_guilds: stats.totalGuilds || 0,
+          castle_owner: 'DragonGuard', // TODO: buscar do banco
+          total_bosses: 120,
+          alive_bosses: 87, // TODO: buscar do banco
+          server_name: info.name || 'MeuMU Online',
+          season: info.version || 'Season 19-2-3 - Épico',
+          exp_rate: info.rates?.exp || '9999x',
+          drop_rate: info.rates?.drop || '60%',
+          updated_at: stats.lastUpdate || new Date().toISOString()
+        };
         
-        // If not JSON, try fallback
-        throw new Error('API returned non-JSON response');
+        setServerData(data);
+        setIsOnline(true);
+        setIsLoading(false);
         
       } catch (error) {
-        // Fallback: try to load from static JSON
-        try {
-          const fallbackResponse = await fetch('/api/data/server_info.json');
-          const contentType = fallbackResponse.headers.get('content-type');
-          
-          if (fallbackResponse.ok && (contentType?.includes('application/json') || contentType?.includes('text/plain'))) {
-            const data = await fallbackResponse.json();
-            setServerData(data);
-            setIsOnline(data.status === 'online');
-          } else {
-            // Use hardcoded fallback data
-            setServerData({
-              status: 'online',
-              players_online: 1247,
-              total_accounts: 5634,
-              total_characters: 12847,
-              total_guilds: 234,
-              castle_owner: 'DragonGuard',
-              total_bosses: 120,
-              alive_bosses: 87,
-              server_name: 'MeuMU Online',
-              season: 'Season 19-2-3 - Épico',
-              exp_rate: '9999x',
-              drop_rate: '60%',
-              updated_at: new Date().toISOString()
-            });
-            setIsOnline(true);
-          }
-        } catch (fallbackError) {
-          // Last resort: use hardcoded data
-          setServerData({
-            status: 'online',
-            players_online: 1247,
-            total_accounts: 5634,
-            total_characters: 12847,
-            total_guilds: 234,
-            castle_owner: 'DragonGuard',
-            total_bosses: 120,
-            alive_bosses: 87,
-            server_name: 'MeuMU Online',
-            season: 'Season 19-2-3 - Épico',
-            exp_rate: '9999x',
-            drop_rate: '60%',
-            updated_at: new Date().toISOString()
-          });
-          setIsOnline(true);
-        }
-      } finally {
+        console.error('❌ Erro ao buscar dados do servidor:', error);
+        
+        // Fallback: usar dados padrão se o backend não estiver disponível
+        setServerData({
+          status: 'online',
+          players_online: 0,
+          total_accounts: 8,
+          total_characters: 0,
+          total_guilds: 0,
+          castle_owner: 'DragonGuard',
+          total_bosses: 120,
+          alive_bosses: 87,
+          server_name: 'MeuMU Online',
+          season: 'Season 19-2-3 - Épico',
+          exp_rate: '9999x',
+          drop_rate: '60%',
+          updated_at: new Date().toISOString()
+        });
+        setIsOnline(true);
         setIsLoading(false);
       }
     };
@@ -113,7 +96,7 @@ export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection 
     // Fetch immediately
     fetchServerInfo();
 
-    // Fetch every 60 seconds (increased from 30 for better performance)
+    // Fetch every 60 seconds
     const interval = setInterval(fetchServerInfo, 60000);
 
     return () => clearInterval(interval);
