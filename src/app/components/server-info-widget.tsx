@@ -121,8 +121,8 @@ export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection 
 
   const serverInfo = useMemo(() => [
     { 
-      label: t('common.season').split(' ')[0], // "Season"
-      value: serverData?.season.split(' - ')[0] || "Season 19-2-3", 
+      label: t('common.season')?.split(' ')[0] || 'Season', // "Season" - safe navigation
+      value: serverData?.season?.split(' - ')[0] || "Season 19-2-3", 
       icon: Server 
     },
     { 

@@ -92,6 +92,11 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
    */
   const t = (key: string): string => {
     try {
+      // Ensure we have a valid language before attempting translation
+      if (!language || !translations[language]) {
+        return key;
+      }
+      
       const translation = getNestedValue(translations[language], key);
       
       // Debug mode: log missing translations in development (only after initialization)
