@@ -99,37 +99,12 @@ if(isset($_POST['install_final'])) {
 		$backendStarted = false;
 		$backendError = null;
 		
-		// Verificar se node_modules existe
-		if(!is_dir($backendPath . '/node_modules')) {
-			exec("cd {$backendPath} && npm install 2>&1", $npmOutput, $npmCode);
-			if($npmCode !== 0) {
-				$backendError = 'npm install falhou. Execute manualmente: cd backend-nodejs && npm install';
-			}
-		}
-		
-		if($backendMode === 'pm2' && !$backendError) {
-			exec('which pm2 2>&1', $pm2Check, $pm2Code);
-			if($pm2Code !== 0) {
-				exec('npm install -g pm2 2>&1', $pm2Install, $pm2InstallCode);
-				if($pm2InstallCode !== 0) {
-					$backendError = 'PM2 não instalado. Instale com: npm install -g pm2';
-				}
-			}
-			
-			if(!$backendError) {
-				exec("cd {$backendPath} && pm2 delete meumu-backend 2>/dev/null && pm2 start src/server.js --name meumu-backend && pm2 save 2>&1", $pm2Output, $pm2StartCode);
-				$backendStarted = ($pm2StartCode === 0);
-				if(!$backendStarted) {
-					$backendError = 'Erro ao iniciar PM2. Tente manualmente: cd backend-nodejs && pm2 start src/server.js --name meumu-backend';
-				}
-			}
-		} elseif($backendMode === 'standalone' && !$backendError) {
-			exec("cd {$backendPath} && nohup node src/server.js > /dev/null 2>&1 & echo $!", $nodeOutput);
-			$backendStarted = true;
-		}
+		// REMOVIDO: Tentativa automática de npm install e pm2
+		// O usuário deve iniciar o backend manualmente
+		$backendError = 'Backend não iniciado automaticamente. Execute manualmente: cd backend-nodejs && npm install && npm start';
 		
 		$_SESSION['install_final_success'] = true;
-		$_SESSION['install_backend_started'] = $backendStarted;
+		$_SESSION['install_backend_started'] = false;
 		$_SESSION['install_backend_error'] = $backendError;
 		$_SESSION['install_site_url'] = $siteUrl;
 		
@@ -154,6 +129,17 @@ $backendMode = 'pm2';
 <p>Última etapa! Configure a URL do site e o modo de execução do backend.</p>
 
 <br>
+
+<div class="alert alert-warning">
+	<span>⚠️</span>
+	<div>
+		<strong>Importante:</strong><br>
+		O instalador irá criar os arquivos de configuração (<code>.env</code> e <code>config.php</code>), mas o backend Node.js precisa ser iniciado MANUALMENTE após a instalação.
+		<br><br>
+		<strong>Comandos para iniciar o backend:</strong><br>
+		<code>cd backend-nodejs && npm install && npm start</code>
+	</div>
+</div>
 
 <?php
 // Mostrar erro
