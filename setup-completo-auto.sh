@@ -359,71 +359,345 @@ echo -e "${BLUE}║  PASSO 5: Iniciar Backend Node.js                           
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# Verificar se já está rodando
-if netstat -tuln 2>/dev/null | grep -q ':3001 '; then
-    echo -e "${YELLOW}⚠️  Backend já está rodando na porta 3001${NC}"
-    
-    if command -v pm2 &> /dev/null; then
-        echo -e "${CYAN}Reiniciando...${NC}"
-        pm2 restart meumu-backend 2>/dev/null || pm2 start "${BACKEND_TARGET}/src/server.js" --name meumu-backend
+cd "$BACKEND_TARGET" || exit 1
+
+# ═══════════════════════════════════════════════════════════════
+# 5.1: PARAR PROCESSOS ANTERIORES
+# ═══════════════════════════════════════════════════════════════
+
+echo -e "${CYAN}5.1 Limpando processos anteriores...${NC}"
+
+# Parar PM2
+if command -v pm2 &> /dev/null; then
+    pm2 delete meumu-backend 2>/dev/null || true
+    pm2 kill 2>/dev/null || true
+fi
+
+# Matar processos Node.js na porta 3001
+if lsof -ti:3001 &> /dev/null; then
+    echo -e "${YELLOW}⚠️  Matando processos na porta 3001...${NC}"
+    kill -9 $(lsof -ti:3001) 2>/dev/null || true
+    sleep 2
+fi
+
+echo -e "${GREEN}✅ Processos limpos${NC}"
+echo ""
+
+# ═══════════════════════════════════════════════════════════════
+# 5.2: VERIFICAR CONEXÃO MYSQL
+# ═══════════════════════════════════════════════════════════════
+
+echo -e "${CYAN}5.2 Testando conexão MySQL...${NC}"
+
+# Carregar variáveis do .env
+source .env 2>/dev/null || true
+
+if command -v mysql &> /dev/null; then
+    if [ -n "$DB_HOST" ] && [ -n "$DB_USER" ] && [ -n "$DB_PASSWORD" ] && [ -n "$DB_NAME" ]; then
+        if mysql -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" -e "USE $DB_NAME;" 2>/dev/null; then
+            echo -e "${GREEN}✅ Conexão MySQL OK (database: $DB_NAME)${NC}"
+        else
+            echo -e "${RED}❌ ERRO DE CONEXÃO MYSQL!${NC}"
+            echo ""
+            echo -e "${YELLOW}Verifique no .env:${NC}"
+            echo -e "  • DB_HOST=${DB_HOST:-não definido}"
+            echo -e "  • DB_USER=${DB_USER:-não definido}"
+            echo -e "  • DB_NAME=${DB_NAME:-não definido}"
+            echo ""
+            echo -e "${YELLOW}Teste manual:${NC}"
+            echo -e "${CYAN}mysql -h${DB_HOST} -u${DB_USER} -p${DB_PASSWORD} -e 'SHOW DATABASES;'${NC}"
+            echo ""
+            read -p "Continuar mesmo assim? (s/N): " FORCE_CONTINUE
+            if [[ ! "$FORCE_CONTINUE" =~ ^[Ss]$ ]]; then
+                exit 1
+            fi
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Variáveis MySQL não configuradas no .env${NC}"
     fi
-    
-    echo -e "${GREEN}✅ Backend rodando${NC}"
 else
-    # Instalar PM2 se não existir
-    if ! command -v pm2 &> /dev/null; then
-        echo -e "${YELLOW}PM2 não instalado. Instalando...${NC}"
-        sudo npm install -g pm2 || { echo -e "${RED}❌ Erro ao instalar PM2!${NC}"; exit 1; }
-        echo -e "${GREEN}✅ PM2 instalado!${NC}"
-    fi
-    
-    echo -e "${CYAN}Iniciando backend com PM2...${NC}"
-    cd "$BACKEND_TARGET" || exit 1
-    
-    pm2 delete meumu-backend 2>/dev/null
-    pm2 start src/server.js --name meumu-backend || { 
-        echo -e "${RED}❌ Erro ao iniciar backend!${NC}"
-        echo ""
-        echo -e "${YELLOW}Verificando erro...${NC}"
-        node src/server.js
-        exit 1
-    }
-    
-    pm2 save
-    
-    # Configurar PM2 para iniciar no boot
-    pm2 startup 2>/dev/null || true
-    
-    echo -e "${GREEN}✅ Backend iniciado!${NC}"
-    
-    cd "$DEPLOY_DIR" || exit 1
+    echo -e "${YELLOW}⚠️  MySQL client não instalado (pulando teste)${NC}"
 fi
 
 echo ""
-echo -e "${CYAN}Aguardando backend inicializar...${NC}"
-sleep 3
 
-# Testar backend
-echo -e "${CYAN}Testando backend...${NC}"
-HEALTH=$(curl -s http://localhost:3001/health 2>/dev/null)
+# ═══════════════════════════════════════════════════════════════
+# 5.3: TESTAR BACKEND MANUALMENTE (SEM PM2)
+# ═══════════════════════════════════════════════════════════════
 
-if echo "$HEALTH" | grep -q '"status"'; then
-    echo -e "${GREEN}✅ Backend respondendo corretamente!${NC}"
-    echo -e "${CYAN}Resposta: ${HEALTH:0:100}...${NC}"
+echo -e "${CYAN}5.3 Testando backend manualmente...${NC}"
+echo -e "${YELLOW}    (timeout: 10 segundos)${NC}"
+echo ""
+
+# Rodar em background com timeout
+timeout 10s node src/server.js > /tmp/backend-test.log 2>&1 &
+TEST_PID=$!
+
+# Aguardar servidor iniciar
+sleep 5
+
+# Verificar se ainda está rodando
+if ps -p $TEST_PID > /dev/null 2>&1; then
+    echo -e "${GREEN}✅ Backend rodou por 5 segundos sem crashar${NC}"
+    
+    # Testar API
+    echo -e "${CYAN}Testando API...${NC}"
+    TEST_HEALTH=$(curl -s http://localhost:3001/api/server/health 2>/dev/null)
+    
+    if echo "$TEST_HEALTH" | grep -q "healthy"; then
+        echo -e "${GREEN}✅✅ API RESPONDENDO CORRETAMENTE!${NC}"
+        echo -e "${CYAN}Resposta: ${TEST_HEALTH:0:150}${NC}"
+        
+        # Matar teste
+        kill $TEST_PID 2>/dev/null || true
+        wait $TEST_PID 2>/dev/null || true
+        
+        BACKEND_OK=true
+    else
+        echo -e "${RED}❌ Backend rodou mas API não respondeu corretamente${NC}"
+        echo -e "${YELLOW}Resposta: ${TEST_HEALTH:0:200}${NC}"
+        
+        kill $TEST_PID 2>/dev/null || true
+        wait $TEST_PID 2>/dev/null || true
+        
+        BACKEND_OK=false
+    fi
 else
-    echo -e "${RED}❌ Backend não está respondendo!${NC}"
+    echo -e "${RED}❌❌ BACKEND CRASHOU EM MENOS DE 5 SEGUNDOS!${NC}"
     echo ""
-    echo -e "${YELLOW}Logs do PM2:${NC}"
-    pm2 logs meumu-backend --lines 30 --nostream
+    echo -e "${YELLOW}═════════════════ ERRO DO BACKEND ═════════════════${NC}"
+    cat /tmp/backend-test.log 2>/dev/null || echo "Nenhum log disponível"
+    echo -e "${YELLOW}════════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "${YELLOW}Verifique:${NC}"
-    echo -e "  • ${CYAN}.env está configurado corretamente${NC}"
-    echo -e "  • ${CYAN}MySQL está rodando${NC}"
-    echo -e "  • ${CYAN}Credenciais do banco estão corretas${NC}"
+    
+    BACKEND_OK=false
+fi
+
+echo ""
+
+# ═══════════════════════════════════════════════════════════════
+# 5.4: DIAGNÓSTICO E CORREÇÃO AUTOMÁTICA
+# ═══════════════════════════════════════════════════════════════
+
+if [ "$BACKEND_OK" = false ]; then
+    echo -e "${RED}${BOLD}⚠️  BACKEND NÃO ESTÁ FUNCIONANDO!${NC}"
+    echo ""
+    echo -e "${CYAN}Executando diagnóstico automático...${NC}"
+    echo ""
+    
+    # Análise dos logs
+    LOG_CONTENT=$(cat /tmp/backend-test.log 2>/dev/null || echo "")
+    
+    # Problema 1: Módulos faltando
+    if echo "$LOG_CONTENT" | grep -qi "cannot find module"; then
+        echo -e "${YELLOW}🔍 Detectado: Módulos Node.js faltando${NC}"
+        echo -e "${CYAN}Reinstalando dependências...${NC}"
+        
+        rm -rf node_modules package-lock.json
+        npm install
+        
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✅ Dependências reinstaladas!${NC}"
+            echo -e "${CYAN}Testando novamente...${NC}"
+            
+            timeout 10s node src/server.js > /tmp/backend-test.log 2>&1 &
+            TEST_PID=$!
+            sleep 5
+            
+            if ps -p $TEST_PID > /dev/null 2>&1; then
+                TEST_HEALTH=$(curl -s http://localhost:3001/api/server/health 2>/dev/null)
+                if echo "$TEST_HEALTH" | grep -q "healthy"; then
+                    echo -e "${GREEN}✅ CORRIGIDO! Backend funcionando após reinstalação!${NC}"
+                    kill $TEST_PID 2>/dev/null || true
+                    wait $TEST_PID 2>/dev/null || true
+                    BACKEND_OK=true
+                else
+                    kill $TEST_PID 2>/dev/null || true
+                    wait $TEST_PID 2>/dev/null || true
+                fi
+            fi
+        fi
+    fi
+    
+    # Problema 2: Erro de conexão MySQL
+    if echo "$LOG_CONTENT" | grep -qi "ECONNREFUSED\|ER_ACCESS_DENIED\|authentication\|mysql"; then
+        echo -e "${YELLOW}🔍 Detectado: Erro de conexão MySQL${NC}"
+        echo ""
+        echo -e "${RED}❌ O backend não consegue conectar ao MySQL!${NC}"
+        echo ""
+        echo -e "${YELLOW}Verifique:${NC}"
+        echo -e "  1. ${CYAN}MySQL está rodando?${NC}"
+        echo -e "     ${BOLD}systemctl status mysql${NC}"
+        echo ""
+        echo -e "  2. ${CYAN}Credenciais no .env estão corretas?${NC}"
+        echo -e "     ${BOLD}nano ${ENV_FILE}${NC}"
+        echo ""
+        echo -e "  3. ${CYAN}Database existe?${NC}"
+        echo -e "     ${BOLD}mysql -e 'SHOW DATABASES;'${NC}"
+        echo ""
+        
+        BACKEND_OK=false
+    fi
+    
+    # Problema 3: Porta já em uso
+    if echo "$LOG_CONTENT" | grep -qi "EADDRINUSE\|port.*already in use"; then
+        echo -e "${YELLOW}🔍 Detectado: Porta 3001 já em uso${NC}"
+        echo -e "${CYAN}Matando processo na porta 3001...${NC}"
+        
+        kill -9 $(lsof -ti:3001) 2>/dev/null || true
+        sleep 2
+        
+        echo -e "${GREEN}✅ Porta liberada!${NC}"
+        echo -e "${CYAN}Testando novamente...${NC}"
+        
+        timeout 10s node src/server.js > /tmp/backend-test.log 2>&1 &
+        TEST_PID=$!
+        sleep 5
+        
+        if ps -p $TEST_PID > /dev/null 2>&1; then
+            TEST_HEALTH=$(curl -s http://localhost:3001/api/server/health 2>/dev/null)
+            if echo "$TEST_HEALTH" | grep -q "healthy"; then
+                echo -e "${GREEN}✅ CORRIGIDO! Backend funcionando!${NC}"
+                kill $TEST_PID 2>/dev/null || true
+                wait $TEST_PID 2>/dev/null || true
+                BACKEND_OK=true
+            else
+                kill $TEST_PID 2>/dev/null || true
+                wait $TEST_PID 2>/dev/null || true
+            fi
+        fi
+    fi
+    
+    # Problema 4: .env faltando ou corrompido
+    if echo "$LOG_CONTENT" | grep -qi "undefined\|null.*env"; then
+        echo -e "${YELLOW}🔍 Detectado: Problema no arquivo .env${NC}"
+        echo ""
+        echo -e "${RED}❌ Arquivo .env pode estar incompleto ou corrompido!${NC}"
+        echo ""
+        echo -e "${YELLOW}Edite o .env e configure todas as variáveis:${NC}"
+        echo -e "${CYAN}nano ${ENV_FILE}${NC}"
+        echo ""
+        
+        BACKEND_OK=false
+    fi
+    
+    echo ""
+    
+    # Se ainda não funcionou
+    if [ "$BACKEND_OK" = false ]; then
+        echo -e "${RED}${BOLD}╔══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${RED}${BOLD}║  ❌ BACKEND NÃO PODE SER INICIADO AUTOMATICAMENTE ❌        ║${NC}"
+        echo -e "${RED}${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${YELLOW}Logs completos do erro:${NC}"
+        echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
+        cat /tmp/backend-test.log 2>/dev/null || echo "Nenhum log"
+        echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
+        echo ""
+        echo -e "${CYAN}Para debugar manualmente:${NC}"
+        echo -e "  ${BOLD}cd ${BACKEND_TARGET}${NC}"
+        echo -e "  ${BOLD}node src/server.js${NC}"
+        echo ""
+        echo -e "${CYAN}Ver configuração:${NC}"
+        echo -e "  ${BOLD}cat ${ENV_FILE}${NC}"
+        echo ""
+        exit 1
+    fi
+fi
+
+echo ""
+
+# ═══════════════════════════════════════════════════════════════
+# 5.5: INICIAR COM PM2
+# ═══════════════════════════════════════════════════════════════
+
+echo -e "${CYAN}5.5 Iniciando com PM2...${NC}"
+
+# Instalar PM2 se não existir
+if ! command -v pm2 &> /dev/null; then
+    echo -e "${YELLOW}PM2 não instalado. Instalando...${NC}"
+    sudo npm install -g pm2 || { echo -e "${RED}❌ Erro ao instalar PM2!${NC}"; exit 1; }
+    echo -e "${GREEN}✅ PM2 instalado!${NC}"
+fi
+
+# Limpar PM2
+pm2 delete all 2>/dev/null || true
+
+# Iniciar UMA ÚNICA instância (não cluster!)
+echo -e "${CYAN}Iniciando backend...${NC}"
+pm2 start src/server.js --name meumu-backend --instances 1 --max-memory-restart 500M
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ PM2 falhou ao iniciar!${NC}"
     exit 1
 fi
 
+# Salvar configuração
+pm2 save > /dev/null 2>&1
+
+# Configurar para iniciar no boot
+pm2 startup > /dev/null 2>&1 || true
+
+echo -e "${GREEN}✅ Backend iniciado com PM2!${NC}"
 echo ""
+
+# Aguardar inicializar
+echo -e "${CYAN}Aguardando 3 segundos...${NC}"
+sleep 3
+
+# ═══════════════════════════════════════════════════════════════
+# 5.6: VERIFICAÇÃO FINAL
+# ═══════════════════════════════════════════════════════════════
+
+echo -e "${CYAN}5.6 Verificação final...${NC}"
+echo ""
+
+# Verificar status PM2
+PM2_STATUS=$(pm2 jlist 2>/dev/null)
+
+if echo "$PM2_STATUS" | grep -q '"status":"online"'; then
+    echo -e "${GREEN}✅ PM2 Status: ONLINE${NC}"
+else
+    echo -e "${RED}❌ PM2 Status: ERRO${NC}"
+    echo ""
+    pm2 status
+    echo ""
+    echo -e "${YELLOW}Logs:${NC}"
+    pm2 logs meumu-backend --lines 30 --nostream
+    exit 1
+fi
+
+# Testar API final
+FINAL_HEALTH=$(curl -s http://localhost:3001/api/server/health 2>/dev/null)
+
+if echo "$FINAL_HEALTH" | grep -q "healthy"; then
+    echo -e "${GREEN}✅ API Health Check: OK${NC}"
+    echo -e "${CYAN}   Resposta: ${FINAL_HEALTH:0:100}${NC}"
+else
+    echo -e "${RED}❌ API não está respondendo!${NC}"
+    echo -e "${YELLOW}Resposta: ${FINAL_HEALTH}${NC}"
+    echo ""
+    echo -e "${YELLOW}Logs PM2:${NC}"
+    pm2 logs meumu-backend --lines 30 --nostream
+    exit 1
+fi
+
+# Testar endpoint de info
+FINAL_INFO=$(curl -s http://localhost:3001/api/server/info 2>/dev/null)
+
+if echo "$FINAL_INFO" | grep -q "success"; then
+    echo -e "${GREEN}✅ API Info: OK${NC}"
+else
+    echo -e "${YELLOW}⚠️  API Info não respondeu (pode ser normal)${NC}"
+fi
+
+echo ""
+echo -e "${GREEN}${BOLD}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}${BOLD}║          ✅✅ BACKEND 100% FUNCIONANDO! ✅✅               ║${NC}"
+echo -e "${GREEN}${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+
+cd "$DEPLOY_DIR" || exit 1
 
 # ═══════════════════════════════════════════════════════════════
 # PASSO 6: CONFIGURAR PROXY REVERSO

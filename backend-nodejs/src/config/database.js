@@ -20,8 +20,8 @@ const poolMU = mysql.createPool({
   connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
   queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-  family: 4 // Forçar IPv4
+  keepAliveInitialDelay: 0
+  // Removido: family: 4 (não é opção válida no MySQL2)
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -38,8 +38,8 @@ const poolWEB = mysql.createPool({
   connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
   queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-  family: 4 // Forçar IPv4
+  keepAliveInitialDelay: 0
+  // Removido: family: 4 (não é opção válida no MySQL2)
 });
 
 // ═══════════════════════════════════════════════════════════════════
