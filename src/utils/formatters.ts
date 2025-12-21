@@ -21,6 +21,35 @@ export function formatCurrency(num: number, currency: string = 'BRL'): string {
 }
 
 /**
+ * Formata moeda de acordo com o idioma selecionado
+ * @param num - Valor numérico a ser formatado
+ * @param language - Código do idioma (pt-BR, en, es, de, zh, ru, fil, vi)
+ * @returns String formatada com moeda localizada
+ */
+export function formatLocalizedCurrency(num: number, language: string = 'pt-BR'): string {
+  // Mapeamento de idioma para locale e moeda
+  const currencyMap: Record<string, { locale: string; currency: string }> = {
+    'pt-BR': { locale: 'pt-BR', currency: 'BRL' }, // Real brasileiro
+    'en': { locale: 'en-US', currency: 'USD' },     // Dólar americano
+    'es': { locale: 'es-ES', currency: 'EUR' },     // Euro
+    'de': { locale: 'de-DE', currency: 'EUR' },     // Euro
+    'zh': { locale: 'zh-CN', currency: 'CNY' },     // Yuan chinês
+    'ru': { locale: 'ru-RU', currency: 'RUB' },     // Rublo russo
+    'fil': { locale: 'fil-PH', currency: 'PHP' },   // Peso filipino
+    'vi': { locale: 'vi-VN', currency: 'VND' },     // Dong vietnamita
+  };
+
+  const config = currencyMap[language] || currencyMap['pt-BR'];
+  
+  return new Intl.NumberFormat(config.locale, {
+    style: 'currency',
+    currency: config.currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(num);
+}
+
+/**
  * Formata data em formato pt-BR
  */
 export function formatDate(date: Date | string, format: 'short' | 'long' | 'time' = 'short'): string {

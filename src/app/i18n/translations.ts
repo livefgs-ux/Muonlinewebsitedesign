@@ -141,6 +141,9 @@ export interface Translations {
     latestNews: string;
     noNews: string;
     viewAllNews: string; // ← ADICIONAR ESTE
+    close: string; // ← NOVO para modal
+    relatedLinks: string; // ← NOVO para modal
+    moreLinks: string; // ← NOVO para preview de links
   };
   // Login/Register
   auth: {
@@ -273,6 +276,7 @@ export interface Translations {
     search: string;
     filter: string;
     season: string;
+    retry: string;
   };
   // AdminCP
   admincp: {
@@ -457,6 +461,19 @@ export const translations: Record<Language, Translations> = {
       happeningNow: 'Acontecendo Agora!',
       everyXHours: 'A cada {hours} horas',
       saturdaysAt: 'Sábados {time}',
+      serverTime: 'Horário do Servidor',
+      liveEvents: '🔥 Eventos Ao Vivo',
+      every2Hours: 'A cada 2 horas',
+      every3Hours: 'A cada 3 horas',
+      every4Hours: 'A cada 4 horas',
+      every: 'A cada',
+      daily: 'Diário',
+      weekly: 'Semanal',
+      specific: 'Específico',
+      nextEventIn: 'Próximo evento em:',
+      rewards: 'Recompensas',
+      tip: 'Dica',
+      tipMessage: 'Todos os horários seguem o horário de Brasília (BRT/BRST). Prepare-se com antecedência para maximizar suas recompensas!',
     },
     downloads: {
       title: 'Downloads',
@@ -520,6 +537,9 @@ export const translations: Record<Language, Translations> = {
       latestNews: 'Últimas Notícias',
       noNews: 'Nenhuma notícia disponível no momento.',
       viewAllNews: 'Ver Todas as Notícias',
+      close: 'Fechar',
+      relatedLinks: 'Links Relacionados',
+      moreLinks: 'mais links',
     },
     auth: {
       login: 'Entrar',
@@ -560,6 +580,7 @@ export const translations: Record<Language, Translations> = {
       search: 'Buscar',
       filter: 'Filtrar',
       season: 'Season 19-2-3 Epic Server',
+      retry: 'Tentar Novamente',
     },
     admincp: {
       // Navigation
@@ -741,6 +762,19 @@ export const translations: Record<Language, Translations> = {
       happeningNow: 'Happening Now!',
       everyXHours: 'Every {hours} hours',
       saturdaysAt: 'Saturdays {time}',
+      serverTime: 'Server Time',
+      liveEvents: '🔥 Live Events',
+      every2Hours: 'Every 2 hours',
+      every3Hours: 'Every 3 hours',
+      every4Hours: 'Every 4 hours',
+      every: 'Every',
+      daily: 'Daily',
+      weekly: 'Weekly',
+      specific: 'Specific',
+      nextEventIn: 'Next event in:',
+      rewards: 'Rewards',
+      tip: 'Tip',
+      tipMessage: 'All times follow Brasília time (BRT/BRST). Prepare in advance to maximize your rewards!',
     },
     downloads: {
       title: 'Downloads',
@@ -804,6 +838,9 @@ export const translations: Record<Language, Translations> = {
       latestNews: 'Latest News',
       noNews: 'No news available at the moment.',
       viewAllNews: 'View All News',
+      close: 'Close',
+      relatedLinks: 'Related Links',
+      moreLinks: 'more links',
     },
     auth: {
       login: 'Login',
@@ -844,6 +881,7 @@ export const translations: Record<Language, Translations> = {
       search: 'Search',
       filter: 'Filter',
       season: 'Season 19-2-3 Epic Server',
+      retry: 'Retry',
     },
     admincp: {
       // Navigation
@@ -1025,6 +1063,19 @@ export const translations: Record<Language, Translations> = {
       happeningNow: '¡Sucediendo Ahora!',
       everyXHours: 'Cada {hours} horas',
       saturdaysAt: 'Sábados {time}',
+      serverTime: 'Hora del Servidor',
+      liveEvents: '🔥 Eventos en Vivo',
+      every2Hours: 'Cada 2 horas',
+      every3Hours: 'Cada 3 horas',
+      every4Hours: 'Cada 4 horas',
+      every: 'Cada',
+      daily: 'Diario',
+      weekly: 'Semanal',
+      specific: 'Específico',
+      nextEventIn: 'Próximo evento en:',
+      rewards: 'Recompensas',
+      tip: 'Consejo',
+      tipMessage: 'Todos los horarios siguen la hora de Brasília (BRT/BRST). ¡Prepárate con anticipación para maximizar tus recompensas!',
     },
     downloads: {
       title: 'Descargas',
@@ -1086,6 +1137,9 @@ export const translations: Record<Language, Translations> = {
       latestNews: 'Últimas Noticias',
       noNews: 'No hay noticias disponibles en este momento.',
       viewAllNews: 'Ver Todas las Noticias',
+      close: 'Cerrar',
+      relatedLinks: 'Enlaces Relacionados',
+      moreLinks: 'más enlaces',
     },
     auth: {
       login: 'Iniciar Sesión',
@@ -1126,6 +1180,7 @@ export const translations: Record<Language, Translations> = {
       search: 'Buscar',
       filter: 'Filtrar',
       season: 'Season 19-2-3 Servidor Épico',
+      retry: 'Reintentar',
     },
     admincp: admincpTranslations.es,
   },
@@ -1257,6 +1312,9 @@ export const translations: Record<Language, Translations> = {
       latestNews: 'Neueste Nachrichten',
       noNews: 'Derzeit keine Nachrichten verfügbar.',
       viewAllNews: 'Alle Nachrichten anzeigen',
+      close: 'Schließen',
+      relatedLinks: 'Verwandte Links',
+      moreLinks: 'weitere Links',
     },
     auth: {
       login: 'Anmelden',
@@ -1297,6 +1355,7 @@ export const translations: Record<Language, Translations> = {
       search: 'Suchen',
       filter: 'Filter',
       season: 'Season 19-2-3 Epic Server',
+      retry: 'Wiederholen',
     },
     admincp: admincpTranslations.de,
   },
@@ -1428,6 +1487,9 @@ export const translations: Record<Language, Translations> = {
       latestNews: '最新新闻',
       noNews: '目前没有可用的新闻。',
       viewAllNews: '查看所有新闻',
+      close: '关闭',
+      relatedLinks: '相关链接',
+      moreLinks: '更多链接',
     },
     auth: {
       login: '登录',
@@ -1468,6 +1530,7 @@ export const translations: Record<Language, Translations> = {
       search: '搜索',
       filter: '筛选',
       season: 'Season 19-2-3 史诗服务器',
+      retry: '重试',
     },
     admincp: admincpTranslations.zh,
   },
@@ -1599,6 +1662,9 @@ export const translations: Record<Language, Translations> = {
       latestNews: 'Последние Новости',
       noNews: 'В данный момент нет доступных новостей.',
       viewAllNews: 'Просмотреть все новости',
+      close: 'Закрыть',
+      relatedLinks: 'Связанные Ссылки',
+      moreLinks: 'дополнительные ссылки',
     },
     auth: {
       login: 'Войти',
@@ -1639,6 +1705,7 @@ export const translations: Record<Language, Translations> = {
       search: 'Поиск',
       filter: 'Фильтр',
       season: 'Season 19-2-3 Эпический Сервер',
+      retry: 'Повторить',
     },
     admincp: admincpTranslations.ru,
   },
@@ -1770,6 +1837,9 @@ export const translations: Record<Language, Translations> = {
       latestNews: 'Pinakabagong Balita',
       noNews: 'Walang available na balita sa ngayon.',
       viewAllNews: 'Tingnan ang Lahat ng Balita',
+      close: 'Isara',
+      relatedLinks: 'Mga Kaugnay na Link',
+      moreLinks: 'higit pang mga link',
     },
     auth: {
       login: 'Mag-login',
@@ -1810,6 +1880,7 @@ export const translations: Record<Language, Translations> = {
       search: 'Maghanap',
       filter: 'I-filter',
       season: 'Season 19-2-3 Epic Server',
+      retry: 'Subukan Muli',
     },
     admincp: admincpTranslations.fil,
   },
@@ -1941,6 +2012,9 @@ export const translations: Record<Language, Translations> = {
       latestNews: 'Tin Tức Mới Nhất',
       noNews: 'Hiện tại chưa có tin tức nào.',
       viewAllNews: 'Xem Tất Cả Tin Tức',
+      close: 'Đóng',
+      relatedLinks: 'Liên Kết Liên Quan',
+      moreLinks: 'liên kết khác',
     },
     auth: {
       login: 'Đăng Nhập',
@@ -1981,6 +2055,7 @@ export const translations: Record<Language, Translations> = {
       search: 'Tìm Kiếm',
       filter: 'Lọc',
       season: 'Season 19-2-3 Máy Chủ Huyền Thoại',
+      retry: 'Thử Lại',
     },
     admincp: admincpTranslations.vi,
   },

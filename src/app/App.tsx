@@ -9,19 +9,19 @@ import { NewsProvider } from './contexts/NewsContext';
 import { SharedBackground } from './components/shared-background';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PlayerProvider } from './contexts/PlayerContext';
+import { Footer } from './components/footer';
 
 // Lazy loading de componentes pesados
 const HeroSection = lazy(() => import('./components/hero-section'));
 const DashboardSection = lazy(() => import('./components/dashboard-section'));
-const EventsSection = lazy(() => import('./components/events-section'));
-const RankingsSection = lazy(() => import('./components/rankings-section'));
+const EventsSection = lazy(() => import('./components/events-section-real')); // ✅ USANDO API REAL
+const RankingsSection = lazy(() => import('./components/rankings-section-real')); // ✅ USANDO API REAL
 const DownloadsSection = lazy(() => import('./components/downloads-section'));
 const NewsSection = lazy(() => import('./components/news-section'));
 const LoginSection = lazy(() => import('./components/login-section'));
 const PlayerDashboard = lazy(() => import('./components/player-dashboard'));
 const AdminLogin = lazy(() => import('./components/admin-login'));
 const AdminDashboard = lazy(() => import('./components/admin-dashboard'));
-const Login2Test = lazy(() => import('./components/login2-test')); // 🧪 TESTE
 
 // Skeleton loader component
 const SectionLoader = () => (
@@ -109,8 +109,6 @@ function AppContent() {
         ) : (
           <LoginSection onLoginSuccess={handleLoginSuccess} />
         );
-      case 'login2': // 🧪 TESTE - Login fake para testes
-        return <Login2Test onLoginSuccess={handleLoginSuccess} />;
       case 'events':
         return <EventsSection />;
       case 'rankings':
@@ -131,7 +129,7 @@ function AppContent() {
       {/* ⚠️ BACKGROUND UNIVERSAL - NUNCA REMOVER! ⚠️ */}
       <SharedBackground />
       
-      <div className="min-h-screen relative">
+      <div className="min-h-screen relative flex flex-col">
         <Navigation 
           onNavigate={setCurrentSection} 
           currentSection={currentSection}
@@ -141,13 +139,17 @@ function AppContent() {
         />
         
         {/* Language Selector - Fixed top right */}
-        <div className="fixed top-4 right-6 z-50">
+        <div className="fixed top-4 right-6 z-[110]">
           <LanguageSelector />
         </div>
         
-        <Suspense fallback={<SectionLoader />}>
-          {renderSection()}
-        </Suspense>
+        <div className="flex-1">
+          <Suspense fallback={<SectionLoader />}>
+            {renderSection()}
+          </Suspense>
+        </div>
+        
+        <Footer />
         
         <ServerInfoWidget currentSection={currentSection} />
         <MusicPlayerWidget currentSection={currentSection} />

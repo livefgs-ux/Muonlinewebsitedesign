@@ -18,7 +18,6 @@ import {
   EyeOff
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { projectId, publicAnonKey } from '../../../../../utils/supabase/info';
 
 interface InstallationStep {
   id: string;
@@ -42,18 +41,11 @@ export function InstallationGuideSection() {
   const loadSteps = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/installation-guide`,
-        {
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setSteps(data.steps || getDefaultSteps());
+      // Backend Node.js não tem endpoint de installation-guide ainda
+      // Usar dados padrões salvos no localStorage
+      const savedSteps = localStorage.getItem('installation_steps');
+      if (savedSteps) {
+        setSteps(JSON.parse(savedSteps));
       } else {
         setSteps(getDefaultSteps());
       }
@@ -103,23 +95,9 @@ export function InstallationGuideSection() {
     try {
       setSaving(true);
       
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/installation-guide`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ steps }),
-        }
-      );
-
-      if (response.ok) {
-        toast.success('Guia de instalação salvo com sucesso!');
-      } else {
-        throw new Error('Erro ao salvar');
-      }
+      // Salvar no localStorage
+      localStorage.setItem('installation_steps', JSON.stringify(steps));
+      toast.success('Guia de instalação salvo com sucesso!');
     } catch (error) {
       console.error('Error saving installation guide:', error);
       toast.error('Erro ao salvar guia de instalação');
@@ -171,33 +149,22 @@ export function InstallationGuideSection() {
     try {
       setUploadingImage(stepId);
       
-      // Create form data
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('stepId', stepId);
-
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/upload-installation-image`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-          body: formData,
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        updateStep(stepId, 'image', data.imageUrl);
+      // Converter imagem para base64 e armazenar localmente
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        updateStep(stepId, 'image', base64String);
         toast.success('Imagem carregada com sucesso!');
-      } else {
-        throw new Error('Erro ao fazer upload');
-      }
+        setUploadingImage(null);
+      };
+      reader.onerror = () => {
+        toast.error('Erro ao carregar imagem');
+        setUploadingImage(null);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error('Erro ao fazer upload da imagem');
-    } finally {
       setUploadingImage(null);
     }
   };

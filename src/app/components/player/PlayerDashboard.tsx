@@ -1,53 +1,10 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  User, 
-  Calendar,
-  Coins,
-  Users,
-  Swords,
-  TrendingUp,
-  Activity,
-  RefreshCw,
-  Plus,
-  Award,
-  Clock,
-  Shield,
-  Crown,
-  Zap,
-  Settings,
-  ShoppingCart,
-  Gift,
-  MessageSquare,
-  Trophy,
-  ArrowRightLeft,
-  CreditCard,
-  History,
-  LogOut,
-  ChevronRight,
-  Star,
-  Lock,
-  Send,
-  Download,
-  Upload,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Mail,
-  Sword,
-  MapPin,
-  Heart,
-  Image,
-  Palette,
-  Info
-} from 'lucide-react';
-import { formatNumber, formatDate, formatRelativeTime } from '../../../utils/formatters';
+import { formatNumber, formatDate, formatRelativeTime, formatLocalizedCurrency } from '../../../utils/formatters';
 import { validateStatPoints } from '../../../utils/validators';
 import { getStatusColor, getIconEmoji } from '../../../utils/status-helpers';
 import type { Character, Activity as ActivityType, Stats } from '../../../types/common';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { toast } from 'react-toastify';
+import { API_CONFIG } from '../../config/api';
 
 interface UserInfo {
   username: string;
@@ -78,10 +35,10 @@ interface PlayerDashboardProps {
   onLogout?: () => void;
 }
 
-type TabType = 'account' | 'characters' | 'stats' | 'reset' | 'shop' | 'donations' | 'tickets' | 'achievements' | 'settings';
+type TabType = 'account' | 'characters' | 'stats' | 'reset' | 'shop' | 'tickets' | 'settings';
 
 const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('account');
   const [selectedChar, setSelectedChar] = useState<ExtendedCharacter | null>(null);
   const [showStatsBox, setShowStatsBox] = useState(false);
@@ -104,8 +61,13 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
   const [transferAmount, setTransferAmount] = useState(0);
 
   // Ticket states
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [ticketSubject, setTicketSubject] = useState('');
   const [ticketMessage, setTicketMessage] = useState('');
+
+  // Shop states
+  const [wcoinPackages, setWcoinPackages] = useState<any[]>([]);
+  const [loadingPackages, setLoadingPackages] = useState(true);
 
   // Mock data - futuramente buscar da API
   const [accountInfo] = useState<UserInfo>({
@@ -240,107 +202,39 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
     }
   ]);
 
-  const [donations] = useState([
-    {
-      id: 1,
-      date: '2025-12-18 23:45',
-      amount: 'R$ 50,00',
-      wcoin: 1000,
-      status: 'Confirmado',
-      method: 'PIX'
-    },
-    {
-      id: 2,
-      date: '2025-12-15 18:20',
-      amount: 'R$ 25,00',
-      wcoin: 500,
-      status: 'Confirmado',
-      method: 'PagSeguro'
-    },
-    {
-      id: 3,
-      date: '2025-12-10 12:30',
-      amount: 'R$ 100,00',
-      wcoin: 2100,
-      status: 'Confirmado',
-      method: 'PIX'
-    }
-  ]);
-
-
-
-  const [tickets] = useState([
-    {
-      id: 1,
-      subject: 'Problemas com Reset',
-      status: 'Respondido',
-      date: '2025-12-19 10:30',
-      lastReply: 'Equipe MeuMU'
-    },
-    {
-      id: 2,
-      subject: 'Doação não creditada',
-      status: 'Resolvido',
-      date: '2025-12-17 15:45',
-      lastReply: 'Equipe MeuMU'
-    },
-    {
-      id: 3,
-      subject: 'Dúvida sobre evento',
-      status: 'Aguardando',
-      date: '2025-12-20 08:15',
-      lastReply: 'Você'
-    }
-  ]);
-
-  const [achievements] = useState([
-    {
-      id: 1,
-      name: 'Primeiro Reset',
-      description: 'Complete seu primeiro reset',
-      completed: true,
-      reward: '100 GP',
-      icon: '🏆'
-    },
-    {
-      id: 2,
-      name: 'Level 400',
-      description: 'Alcance o level 400',
-      completed: true,
-      reward: '200 GP',
-      icon: '⭐'
-    },
-    {
-      id: 3,
-      name: 'Master Reset',
-      description: 'Complete seu primeiro Master Reset',
-      completed: true,
-      reward: '500 GP',
-      icon: '👑'
-    },
-    {
-      id: 4,
-      name: 'Guild Master',
-      description: 'Crie ou lidere uma guild',
-      completed: false,
-      reward: '300 GP',
-      icon: '🛡️'
-    },
-    {
-      id: 5,
-      name: '100 Kills PvP',
-      description: 'Alcance 100 kills em PvP',
-      completed: false,
-      reward: '250 GP',
-      icon: '⚔️'
-    }
-  ]);
 
   // Initialize email and password from accountInfo
   useEffect(() => {
     setEmail(accountInfo.email);
     setPassword(accountInfo.password);
   }, [accountInfo]);
+
+  // Carregar pacotes de WCoin do backend
+  useEffect(() => {
+    const loadWCoinPackages = async () => {
+      try {
+        setLoadingPackages(true);
+        const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.WCOIN_PACKAGES}`);
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          setWcoinPackages(data.data);
+        } else {
+          console.error('Erro ao carregar pacotes de WCoin');
+          // Fallback para pacotes padrão se o backend não estiver disponível
+          setWcoinPackages([]);
+        }
+      } catch (error) {
+        console.error('Erro ao conectar com o backend:', error);
+        // Fallback para pacotes padrão se o backend não estiver disponível
+        setWcoinPackages([]);
+      } finally {
+        setLoadingPackages(false);
+      }
+    };
+
+    loadWCoinPackages();
+  }, []);
 
   // Ordenar personagens por último login (mais recente primeiro)
   const sortedCharacters = [...characters].sort((a, b) => 
@@ -496,9 +390,7 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
     { id: 'stats', name: t('dashboard.addStats'), icon: TrendingUp },
     { id: 'reset', name: t('dashboard.resetSystem'), icon: RefreshCw },
     { id: 'shop', name: t('dashboard.cashShop'), icon: ShoppingCart },
-    { id: 'donations', name: t('dashboard.vipBenefits'), icon: Gift },
     { id: 'tickets', name: 'Suporte', icon: MessageSquare },
-    { id: 'achievements', name: 'Conquistas', icon: Trophy },
     { id: 'settings', name: 'Configurações', icon: Settings }
   ];
 
@@ -1109,7 +1001,7 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-green-400" />
-                        Desbloqueie novos títulos e conquistas
+                        Desbloqueie novos títulos e recompensas
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-green-400" />
@@ -1156,82 +1048,48 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { wcoin: 500, price: 'R$ 25,00', bonus: 0 },
-                { wcoin: 1000, price: 'R$ 50,00', bonus: 50 },
-                { wcoin: 2000, price: 'R$ 100,00', bonus: 200 },
-                { wcoin: 5000, price: 'R$ 250,00', bonus: 750 },
-                { wcoin: 10000, price: 'R$ 500,00', bonus: 2000 },
-                { wcoin: 20000, price: 'R$ 1000,00', bonus: 5000 }
-              ].map((pack, index) => (
-                <div
-                  key={index}
-                  className="backdrop-blur-xl bg-black/60 p-6 rounded-xl border border-[#FFB800]/20 hover:border-[#FFB800]/60 transition-all text-center flex flex-col"
-                >
-                  <div className="flex justify-center mb-3">
-                    <Coins className="w-12 h-12 text-[#FFB800]" />
+              {wcoinPackages.map((pack, index) => {
+                // Obter link de compra configurado no AdminCP ou usar padrão
+                const purchaseLinks = JSON.parse(localStorage.getItem('wcoin_purchase_links') || '{}');
+                const defaultLink = purchaseLinks.default || '#';
+                const packageLink = purchaseLinks[`package_${pack.wcoin}`] || purchaseLinks[`package_${pack.wcoin_amount}`] || defaultLink;
+                
+                // Formatar preço de acordo com o idioma selecionado
+                const localizedPrice = formatLocalizedCurrency(Number(pack.price), language);
+                
+                return (
+                  <div
+                    key={index}
+                    className="backdrop-blur-xl bg-black/60 p-6 rounded-xl border border-[#FFB800]/20 hover:border-[#FFB800]/60 transition-all text-center flex flex-col"
+                  >
+                    <div className="flex justify-center mb-3">
+                      <Coins className="w-12 h-12 text-[#FFB800]" />
+                    </div>
+                    <h4 className="text-2xl font-bold text-[#FFB800] mb-2">{formatNumber(pack.wcoin_amount || pack.wcoin)} WCoin</h4>
+                    {/* Container com altura fixa para o bônus */}
+                    <div className="h-6 mb-2">
+                      {(pack.bonus_amount || pack.bonus || 0) > 0 && (
+                        <p className="text-green-400 text-sm">+ {formatNumber(pack.bonus_amount || pack.bonus)} {t('bonus')}!</p>
+                      )}
+                    </div>
+                    <p className="text-3xl font-bold text-white mb-4">{localizedPrice}</p>
+                    {/* Espaçador flex para empurrar botão para baixo */}
+                    <div className="flex-grow"></div>
+                    <button 
+                      onClick={() => {
+                        if (packageLink === '#') {
+                          toast.error('⚠️ Sistema de compra ainda não configurado. Contate o administrador.');
+                        } else {
+                          window.open(packageLink, '_blank');
+                        }
+                      }}
+                      className="w-full bg-[#FFB800] text-black py-3 rounded-md hover:bg-[#FFC933] transition-all font-semibold mt-auto"
+                    >
+                      {t('buyNow')}
+                    </button>
                   </div>
-                  <h4 className="text-2xl font-bold text-[#FFB800] mb-2">{formatNumber(pack.wcoin)} WCoin</h4>
-                  {/* Container com altura fixa para o bônus */}
-                  <div className="h-6 mb-2">
-                    {pack.bonus > 0 && (
-                      <p className="text-green-400 text-sm">+ {formatNumber(pack.bonus)} Bônus!</p>
-                    )}
-                  </div>
-                  <p className="text-3xl font-bold text-white mb-4">{pack.price}</p>
-                  {/* Espaçador flex para empurrar botão para baixo */}
-                  <div className="flex-grow"></div>
-                  <button className="w-full bg-[#FFB800] text-black py-3 rounded-md hover:bg-[#FFC933] transition-all font-semibold mt-auto">
-                    Comprar Agora
-                  </button>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* DONATIONS TAB */}
-        {activeTab === 'donations' && (
-          <motion.div
-            key="donations"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="backdrop-blur-xl bg-black/60 p-6 rounded-xl border border-[#FFB800]/20"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Gift className="w-6 h-6 text-[#FFB800]" />
-              <h3 className="text-2xl font-semibold text-[#FFB800]">Histórico de Doações</h3>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="text-gray-400 border-b border-gray-700">
-                  <tr>
-                    <th className="p-3">Data</th>
-                    <th className="p-3">Valor</th>
-                    <th className="p-3">WCoin</th>
-                    <th className="p-3">Método</th>
-                    <th className="p-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {donations.map((donation) => (
-                    <tr key={donation.id} className="border-b border-gray-800 hover:bg-white/5 transition-colors">
-                      <td className="p-3 text-gray-300">{donation.date}</td>
-                      <td className="p-3 text-white font-semibold">{donation.amount}</td>
-                      <td className="p-3 text-[#FFB800] font-bold">{formatNumber(donation.wcoin)}</td>
-                      <td className="p-3 text-gray-300">{donation.method}</td>
-                      <td className="p-3">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">
-                          <CheckCircle className="w-3 h-3" />
-                          {donation.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                );
+              })}
             </div>
           </motion.div>
         )}
@@ -1326,62 +1184,6 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
                   </div>
                 ))}
               </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* ACHIEVEMENTS TAB */}
-        {activeTab === 'achievements' && (
-          <motion.div
-            key="achievements"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="backdrop-blur-xl bg-black/60 p-6 rounded-xl border border-[#FFB800]/20"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Trophy className="w-6 h-6 text-[#FFB800]" />
-              <h3 className="text-2xl font-semibold text-[#FFB800]">Conquistas</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {achievements.map((achievement) => (
-                <div
-                  key={achievement.id}
-                  className={`backdrop-blur-xl bg-black/60 p-4 rounded-lg border transition-all ${
-                    achievement.completed
-                      ? 'border-[#FFB800]/40 bg-[#FFB800]/5'
-                      : 'border-gray-700 opacity-60'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-16 h-16 rounded-lg flex items-center justify-center text-3xl ${
-                      achievement.completed
-                        ? 'bg-gradient-to-br from-[#FFB800] to-yellow-600'
-                        : 'bg-gray-700'
-                    }`}>
-                      {achievement.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-white">{achievement.name}</h4>
-                        {achievement.completed && (
-                          <CheckCircle className="w-4 h-4 text-green-400" />
-                        )}
-                      </div>
-                      <p className="text-gray-400 text-sm mb-1">{achievement.description}</p>
-                      <p className="text-[#FFB800] text-sm font-semibold">Recompensa: {achievement.reward}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 p-4 bg-[#FFB800]/10 border border-[#FFB800]/30 rounded-lg">
-              <p className="text-[#FFB800] text-center">
-                <Trophy className="w-5 h-5 inline mr-2" />
-                Você completou <span className="font-bold">{achievements.filter(a => a.completed).length}/{achievements.length}</span> conquistas!
-              </p>
             </div>
           </motion.div>
         )}

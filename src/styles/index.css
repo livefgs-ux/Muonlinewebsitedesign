@@ -11,7 +11,7 @@ html {
 }
 
 body {
-  background-color: #000000;
+  /* ⚠️ REMOVIDO background-color para permitir o background universal ser visível */
   color: #ffffff;
 }
 

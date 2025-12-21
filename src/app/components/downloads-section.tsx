@@ -4,7 +4,6 @@ import { Card } from './ui/card';
 import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useState, useEffect } from 'react';
-import { projectId, publicAnonKey } from '../../../utils/supabase/info';
 
 interface InstallationStep {
   id: string;
@@ -23,19 +22,9 @@ export function DownloadsSection() {
   useEffect(() => {
     const fetchInstallationSteps = async () => {
       try {
-        const response = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/make-server-4169bd43/installation-guide`,
-          {
-            headers: {
-              'Authorization': `Bearer ${publicAnonKey}`,
-            },
-          }
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          setInstallationSteps(data.steps || []);
-        }
+        // Backend Node.js não implementa installation-guide ainda
+        // Usar dados estáticos por enquanto
+        setInstallationSteps([]);
       } catch (error) {
         console.error('Error loading installation steps:', error);
       } finally {

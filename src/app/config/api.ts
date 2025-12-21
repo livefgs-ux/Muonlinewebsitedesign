@@ -45,6 +45,9 @@ export const API_CONFIG = {
     // Status do Servidor
     SERVER_STATUS: '/status',
     SERVER_STATUS_DETAILED: '/status/detailed',
+    
+    // WCoin Packages
+    WCOIN_PACKAGES: '/wcoin/packages',
   }
 };
 

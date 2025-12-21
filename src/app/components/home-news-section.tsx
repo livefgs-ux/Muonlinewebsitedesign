@@ -4,6 +4,8 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { useNews } from '../contexts/NewsContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { NewsModal } from './ui/news-modal';
+import { useState } from 'react';
 
 interface HomeNewsSectionProps {
   onNavigate: (section: string) => void;
@@ -12,6 +14,7 @@ interface HomeNewsSectionProps {
 export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
   const { news } = useNews();
   const { t, language } = useLanguage();
+  const [selectedNews, setSelectedNews] = useState<typeof news[0] | null>(null);
 
   // Filter news for home page and get latest 3
   const homeNews = news
@@ -23,7 +26,7 @@ export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
   }
 
   return (
-    <section className="relative py-20 px-4 bg-gradient-to-b from-obsidian-light to-obsidian">
+    <section className="relative py-20 px-4">
       <div className="max-w-7xl mx-auto relative z-20">
         {/* Section Header */}
         <motion.div
@@ -53,11 +56,14 @@ export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="group h-full backdrop-blur-lg bg-gradient-to-br from-yellow-500/5 to-yellow-600/5 border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 overflow-hidden">
+              <Card className="group h-full backdrop-blur-lg bg-gradient-to-br from-yellow-500/5 to-yellow-600/5 border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 overflow-hidden cursor-pointer"
+                onClick={() => setSelectedNews(item)}
+              >
                 {/* Image */}
                 {item.imageUrl && (
                   <div className="relative h-48 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent z-10" />
+                    {/* Darker gradient overlay for better text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/40 z-10" />
                     <img
                       src={item.imageUrl}
                       alt={item.title}
@@ -100,7 +106,10 @@ export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
 
                   {/* Read More */}
                   <Button
-                    onClick={() => onNavigate('news')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedNews(item);
+                    }}
                     variant="outline"
                     className="w-full border-yellow-500/30 bg-yellow-500/5 text-yellow-500 hover:bg-yellow-500/10 group/btn"
                   >
@@ -130,6 +139,17 @@ export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
           </Button>
         </motion.div>
       </div>
+
+      {/* News Modal */}
+      {selectedNews && (
+        <NewsModal
+          isOpen={!!selectedNews}
+          onClose={() => setSelectedNews(null)}
+          news={selectedNews}
+          language={language}
+          t={t}
+        />
+      )}
 
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-yellow-500/5 rounded-full filter blur-3xl" />

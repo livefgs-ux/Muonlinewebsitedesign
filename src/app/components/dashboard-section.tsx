@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { User, Sword, Shield, Heart, Zap, RotateCcw, LogOut, Users, Mail, Lock, Eye, EyeOff, Crown, MapPin, Swords } from 'lucide-react';
-import { Button } from './ui/button';
+import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Card } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { Button } from './ui/button';
+import { Users, Settings, User, Shield, Trophy, Calendar, LogOut, Eye, EyeOff, Mail, Lock, Swords, ChevronDown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { motion } from 'motion/react';
-import characterExample from 'figma:asset/0481c7d9f941d688b911f1c81a92c821fe1a50e8.png';
+
+// ⚠️ REMOVIDO figma:asset - usando placeholder
+const characterPlaceholder = 'https://via.placeholder.com/400x600/1a1a1a/FFB800?text=Character';
 
 // Mock data
 const mockUser = {
@@ -678,7 +679,7 @@ export function DashboardSection({ onLoginSuccess, isLoggedIn: isLoggedInProp, o
                         {/* Character Image */}
                         <div className="relative h-64 overflow-hidden bg-gradient-to-b from-yellow-900/20 to-black">
                           <img
-                            src={characterExample}
+                            src={characterPlaceholder}
                             alt={character.name}
                             className="w-full h-full object-contain"
                           />

@@ -1,0 +1,102 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║   📁  ARQUIVOS UTILIZADOS NA CRIAÇÃO DO SITE - MeuMU Online      ║
+║                                                                   ║
+║   Esta pasta contém DOCUMENTAÇÃO e ARQUIVOS DE DESENVOLVIMENTO   ║
+║   que NÃO são necessários para o site funcionar.                 ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+
+⚠️  ATENÇÃO: TODOS OS ARQUIVOS DESTA PASTA PODEM SER DELETADOS EM PRODUÇÃO
+
+
+📋 O QUE HÁ NESTA PASTA:
+
+   ✅ 58+ arquivos .md de documentação
+   ✅ 6 arquivos .txt de instruções
+   ✅ 1 pasta de backup completo (20/12/2024)
+   ✅ Pasta /server/ (servidor Node local - não usado)
+   ✅ Pasta /mock-data/ (dados de teste)
+   ✅ Pasta /scripts/ (scripts de migração)
+   ✅ Pasta /guidelines/ (guias de desenvolvimento)
+   ✅ Pasta /shared/ (módulos compartilhados de teste)
+
+
+🎯 OBJETIVO DESTA PASTA:
+
+   Organizar todos os arquivos de desenvolvimento, documentação e testes
+   separados do código de produção, facilitando:
+
+   1. Deploy limpo em produção
+   2. Manutenção do projeto
+   3. Onboarding de novos desenvolvedores
+   4. Histórico de decisões técnicas
+
+
+📖 COMO USAR:
+
+   1. LEIA: README.md (nesta pasta)
+   2. VEJA: LISTA_ARQUIVOS_MOVIDOS.md
+   3. EXECUTE: COMO_MOVER_ARQUIVOS.md (para mover os arquivos da raiz)
+
+
+🚀 PARA MOVER OS ARQUIVOS:
+
+   Os arquivos ainda NÃO foram movidos automaticamente da raiz.
+   Você precisa executar os comandos do arquivo:
+   
+   ➡️  COMO_MOVER_ARQUIVOS.md
+
+
+✅ ARQUIVOS QUE DEVEM FICAR NA RAIZ:
+
+   /src/              → Código fonte (ESSENCIAL)
+   /supabase/         → Backend (ESSENCIAL)
+   /public/           → Assets (ESSENCIAL)
+   /utils/            → Utilitários (ESSENCIAL)
+   package.json       → Dependências (ESSENCIAL)
+   vite.config.ts     → Config (ESSENCIAL)
+   index.html         → Entry point (ESSENCIAL)
+   README.md          → README principal (OPCIONAL)
+
+
+🗑️  PODE DELETAR EM PRODUÇÃO:
+
+   Após mover e testar que o site funciona normalmente,
+   você pode DELETAR esta pasta inteira:
+
+   rm -rf "arquivos utilizados na criacao do site/"
+
+
+⚠️  ANTES DE DELETAR:
+
+   1. ✅ Faça backup do banco de dados
+   2. ✅ Teste se o site funciona
+   3. ✅ Verifique se não há imports destes arquivos no código
+   4. ✅ Guarde a documentação importante em outro lugar (se necessário)
+
+
+📊 ESTATÍSTICAS:
+
+   Total de arquivos: ~110
+   Tamanho estimado:  ~50 MB
+   Arquivos .md:      58
+   Backups:           1 pasta completa
+   Data criação:      20/12/2024 - 18h30
+
+
+📞 SUPORTE:
+
+   Se tiver dúvidas, consulte:
+   - README.md (visão geral)
+   - LISTA_ARQUIVOS_MOVIDOS.md (lista completa)
+   - COMO_MOVER_ARQUIVOS.md (instruções passo a passo)
+
+
+═══════════════════════════════════════════════════════════════════
+
+   MeuMU Online - Season 19-2-3 Épico
+   Data: 20/12/2024
+   
+═══════════════════════════════════════════════════════════════════

@@ -4,7 +4,7 @@ import {
   Crown, Users, Swords, FileText, Settings, LogOut, Menu,
   X, ChevronRight, Search, Bell, UserCircle2, Database,
   Calendar, Award, Activity, Ban, Shield, TrendingUp,
-  BarChart3, Boxes, Layout, ScrollText, Clock, DollarSign, Eye
+  BarChart3, Boxes, Layout, ScrollText, Clock, DollarSign, Eye, ShoppingCart
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -20,8 +20,9 @@ import { LogsSection } from './sections/LogsSection';
 import { SiteEditorSection } from './sections/SiteEditorSection';
 import { CronsSection } from './sections/CronsSection';
 import { BansSection } from './sections/BansSection';
-import { TestModesSection } from './sections/TestModesSection';
 import { InstallationGuideSection } from './sections/InstallationGuideSection';
+import { DonationLinksSection } from './sections/DonationLinksSection';
+import WCoinPackagesSection from './sections/WCoinPackagesSection';
 import DonationsPanel from '../admin/DonationsPanel';
 import SecurityPanel from '../admin/SecurityPanel';
 import CronJobsPanel from '../admin/CronJobsPanel';
@@ -158,19 +159,27 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
       permission: 'viewAccounts'
     },
     {
-      id: 'test-modes',
-      name: 'Modos de Teste',
-      icon: Eye,
-      color: 'text-lime-400',
-      bgColor: 'bg-lime-500/10',
-      permission: 'viewAccounts'
-    },
-    {
       id: 'installation-guide',
       name: 'Guia de Instalação',
       icon: FileText,
       color: 'text-gray-400',
       bgColor: 'bg-gray-500/10',
+      permission: 'viewAccounts'
+    },
+    {
+      id: 'donation-links',
+      name: 'Links de Doação',
+      icon: DollarSign,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/10',
+      permission: 'viewAccounts'
+    },
+    {
+      id: 'wcoin-packages',
+      name: 'Pacotes WCoin',
+      icon: DollarSign,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/10',
       permission: 'viewAccounts'
     }
   ], []);
@@ -211,10 +220,12 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
         return <BansSection />;
       case 'system':
         return <SystemManagement />;
-      case 'test-modes':
-        return <TestModesSection onNavigate={onNavigate} />;
       case 'installation-guide':
         return <InstallationGuideSection />;
+      case 'donation-links':
+        return <DonationLinksSection />;
+      case 'wcoin-packages':
+        return <WCoinPackagesSection apiBaseUrl={process.env.VITE_API_URL || 'http://localhost:3001/api'} />;
       default:
         return <DashboardSection />;
     }

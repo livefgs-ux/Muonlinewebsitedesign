@@ -90,6 +90,8 @@ export const dashboardTranslations = {
     insufficientLevel: '❌ Level insuficiente para resetar!',
     noPointsToDistribute: '❌ Não há pontos para distribuir!',
     insufficientZen: '❌ Zen insuficiente!',
+    buyNow: 'Comprar Agora',
+    bonus: 'Bônus',
   },
   en: {
     welcome: 'Welcome',
@@ -180,6 +182,8 @@ export const dashboardTranslations = {
     insufficientLevel: '❌ Insufficient level to reset!',
     noPointsToDistribute: '❌ No points to distribute!',
     insufficientZen: '❌ Insufficient Zen!',
+    buyNow: 'Buy Now',
+    bonus: 'Bonus',
   },
   es: {
     welcome: 'Bienvenido',
@@ -270,6 +274,8 @@ export const dashboardTranslations = {
     insufficientLevel: '❌ ¡Nivel insuficiente para resetear!',
     noPointsToDistribute: '❌ ¡No hay puntos para distribuir!',
     insufficientZen: '❌ ¡Zen insuficiente!',
+    buyNow: 'Comprar Ahora',
+    bonus: 'Bónus',
   },
   de: {
     welcome: 'Willkommen',
@@ -360,6 +366,8 @@ export const dashboardTranslations = {
     insufficientLevel: '❌ Unzureichendes Level zum Zurücksetzen!',
     noPointsToDistribute: '❌ Keine Punkte zum Verteilen!',
     insufficientZen: '❌ Unzureichendes Zen!',
+    buyNow: 'Jetzt kaufen',
+    bonus: 'Bonus',
   },
   zh: {
     welcome: '欢迎',
@@ -450,6 +458,8 @@ export const dashboardTranslations = {
     insufficientLevel: '❌ 等级不足无法重置！',
     noPointsToDistribute: '❌ 没有可分配的点数！',
     insufficientZen: '❌ 金币不足！',
+    buyNow: '立即购买',
+    bonus: '奖励',
   },
   ru: {
     welcome: 'Добро пожаловать',
@@ -540,6 +550,8 @@ export const dashboardTranslations = {
     insufficientLevel: '❌ Недостаточный уровень для сброса!',
     noPointsToDistribute: '❌ Нет очков для распределения!',
     insufficientZen: '❌ Недостаточно Zen!',
+    buyNow: 'Купить сейчас',
+    bonus: 'Бонус',
   },
   fil: {
     welcome: 'Maligayang pagdating',
@@ -630,6 +642,8 @@ export const dashboardTranslations = {
     insufficientLevel: '❌ Kulang ang level para mag-reset!',
     noPointsToDistribute: '❌ Walang puntos para i-distribute!',
     insufficientZen: '❌ Kulang ang Zen!',
+    buyNow: 'Bili Ngayon',
+    bonus: 'Bonus',
   },
   vi: {
     welcome: 'Chào mừng',
@@ -720,5 +734,7 @@ export const dashboardTranslations = {
     insufficientLevel: '❌ Cấp độ không đủ để reset!',
     noPointsToDistribute: '❌ Không có điểm để phân phối!',
     insufficientZen: '❌ Zen không đủ!',
+    buyNow: 'Mua Ngay',
+    bonus: 'Thưởng',
   },
 };
