@@ -8,6 +8,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 // Importar configurações
@@ -26,6 +28,7 @@ const eventsRoutes = require('./routes/events');
 const adminLogsRoutes = require('./routes/adminLogs');
 const sandboxRoutes = require('./routes/sandbox');
 const setupRoutes = require('./routes/setup'); // Setup Wizard
+const installRoutes = require('./routes/install'); // Instalador Web
 
 // Criar app Express
 const app = express();
@@ -35,8 +38,11 @@ const PORT = process.env.PORT || 3001;
 // MIDDLEWARES DE SEGURANÇA
 // ==================================
 
-// Helmet - Headers de segurança
-app.use(helmet());
+// Helmet - Headers de segurança (modificado para servir frontend)
+app.use(helmet({
+  contentSecurityPolicy: false, // Desabilitar para permitir assets do React
+  crossOriginEmbedderPolicy: false
+}));
 
 // CORS - Configurar domínios permitidos
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
@@ -81,6 +87,16 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(logger);
 
 // ==================================
+// SERVIR INSTALADOR WEB (SE EXISTIR)
+// ==================================
+
+const installPath = path.join(__dirname, '../../install');
+if (fs.existsSync(installPath)) {
+  app.use('/install', express.static(installPath));
+  console.log('📦 Instalador disponível em /install');
+}
+
+// ==================================
 // ROTAS DA API
 // ==================================
 
@@ -108,6 +124,9 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// API de Instalação
+app.use('/api/install', installRoutes);
+
 // Rotas principais
 app.use('/api/auth', authRoutes);
 app.use('/api/rankings', rankingsRoutes);
@@ -122,25 +141,44 @@ app.use('/api/sandbox', sandboxRoutes);
 // Setup Wizard (sem /api para evitar conflitos)
 app.use('/setup-api', setupRoutes);
 
-// Rota raiz
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'MeuMU Online API',
-    version: '1.0.0',
-    endpoints: {
-      auth: '/api/auth',
-      rankings: '/api/rankings',
-      characters: '/api/characters',
-      news: '/api/news',
-      server: '/api/server',
-      wcoin: '/api/wcoin',
-      events: '/api/events',
-      adminLogs: '/api/admin/logs',
-      health: '/health'
-    }
+// ==================================
+// SERVIR FRONTEND REACT (ÚLTIMA PRIORIDADE!)
+// ==================================
+
+const frontendPath = path.join(__dirname, '../../dist');
+if (fs.existsSync(frontendPath)) {
+  // Servir arquivos estáticos
+  app.use(express.static(frontendPath));
+  
+  // React Router - todas as rotas vão para index.html
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
   });
-});
+  
+  console.log('⚛️  Frontend React disponível na raiz');
+} else {
+  // Se não tiver frontend buildado, mostrar info
+  app.get('/', (req, res) => {
+    res.json({
+      success: true,
+      message: 'MeuMU Online API',
+      version: '1.0.0',
+      warning: 'Frontend não buildado (pasta /dist não existe)',
+      installer: '/install',
+      endpoints: {
+        auth: '/api/auth',
+        rankings: '/api/rankings',
+        characters: '/api/characters',
+        news: '/api/news',
+        server: '/api/server',
+        wcoin: '/api/wcoin',
+        events: '/api/events',
+        adminLogs: '/api/admin/logs',
+        health: '/health'
+      }
+    });
+  });
+}
 
 // ==================================
 // TRATAMENTO DE ERROS
