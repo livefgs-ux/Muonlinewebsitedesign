@@ -1,4 +1,4 @@
-# 🎮 MeuMU Online - Instalação
+# 🎮 MeuMU Online - Instalação Detalhada
 
 ## 📋 Requisitos
 
