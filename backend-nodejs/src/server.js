@@ -51,8 +51,13 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir todas as origens durante instalação (sem .env ainda)
-    if (!process.env.JWT_SECRET) {
+    // Verificar se pasta /install existe (modo instalação)
+    const fs = require('fs');
+    const installPath = path.join(__dirname, '../../install');
+    const isInstallMode = fs.existsSync(installPath);
+    
+    // Durante instalação, permitir TODAS as origens
+    if (isInstallMode || !process.env.JWT_SECRET) {
       return callback(null, true);
     }
     
@@ -60,6 +65,8 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('❌ CORS bloqueado para:', origin);
+      console.log('   Origens permitidas:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
