@@ -14,11 +14,53 @@ let installData = {
 };
 
 // ════════════════════════════════════════════════════════════════
+//  CONFIGURAÇÃO DA API
+// ════════════════════════════════════════════════════════════════
+
+// Detectar protocolo e hostname automaticamente
+// Tentar HTTPS primeiro, depois HTTP
+const API_BASE_URLS = [
+    `${window.location.protocol}//${window.location.hostname}:3001`, // Mesmo protocolo
+    `http://${window.location.hostname}:3001`, // HTTP forçado
+    `https://${window.location.hostname}:3001` // HTTPS forçado
+];
+
+let API_BASE_URL = API_BASE_URLS[0]; // Começar com o primeiro
+
+// Função helper para fazer fetch com fallback
+async function apiFetch(endpoint, options = {}) {
+    const errors = [];
+    
+    // Tentar cada URL até funcionar
+    for (const baseUrl of API_BASE_URLS) {
+        try {
+            console.log(`🔄 Tentando: ${baseUrl}${endpoint}`);
+            const response = await fetch(`${baseUrl}${endpoint}`, options);
+            
+            // Se chegou aqui, funcionou! Salvar essa URL
+            API_BASE_URL = baseUrl;
+            console.log(`✅ Sucesso com: ${baseUrl}`);
+            
+            return response;
+        } catch (error) {
+            console.warn(`❌ Falhou com ${baseUrl}: ${error.message}`);
+            errors.push(`${baseUrl}: ${error.message}`);
+            continue;
+        }
+    }
+    
+    // Se nenhuma funcionou, lançar erro
+    throw new Error(`Não foi possível conectar à API. Tentativas:\n${errors.join('\n')}`);
+}
+
+// ════════════════════════════════════════════════════════════════
 // INICIALIZAÇÃO
 // ════════════════════════════════════════════════════════════════
 
 window.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Instalador carregado');
+    console.log('🌐 Current URL:', window.location.href);
+    console.log('📍 API URLs (tentar em ordem):', API_BASE_URLS);
     checkRequirements();
 });
 
@@ -51,7 +93,7 @@ async function checkRequirements() {
     document.getElementById('btnNext1').disabled = true;
     
     try {
-        const response = await fetch('/api/install/check-requirements', {
+        const response = await apiFetch('/api/install/check-requirements', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -137,7 +179,7 @@ async function testDatabase(type) {
     resultElement.innerHTML = '<div class="spinner"></div> Testando...';
     
     try {
-        const response = await fetch('/api/install/test-database', {
+        const response = await apiFetch('/api/install/test-database', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dbData)
@@ -258,7 +300,7 @@ async function startInstall() {
         progressBar.style.width = '30%';
         progressBar.textContent = '30%';
         
-        const response = await fetch('/api/install/install', {
+        const response = await apiFetch('/api/install/install', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(installData)
@@ -278,7 +320,7 @@ async function startInstall() {
             for (const log of data.log) {
                 if (log.includes('✅')) addLog(log, 'success');
                 else if (log.includes('❌')) addLog(log, 'error');
-                else if (log.includes('⚠️')) addLog(log, 'warning');
+                else if (log.includes('⚠')) addLog(log, 'warning');
                 else addLog(log, 'info');
                 
                 await new Promise(resolve => setTimeout(resolve, 200));
@@ -292,7 +334,7 @@ async function startInstall() {
         addLog('Testando proxy reverso...', 'info');
         
         try {
-            const proxyResponse = await fetch('/api/install/test-proxy', {
+            const proxyResponse = await apiFetch('/api/install/test-proxy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ domain: installData.domain })
@@ -350,7 +392,7 @@ async function startInstall() {
 
 // ════════════════════════════════════════════════════════════════
 // PASSO 4: REMOVER INSTALADOR
-// ════════════════════════════════════════════════════════════════
+// ════���═══════════════════════════════════════════════════════════
 
 async function removeInstaller() {
     if (!confirm('Tem certeza que deseja remover a pasta /install?\n\nEsta ação não pode ser desfeita!')) {
@@ -358,7 +400,7 @@ async function removeInstaller() {
     }
     
     try {
-        const response = await fetch('/api/install/remove-installer', {
+        const response = await apiFetch('/api/install/remove-installer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });

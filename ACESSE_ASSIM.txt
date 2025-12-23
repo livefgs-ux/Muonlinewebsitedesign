@@ -1,0 +1,81 @@
+════════════════════════════════════════════════════════════════════════════════
+  PROBLEMA: MIXED CONTENT (HTTPS bloqueando HTTP)
+════════════════════════════════════════════════════════════════════════════════
+
+VOCE ACESSOU:
+  ❌ https://meumu.com/fev/install (HTTPS - porta 443)
+
+NAVEGADOR BLOQUEOU:
+  ❌ http://meumu.com:3001/api/... (HTTP - porta 3001)
+  
+MOTIVO:
+  Navegador nao permite HTTPS chamar HTTP (Mixed Content Security)
+
+════════════════════════════════════════════════════════════════════════════════
+  SOLUCAO: ACESSE VIA HTTP OU PORTA 3001 DIRETA
+════════════════════════════════════════════════════════════════════════════════
+
+OPCAO 1: Porta 3001 direta (RECOMENDADO)
+  http://meumu.com:3001/install
+  
+  Por que funciona:
+  - HTTP:3001 chama HTTP:3001 = OK!
+  - Sem Mixed Content
+  
+════════════════════════════════════════════════════════════════════════════════
+
+OPCAO 2: Porta 80 (se proxy funcionar)
+  http://meumu.com/fev/install
+  (SEM HTTPS!)
+  
+  Por que funciona:
+  - HTTP:80 chama HTTP:3001 = OK!
+  - Sem Mixed Content
+
+════════════════════════════════════════════════════════════════════════════════
+
+OPCAO 3: IP direto
+  http://SEU_IP:3001/install
+  
+════════════════════════════════════════════════════════════════════════════════
+  ANTES DE ACESSAR: VERIFICAR BACKEND
+════════════════════════════════════════════════════════════════════════════════
+
+1. Backend esta rodando?
+   pm2 status
+
+2. Porta 3001 esta aberta?
+   curl http://127.0.0.1:3001/health
+
+3. Dependencias instaladas?
+   ls /home/meumu.com/public_html/backend-nodejs/node_modules
+
+SE ALGUM NAO FUNCIONAR:
+
+   cd /home/meumu.com/public_html/backend-nodejs
+   ./INSTALAR_E_INICIAR.sh
+
+════════════════════════════════════════════════════════════════════════════════
+  RESUMO
+════════════════════════════════════════════════════════════════════════════════
+
+CERTO:
+  ✅ http://meumu.com:3001/install
+  ✅ http://meumu.com/fev/install (sem HTTPS!)
+  ✅ http://IP:3001/install
+
+ERRADO:
+  ❌ https://meumu.com/fev/install (navegador bloqueia HTTP:3001)
+  ❌ https://meumu.com:3001/install (se backend nao tem HTTPS)
+
+════════════════════════════════════════════════════════════════════════════════
+
+EXECUTE NO SSH PRIMEIRO:
+
+  cd /home/meumu.com/public_html/backend-nodejs && ./INSTALAR_E_INICIAR.sh
+
+DEPOIS ACESSE NO NAVEGADOR:
+
+  http://meumu.com:3001/install
+
+════════════════════════════════════════════════════════════════════════════════

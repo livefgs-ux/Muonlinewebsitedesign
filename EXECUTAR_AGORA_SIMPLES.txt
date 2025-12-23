@@ -1,0 +1,36 @@
+════════════════════════════════════════════════════════════════
+  COMANDO UNICO - INSTALA TUDO E INICIA
+════════════════════════════════════════════════════════════════
+
+cd /home/meumu.com/public_html/backend-nodejs && chmod +x INSTALAR_E_INICIAR.sh && ./INSTALAR_E_INICIAR.sh
+
+════════════════════════════════════════════════════════════════
+
+Este comando vai:
+
+  1. Instalar todas dependencias npm (express, mysql2, cors, etc)
+  2. Iniciar o backend com PM2
+  3. Testar a API
+  4. Mostrar URLs para testar
+
+Tempo estimado: 2-3 minutos
+
+════════════════════════════════════════════════════════════════
+
+DEPOIS QUE TERMINAR, ABRA NO NAVEGADOR:
+
+  http://meumu.com:3001/install
+
+════════════════════════════════════════════════════════════════
+
+ALTERNATIVA (se preferir passo a passo):
+
+  cd /home/meumu.com/public_html/backend-nodejs
+  
+  chmod +x instalar-dependencias.sh
+  ./instalar-dependencias.sh
+  
+  chmod +x quick-start.sh
+  ./quick-start.sh
+
+════════════════════════════════════════════════════════════════
