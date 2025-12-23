@@ -47,14 +47,20 @@ const poolWEB = mysql.createPool({
 // ═══════════════════════════════════════════════════════════════════
 
 const testConnection = async () => {
+  // Se não tiver .env, não conectar (modo instalação)
+  if (!process.env.DB_MU_PASSWORD && !process.env.DB_WEB_PASSWORD) {
+    console.log('⚠️  Arquivo .env não encontrado (modo instalação)');
+    console.log('📦 Use o instalador em: http://seudominio.com:3001/install\n');
+    return false; // Retorna false mas não bloqueia servidor
+  }
+  
   let muOK = false;
   let webOK = false;
   
   // Testar Database MU
   try {
     console.log('🔍 Testando conexão com database MU...');
-    console.log(`   Host: ${process.env.DB_MU_HOST || '127.0.0.1'}`)
-;
+    console.log(`   Host: ${process.env.DB_MU_HOST || '127.0.0.1'}`);
     console.log(`   Port: ${process.env.DB_MU_PORT || 3306}`);
     console.log(`   User: ${process.env.DB_MU_USER || 'root'}`);
     console.log(`   Database: ${process.env.DB_MU_NAME || 'muonline'}`);

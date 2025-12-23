@@ -1,117 +1,151 @@
-# 🎮 MeuMU Online - Season 19-2-3 Épico
+# 🎮 MeuMU Online - Instalação
 
-Site completo para servidor privado de Mu Online com tema Dark Medieval Fantasy.
+## 🚀 Instalação em 3 Passos
 
-## ⚡ Instalação Rápida (5 minutos)
+### **1. Execute o script de setup:**
 
-### **1. Extrair arquivos**
 ```bash
-# Extrair MeuMU-Online.zip em:
-# - XAMPP: C:\xampp\htdocs\
-# - CyberPanel: /home/seudominio.com/public_html/
-# - Linux: /var/www/html/
+chmod +x setup.sh
+./setup.sh
 ```
 
-### **2. Acessar instalador**
+### **2. Abra o instalador web:**
+
+Acesse no navegador:
+
 ```
-http://localhost/install
-OU
-http://seudominio.com/install
+http://SEU-IP:3001/install
 ```
 
-### **3. Preencher formulário**
-- Host Database: `localhost`
-- Database: `MuOnline`
-- Usuário: `root`
-- Senha: `sua_senha`
-- Modo Backend: `PM2` ou `Node Standalone`
+ou
 
-### **4. Clicar em "Instalar"**
+```
+http://seu-dominio.com:3001/install
+```
 
-✅ **Pronto! Site funcionando!**
+### **3. Siga as instruções na tela:**
+
+- ✅ Verificação de requisitos
+- ✅ Configuração de databases
+- ✅ Instalação automática
+- ✅ Pronto!
 
 ---
 
-## ⚠️ Erro de Permissão?
+## 📋 Requisitos
 
-Se aparecer **"Erro ao criar arquivo .env"**, execute:
+- **Node.js** 16+ (recomendado 18+)
+- **MySQL/MariaDB** 5.7+
+- **PM2** (instalado automaticamente)
+- **Linux** (Ubuntu/Debian/CentOS)
 
-### **Linux/VPS:**
+---
+
+## 🎯 Como Funciona
+
+### **Backend serve TUDO:**
+
+```
+http://seu-dominio.com:3001/
+├── /install          → Instalador web
+├── /api/*            → API REST
+└── /*                → Frontend React
+```
+
+**UMA porta, SEM proxy reverso necessário!**
+
+---
+
+## ✅ Após a Instalação
+
+O site estará disponível em:
+
+```
+http://seu-dominio.com:3001
+```
+
+Se você configurou proxy reverso (opcional), também funcionará em:
+
+```
+http://seu-dominio.com
+```
+
+---
+
+## 🔧 Comandos Úteis
+
 ```bash
-chmod +x scripts/fix-permissions.sh
-./scripts/fix-permissions.sh
+# Ver status
+pm2 status
+
+# Ver logs
+pm2 logs meumu-backend
+
+# Reiniciar
+pm2 restart meumu-backend
+
+# Parar
+pm2 stop meumu-backend
+
+# Iniciar
+pm2 start meumu-backend
 ```
 
-### **Windows (PowerShell como Admin):**
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process
-.\scripts\fix-permissions.ps1
+---
+
+## 🗑️ Remover Instalador
+
+Por segurança, remova a pasta `/install` após a instalação:
+
+**Opção 1:** Via interface web (botão no final da instalação)
+
+**Opção 2:** Manualmente:
+
+```bash
+rm -rf install/
 ```
 
-### **Manual:**
-Leia o arquivo `CORRIGIR_PERMISSOES.txt` com instruções detalhadas.
+---
+
+## ❓ Problemas Comuns
+
+### **Backend não inicia:**
+
+```bash
+cd backend-nodejs
+node src/server.js
+```
+
+Veja o erro e corrija (geralmente .env ou MySQL)
+
+### **Porta 3001 já em uso:**
+
+```bash
+pkill -9 node
+pm2 delete all
+./setup.sh
+```
+
+### **MySQL não conecta:**
+
+Verifique:
+- MySQL está rodando: `systemctl status mysql`
+- Credenciais corretas no instalador
+- Database existe: `mysql -e 'SHOW DATABASES;'`
 
 ---
 
 ## 🏗️ Estrutura
 
 ```
-meumu-online/
-├── install/          ← Instalador automático
-├── src/              ← Frontend React
-├── backend-nodejs/   ← Backend Node.js + MariaDB
-├── api/              ← Proxy PHP
-├── assets/           ← Build do frontend
-├── scripts/          ← Scripts úteis
-└── index.html        ← Entry point
+/home/seu-dominio.com/public_html/
+├── backend-nodejs/        ← Backend Node.js
+├── dist/                  ← Frontend buildado
+├── install/               ← Instalador web
+├── src/                   ← Código fonte React
+├── setup.sh               ← Script de instalação
+└── README.md              ← Este arquivo
 ```
-
----
-
-## 🔧 Requisitos
-
-- ✅ PHP 7.4+
-- ✅ Node.js 18+
-- ✅ MariaDB/MySQL 10.3+
-- ✅ Apache/LiteSpeed/Nginx
-
----
-
-## 📚 Documentação
-
-Toda documentação técnica está em `/logs-criacao/`:
-- Guias de instalação manual
-- Troubleshooting
-- API documentation
-- Histórico de desenvolvimento
-
----
-
-## 🚀 Comandos Úteis
-
-```bash
-# Desenvolvimento frontend
-npm run dev
-
-# Build produção
-npm run build
-
-# Deploy
-bash scripts/deploy.sh
-
-# Iniciar backend
-bash scripts/start-backend.sh
-```
-
----
-
-## 🌐 Domínio
-
-O site funciona com **1 único domínio**:
-- ✅ `seudominio.com` → Site
-- ✅ `seudominio.com/api/...` → API
-- ❌ NÃO precisa de `api.seudominio.com`
-- ❌ NÃO precisa configurar DNS
 
 ---
 
@@ -136,14 +170,15 @@ O site funciona com **1 único domínio**:
 - Characters reais
 - Status do servidor real
 - Eventos reais
+
 ❌ **SEM dados mockados**
 
 ---
 
 ## 💬 Suporte
 
-Problemas? Acesse o instalador em `/install` - ele diagnostica e corrige automaticamente!
+Problemas? O instalador diagnostica e corrige automaticamente!
 
 ---
 
-**MeuMU Online** - Desenvolvido com ❤️ para a comunidade MU Online
+**MeuMU Online** - Season 19-2-3 Épico

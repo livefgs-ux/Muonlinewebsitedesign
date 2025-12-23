@@ -38,7 +38,7 @@ const PORT = process.env.PORT || 3001;
 // MIDDLEWARES DE SEGURANÇA
 // ==================================
 
-// Helmet - Headers de segurança (modificado para servir frontend)
+// Helmet - Headers de segurança (modificado para permitir assets do React)
 app.use(helmet({
   contentSecurityPolicy: false, // Desabilitar para permitir assets do React
   crossOriginEmbedderPolicy: false
@@ -51,6 +51,12 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: (origin, callback) => {
+    // Permitir todas as origens durante instalação (sem .env ainda)
+    if (!process.env.JWT_SECRET) {
+      return callback(null, true);
+    }
+    
+    // Após instalação, verificar allowed origins
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -199,13 +205,13 @@ const startServer = async () => {
     console.log('🚀 Iniciando MeuMU Online Backend...');
     console.log('================================================');
     
-    // Testar conexão com o banco
+    // Testar conexão com o banco (não bloqueia se falhar - modo instalação)
     const dbConnected = await testConnection();
     
     if (!dbConnected) {
-      console.error('❌ Falha ao conectar no banco de dados!');
-      console.error('Verifique as configurações no arquivo .env');
-      process.exit(1);
+      console.log('⚠️  Banco não conectado - Modo Instalação ativado');
+      console.log('📦 Acesse: http://seu-ip:3001/install para configurar\n');
+      // NÃO BLOQUEIA - permite instalador funcionar
     }
     
     // Iniciar servidor HTTP
@@ -215,6 +221,11 @@ const startServer = async () => {
       console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📡 API URL: http://localhost:${PORT}`);
       console.log(`📊 Health Check: http://localhost:${PORT}/health`);
+      
+      if (!dbConnected) {
+        console.log(`📦 Instalador: http://localhost:${PORT}/install`);
+      }
+      
       console.log('================================================');
     });
     
