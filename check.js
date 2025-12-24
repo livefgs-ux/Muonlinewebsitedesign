@@ -79,6 +79,7 @@ function diagnosticSystem() {
   log.title('🔍 DIAGNÓSTICO DO SISTEMA');
   
   const checks = [];
+  let hasIssues = false;
   
   // Node.js
   if (commandExists('node')) {
@@ -92,10 +93,12 @@ function diagnosticSystem() {
     } else {
       log.error(`Node.js: ${version} (requer 18+)`);
       checks.push({ name: 'Node.js', status: 'OUTDATED', version });
+      hasIssues = true;
     }
   } else {
     log.error('Node.js: NÃO INSTALADO');
     checks.push({ name: 'Node.js', status: 'MISSING' });
+    hasIssues = true;
   }
   
   // npm
@@ -107,6 +110,7 @@ function diagnosticSystem() {
   } else {
     log.error('npm: NÃO INSTALADO');
     checks.push({ name: 'npm', status: 'MISSING' });
+    hasIssues = true;
   }
   
   // Git
@@ -132,7 +136,7 @@ function diagnosticSystem() {
   }
   
   console.log('');
-  return checks;
+  return { checks, hasIssues };
 }
 
 function diagnosticBackend() {
@@ -140,6 +144,7 @@ function diagnosticBackend() {
   
   const backendPath = path.join(process.cwd(), 'backend-nodejs');
   const checks = [];
+  let hasIssues = false;
   
   // Verificar estrutura
   const requiredFiles = [
@@ -157,6 +162,7 @@ function diagnosticBackend() {
     } else {
       log.error(`${file} - NÃO EXISTE`);
       checks.push({ file, status: 'MISSING' });
+      hasIssues = true;
     }
   }
   
@@ -174,11 +180,13 @@ function diagnosticBackend() {
         log.success(`  ${varName} configurado`);
       } else {
         log.warn(`  ${varName} NÃO configurado`);
+        hasIssues = true;
       }
     }
   } else {
     log.error('.env - NÃO EXISTE');
     checks.push({ file: '.env', status: 'MISSING' });
+    hasIssues = true;
   }
   
   // Verificar node_modules
@@ -189,10 +197,11 @@ function diagnosticBackend() {
   } else {
     log.error('node_modules - NÃO EXISTE (execute npm install)');
     checks.push({ file: 'node_modules', status: 'MISSING' });
+    hasIssues = true;
   }
   
   console.log('');
-  return checks;
+  return { checks, hasIssues };
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -461,10 +470,46 @@ async function runInteractive() {
     console.clear();
     
     switch (choice) {
-      case '1':
-        diagnosticSystem();
-        diagnosticBackend();
+      case '1': {
+        // Executar diagnósticos
+        const systemResult = diagnosticSystem();
+        const backendResult = diagnosticBackend();
+        
+        // Verificar se há problemas
+        const hasIssues = systemResult.hasIssues || backendResult.hasIssues;
+        
+        if (hasIssues) {
+          console.log('');
+          log.warn('⚠️  PROBLEMAS DETECTADOS!');
+          console.log('');
+          
+          // Perguntar se quer corrigir automaticamente
+          const readline = createInterface({
+            input: process.stdin,
+            output: process.stdout
+          });
+          
+          const shouldFix = await new Promise((resolve) => {
+            readline.question(
+              `${colors.yellow}Deseja corrigir automaticamente? (S/n):${colors.reset} `,
+              (answer) => {
+                readline.close();
+                resolve(answer.trim().toLowerCase() !== 'n');
+              }
+            );
+          });
+          
+          if (shouldFix) {
+            console.log('');
+            fixProblems();
+            log.success('✅ Correções aplicadas!');
+            log.info('💡 Execute o diagnóstico novamente para verificar');
+          }
+        } else {
+          log.success('✅ TUDO OK! Nenhum problema encontrado.');
+        }
         break;
+      }
       
       case '2':
         fixProblems();
@@ -486,13 +531,14 @@ async function runInteractive() {
         showLogs();
         break;
       
-      case '7':
-        diagnosticSystem();
-        diagnosticBackend();
+      case '7': {
+        const systemResult = diagnosticSystem();
+        const backendResult = diagnosticBackend();
         fixProblems();
         securityScan();
         log.success('\n✅ Tudo executado!');
         break;
+      }
       
       case '0':
         console.log(`\n${colors.green}👋 Até logo!${colors.reset}\n`);
