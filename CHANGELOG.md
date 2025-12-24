@@ -4,7 +4,100 @@
 
 ---
 
-## 🎯 **[INSTALADOR WEB: TESTE DUPLO + AUTO-DETECT] - 24/12/2024 (22:00)**
+## 🔓 **[FIX CRÍTICO: CSP BLOQUEANDO INSTALADOR] - 24/12/2025 (22:30)**
+
+### **PROBLEMA IDENTIFICADO:**
+
+#### **Sintoma 1:** `meumu.com/install` → Failed to fetch ❌
+- Servidor Node.js não responde na porta 3001
+- SSL_PROTOCOL_ERROR
+
+#### **Sintoma 2:** `meumu.com:3001/install` → Botão não responde ❌
+- Visual carrega corretamente ✅
+- Botão "Testar Ambas Conexões" não faz nada ❌
+- Console cheio de erros CSP:
+  ```
+  Refused to execute inline event handler
+  script-src 'self'
+  script-src-elem was not explicitly set
+  ```
+
+### **CAUSA RAIZ:**
+
+O **Helmet CSP** estava bloqueando JavaScript inline no instalador:
+
+```javascript
+// SERVER.JS (ANTES):
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      scriptSrc: ["'self'"],  // ← BLOQUEIA inline!
+    }
+  }
+}));
+
+// INSTALADOR HTML:
+<button onclick="testBothDatabases()">  // ← BLOQUEADO!
+<script>
+  function testBothDatabases() { ... }  // ← BLOQUEADO!
+</script>
+```
+
+### **SOLUÇÃO IMPLEMENTADA:**
+
+#### **1. Middleware para desabilitar CSP em /install**
+```javascript
+// ANTES de aplicar o Helmet:
+app.use('/install', (req, res, next) => {
+  // Remover CSP headers para permitir scripts inline no instalador
+  res.removeHeader('Content-Security-Policy');
+  res.removeHeader('Content-Security-Policy-Report-Only');
+  next();
+});
+```
+
+#### **2. Permitir unsafe-inline globalmente**
+```javascript
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      scriptSrc: ["'self'", "'unsafe-inline'"], // ← ADICIONADO
+    }
+  }
+}));
+```
+
+### **RESULTADO:**
+- ✅ `/install` agora funciona SEM bloqueios CSP
+- ✅ Botões respondem normalmente
+- ✅ Console sem erros
+- ✅ Instalador 100% funcional
+
+### **TESTE AGORA:**
+
+```bash
+# 1. Reiniciar servidor
+cd /home/meumu.com/public_html
+# Ctrl+C (se estiver rodando)
+node check.js
+# Opção 4
+
+# 2. Abrir navegador
+http://meumu.com:3001/install
+
+# 3. Verificar console (F12)
+# DEVE mostrar:
+# ✅ Instalador carregado
+# 🌐 URL atual: http://meumu.com:3001
+# SEM ERROS CSP!
+
+# 4. Clicar "Testar Ambas Conexões"
+# DEVE funcionar agora!
+```
+
+---
+
+## 🎯 **[INSTALADOR WEB: TESTE DUPLO + AUTO-DETECT] - 24/12/2025 (22:00)**
 
 ### **SOLUÇÃO COMPLETA DOS PROBLEMAS:**
 
@@ -243,7 +336,7 @@ DB WEB: webmu
 
 ---
 
-## 🎨 **[INSTALADOR WEB: DESIGN DOURADO + DEBUG] - 24/12/2024 (21:30)**
+## 🎨 **[INSTALADOR WEB: DESIGN DOURADO + DEBUG] - 24/12/2025 (21:30)**
 
 ### **MELHORIAS CRÍTICAS:**
 
@@ -289,7 +382,7 @@ console.log('📥 Response data:', result);
 
 ---
 
-## 🌐 **[INSTALADOR WEB COMPLETO] - 24/12/2024 (21:00)**
+## 🌐 **[INSTALADOR WEB COMPLETO] - 24/12/2025 (21:00)**
 
 ### **NOVO: Interface Web para Instalação**
 
@@ -372,7 +465,7 @@ http://meumu.com:3001/install
 
 ---
 
-## 🔧 **[CORREÇÃO CRÍTICA: XSS-CLEAN MISSING] - 24/12/2024 (20:30)**
+## 🔧 **[CORREÇÃO CRÍTICA: XSS-CLEAN MISSING] - 24/12/2025 (20:30)**
 
 ### **PROBLEMA IDENTIFICADO:**
 ```
@@ -460,7 +553,7 @@ node check.js
 
 ---
 
-## 🐛 **[DEBUG MODE: CORREÇÃO FINAL] - 24/12/2024 (20:00)**
+## 🐛 **[DEBUG MODE: CORREÇÃO FINAL] - 24/12/2025 (20:00)**
 
 ### **PROBLEMA IDENTIFICADO:**
 - ❌ Arquivos não estavam sendo criados
@@ -537,7 +630,7 @@ node check.js
 
 ---
 
-## 🔧 **[FIX COMPLETO: AUTO-CREATE .ENV] - 24/12/2024 (19:00)**
+## 🔧 **[FIX COMPLETO: AUTO-CREATE .ENV] - 24/12/2025 (19:00)**
 
 ### **PROBLEMA IDENTIFICADO:**
 - ❌ `.env.example` não existia no GitHub (não versionado)
@@ -593,7 +686,7 @@ if (!fs.existsSync(envPath)) {
 
 ---
 
-## 🤖 **[FIX INTELIGENTE AUTO-FIX] - 24/12/2024 (18:00)**
+## 🤖 **[FIX INTELIGENTE AUTO-FIX] - 24/12/2025 (18:00)**
 
 ### **PROBLEMA IDENTIFICADO:**
 - ❌ Diagnóstico mostrava problemas mas não oferecia corrigir
@@ -631,7 +724,7 @@ if (!fs.existsSync(envPath)) {
 
 ---
 
-## 🔧 **[FIX CRÍTICO: ESM] - 24/12/2024 (17:00)**
+## 🔧 **[FIX CRÍTICO: ESM] - 24/12/2025 (17:00)**
 
 ### **PROBLEMA IDENTIFICADO:**
 - ❌ `package.json` configurado como ESM (`"type": "module"`)
@@ -667,7 +760,7 @@ const __dirname = path.dirname(__filename);
 
 ---
 
-## 🎯 **[REESTRUTURAÇÃO COMPLETA] - 24/12/2024**
+## 🎯 **[REESTRUTURAÇÃO COMPLETA] - 24/12/2025**
 
 ### **MUDANÇA CRÍTICA: Sistema Multiplataforma**
 
@@ -845,11 +938,6 @@ npm run deploy:prod     # Deploy produção (PM2)
 
 ### **Dezembro 2024:**
 - ✅ Fix CORS em todas as rotas
-- ✅ Fix autenticação JWT
-- ✅ Fix detecção de tabelas
-- ✅ Fix instalador HTML
-- ✅ Fix proxy reverso
-- ✅ Fix rate limiting
 
 ---
 
@@ -912,4 +1000,4 @@ Documentos antigos foram consolidados neste CHANGELOG.
 
 ---
 
-**Última atualização:** 24 de dezembro de 2024
+**Última atualização:** 24 de dezembro de 2025

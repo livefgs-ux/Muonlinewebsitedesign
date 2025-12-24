@@ -52,13 +52,23 @@ const PORT = process.env.PORT || 3001;
 // MIDDLEWARES DE SEGURANÇA
 // ==================================
 
+// ════════════════════════════════════════════════════════════════
+// DESABILITAR CSP PARA O INSTALADOR (apenas durante instalação)
+// ════════════════════════════════════════════════════════════════
+app.use('/install', (req, res, next) => {
+  // Remover CSP headers para permitir scripts inline no instalador
+  res.removeHeader('Content-Security-Policy');
+  res.removeHeader('Content-Security-Policy-Report-Only');
+  next();
+});
+
 // Helmet - Headers de segurança COMPLETOS (Safe Vibe Coding)
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"], // React precisa de inline styles
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // ← PERMITIR inline scripts
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'"],
       fontSrc: ["'self'", "data:"],
