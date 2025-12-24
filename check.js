@@ -448,6 +448,39 @@ function deployDev() {
   log.title('🚀 DEPLOY - DESENVOLVIMENTO');
   
   const backendPath = path.join(process.cwd(), 'backend-nodejs');
+  const nodeModulesPath = path.join(backendPath, 'node_modules');
+  
+  // ✅ VERIFICAÇÃO OBRIGATÓRIA: node_modules DEVE EXISTIR
+  if (!fs.existsSync(nodeModulesPath)) {
+    log.error('❌ IMPOSSÍVEL INICIAR: node_modules não existe!');
+    console.log('');
+    log.warn('⚠️  As dependências NÃO foram instaladas.');
+    console.log('');
+    log.info('💡 SOLUÇÃO:');
+    log.info('   1. Execute a opção 2 (Fix Automático) primeiro');
+    log.info('   OU');
+    log.info('   2. Instale manualmente:');
+    log.info('      cd backend-nodejs');
+    log.info('      npm install');
+    console.log('');
+    log.info('🔙 Voltando ao menu...');
+    console.log('');
+    return;
+  }
+  
+  // ✅ VERIFICAÇÃO: .env DEVE EXISTIR
+  const envPath = path.join(backendPath, '.env');
+  if (!fs.existsSync(envPath)) {
+    log.error('❌ IMPOSSÍVEL INICIAR: .env não existe!');
+    console.log('');
+    log.info('💡 Execute a opção 2 (Fix Automático) primeiro');
+    console.log('');
+    return;
+  }
+  
+  log.success('✅ Dependências verificadas');
+  log.success('✅ Configuração verificada');
+  console.log('');
   
   log.info('Iniciando servidor em modo desenvolvimento...');
   log.info('Porta: 3001');
