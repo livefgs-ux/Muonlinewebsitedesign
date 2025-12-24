@@ -276,11 +276,13 @@ router.post('/test-connection', async (req, res) => {
 
 // ════════════════════════════════════════════════════════════════
 // ENDPOINT: Finalizar Instalação
-// ════════════════════════════════���═══════════════════════════════
+// ════════════════════════════════════════════════════════════════
 router.post('/finalize', async (req, res) => {
   const { dbMU, dbWEB, jwtSecret, frontendUrl } = req.body;
   
   console.log('🚀 Finalizando instalação...');
+  console.log('📊 JWT Secret recebido:', jwtSecret);
+  console.log('📊 JWT Secret length:', jwtSecret ? jwtSecret.length : 0);
   
   const log = [];
   const logEntry = (msg) => {
@@ -294,7 +296,7 @@ router.post('/finalize', async (req, res) => {
     // ════════════════════════════════════════════════════════════
     logEntry('📝 Criando arquivo .env...');
     
-    const envContent = `# ════════════════════════════════════════
+    const envContent = `# ════════════════════��═══════════════════
 # MEUMU ONLINE - CONFIGURAÇÃO DO BACKEND
 # ════════════════════════════════════════
 # Gerado automaticamente em: ${new Date().toLocaleString('pt-BR')}

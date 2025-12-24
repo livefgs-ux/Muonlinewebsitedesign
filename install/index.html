@@ -508,10 +508,20 @@
       
       // Gerar JWT Secret
       const jwtSecret = generateRandomSecret(64);
+      console.log('🔑 JWT Secret gerado:', jwtSecret);
+      console.log('🔑 JWT Secret length:', jwtSecret.length);
       
       try {
         const url = `${API_BASE}/api/install/finalize`;
         console.log('📡 POST:', url);
+        
+        const payload = {
+          dbMU: { host, port, user, password, database: dbMU },
+          dbWEB: { host, port, user, password, database: dbWEB },
+          jwtSecret,
+          frontendUrl: 'http://meumu.com'
+        };
+        console.log('📦 Payload:', JSON.stringify(payload).substring(0, 200) + '...');
         
         const response = await fetch(url, {
           method: 'POST',
@@ -519,12 +529,7 @@
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          body: JSON.stringify({
-            dbMU: { host, port, user, password, database: dbMU },
-            dbWEB: { host, port, user, password, database: dbWEB },
-            jwtSecret,
-            frontendUrl: 'http://meumu.com'
-          })
+          body: JSON.stringify(payload)
         });
         
         console.log('📥 Response:', response.status);
