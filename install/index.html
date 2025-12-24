@@ -13,7 +13,7 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%);
       color: #ffffff;
       min-height: 100vh;
       display: flex;
@@ -23,27 +23,29 @@
     }
     
     .container {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(26, 26, 46, 0.8);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 2px solid #F5A623;
       border-radius: 20px;
       padding: 40px;
       max-width: 700px;
       width: 100%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
+                  0 0 40px rgba(245, 166, 35, 0.3);
     }
     
     .logo {
       text-align: center;
       margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #F5A623;
     }
     
     .logo h1 {
       font-size: 2.5rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #F5A623;
       margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(245, 166, 35, 0.5);
     }
     
     .logo p {
@@ -65,6 +67,15 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
+    .step-title {
+      color: #F5A623;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
     .form-group {
       margin-bottom: 20px;
     }
@@ -79,8 +90,8 @@
     input, select {
       width: 100%;
       padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(245, 166, 35, 0.3);
       border-radius: 8px;
       color: #ffffff;
       font-size: 1rem;
@@ -89,31 +100,33 @@
     
     input:focus, select:focus {
       outline: none;
-      border-color: #667eea;
-      background: rgba(255, 255, 255, 0.15);
+      border-color: #F5A623;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 10px rgba(245, 166, 35, 0.3);
     }
     
     input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.4);
     }
     
     .btn {
       padding: 14px 28px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: linear-gradient(135deg, #F5A623 0%, #DAA520 100%);
+      color: #1a1a2e;
       border: none;
       border-radius: 8px;
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.3s ease;
       width: 100%;
       margin-top: 10px;
+      box-shadow: 0 4px 15px rgba(245, 166, 35, 0.4);
     }
     
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 6px 20px rgba(245, 166, 35, 0.6);
     }
     
     .btn:disabled {
@@ -124,12 +137,14 @@
     
     .btn-secondary {
       background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(245, 166, 35, 0.3);
+      color: #F5A623;
+      box-shadow: none;
     }
     
     .btn-secondary:hover {
       background: rgba(255, 255, 255, 0.15);
-      box-shadow: none;
+      box-shadow: 0 4px 15px rgba(245, 166, 35, 0.2);
     }
     
     .status {
@@ -139,31 +154,41 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
     }
     
     .status.success {
       background: rgba(16, 185, 129, 0.2);
-      border: 1px solid rgba(16, 185, 129, 0.4);
+      border: 1px solid rgba(16, 185, 129, 0.6);
+      color: #10b981;
     }
     
     .status.error {
       background: rgba(239, 68, 68, 0.2);
-      border: 1px solid rgba(239, 68, 68, 0.4);
+      border: 1px solid rgba(239, 68, 68, 0.6);
+      color: #ef4444;
     }
     
     .status.warning {
       background: rgba(245, 158, 11, 0.2);
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      border: 1px solid rgba(245, 158, 11, 0.6);
+      color: #f59e0b;
     }
     
     .status.info {
-      background: rgba(59, 130, 246, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.4);
+      background: rgba(245, 166, 35, 0.2);
+      border: 1px solid rgba(245, 166, 35, 0.6);
+      color: #F5A623;
     }
     
     .spinner {
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top: 3px solid #667eea;
+      border: 3px solid rgba(245, 166, 35, 0.3);
+      border-top: 3px solid #F5A623;
       border-radius: 50%;
       width: 30px;
       height: 30px;
@@ -174,20 +199,6 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
-    }
-    
-    .progress-bar {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      height: 8px;
-      overflow: hidden;
-      margin: 20px 0;
-    }
-    
-    .progress-fill {
-      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-      height: 100%;
-      transition: width 0.5s ease;
     }
     
     .help-text {
@@ -209,8 +220,8 @@
     }
     
     .log-output {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(245, 166, 35, 0.3);
       border-radius: 8px;
       padding: 15px;
       max-height: 300px;
@@ -228,6 +239,26 @@
     .log-line.success { color: #10b981; }
     .log-line.error { color: #ef4444; }
     .log-line.warning { color: #f59e0b; }
+    
+    .skip-info {
+      background: rgba(245, 166, 35, 0.1);
+      border: 1px solid rgba(245, 166, 35, 0.3);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+    
+    .skip-info strong {
+      color: #F5A623;
+    }
+    
+    .skip-info code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #F5A623;
+    }
   </style>
 </head>
 <body>
@@ -239,7 +270,7 @@
     
     <!-- STEP 1: Database MuOnline -->
     <div class="step active" id="step1">
-      <h2 style="margin-bottom: 20px;">📦 Database do Servidor MU</h2>
+      <h2 class="step-title">📦 Database do Servidor MU</h2>
       
       <div class="form-group">
         <label>Host do MySQL/MariaDB</label>
@@ -271,14 +302,20 @@
       </div>
       
       <button class="btn" onclick="testConnectionMU()">Testar Conexão</button>
-      <button class="btn btn-secondary" onclick="nextStep()" style="margin-top: 10px;">Pular (configurar depois)</button>
+      <button class="btn btn-secondary" onclick="skipMU()">Pular (configurar depois)</button>
       
       <div id="status-mu" style="margin-top: 20px;"></div>
+      
+      <div class="skip-info" id="skip-info-mu" style="display: none;">
+        <strong>ℹ️ Configuração Manual:</strong><br>
+        Edite o arquivo: <code>/home/meumu.com/public_html/backend-nodejs/.env</code><br>
+        Configure as variáveis: <code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code>, <code>DB_NAME_MUONLINE</code>
+      </div>
     </div>
     
     <!-- STEP 2: Database WebMU -->
     <div class="step" id="step2">
-      <h2 style="margin-bottom: 20px;">🌐 Database do Website</h2>
+      <h2 class="step-title">🌐 Database do Website</h2>
       
       <div class="status info">
         <span>ℹ️</span>
@@ -302,14 +339,14 @@
       </div>
       
       <button class="btn" onclick="testConnectionWEB()">Testar & Criar Database</button>
-      <button class="btn btn-secondary" onclick="prevStep()" style="margin-top: 10px;">← Voltar</button>
+      <button class="btn btn-secondary" onclick="prevStep()">← Voltar</button>
       
       <div id="status-web" style="margin-top: 20px;"></div>
     </div>
     
     <!-- STEP 3: JWT Secret -->
     <div class="step" id="step3">
-      <h2 style="margin-bottom: 20px;">🔐 Segurança</h2>
+      <h2 class="step-title">🔐 Segurança</h2>
       
       <div class="form-group">
         <label>JWT Secret (Chave de Autenticação)</label>
@@ -335,7 +372,7 @@
     <div class="step" id="step4">
       <div style="text-align: center;">
         <div style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
-        <h2 style="margin-bottom: 15px;">Instalação Concluída!</h2>
+        <h2 class="step-title" style="justify-content: center;">Instalação Concluída!</h2>
         <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 30px;">
           Seu backend está configurado e pronto para uso!
         </p>
@@ -351,13 +388,13 @@
       
       <div class="log-output" id="final-log"></div>
       
-      <h3 style="margin: 20px 0 15px 0;">🚀 Próximos Passos:</h3>
+      <h3 style="margin: 20px 0 15px 0; color: #F5A623;">🚀 Próximos Passos:</h3>
       
       <div class="status info">
         <span>1️⃣</span>
         <div>
           <strong>Reiniciar o Servidor</strong><br>
-          Pressione Ctrl+C no terminal e execute: <code>node check.js</code> → Opção 4
+          Pressione Ctrl+C no terminal e execute: <code style="color: #F5A623;">node check.js</code> → Opção 4
         </div>
       </div>
       
@@ -365,7 +402,7 @@
         <span>2️⃣</span>
         <div>
           <strong>Acessar a API</strong><br>
-          API: <code>http://seu-dominio.com:3001/api</code>
+          API: <code style="color: #F5A623;">http://meumu.com:3001/api</code>
         </div>
       </div>
       
@@ -373,7 +410,7 @@
         <span>3️⃣</span>
         <div>
           <strong>Configurar Frontend (Opcional)</strong><br>
-          Edite <code>src/utils/supabase/info.tsx</code> com a URL da API
+          Edite <code style="color: #F5A623;">src/utils/supabase/info.tsx</code> com a URL da API
         </div>
       </div>
       
@@ -389,12 +426,15 @@
     // Gerar JWT Secret automaticamente ao carregar
     window.onload = function() {
       generateJWTSecret();
+      console.log('✅ Instalador carregado');
+      console.log('📍 API Base URL:', window.location.origin);
     };
     
     function showStep(step) {
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
       document.getElementById('step' + step).classList.add('active');
       currentStep = step;
+      console.log('📍 Step atual:', step);
     }
     
     function nextStep() {
@@ -407,6 +447,11 @@
       if (currentStep > 1) {
         showStep(currentStep - 1);
       }
+    }
+    
+    function skipMU() {
+      document.getElementById('skip-info-mu').style.display = 'block';
+      setTimeout(() => nextStep(), 2000);
     }
     
     function showStatus(elementId, type, message) {
@@ -425,10 +470,15 @@
           <div>${message}</div>
         </div>
       `;
+      
+      console.log(`[${type.toUpperCase()}] ${message.replace(/<[^>]*>/g, '')}`);
     }
     
     async function testConnectionMU() {
+      console.log('🔍 Iniciando teste de conexão MU...');
+      
       const data = {
+        type: 'muonline',
         host: document.getElementById('db_host').value,
         port: parseInt(document.getElementById('db_port').value),
         user: document.getElementById('db_user').value,
@@ -436,16 +486,31 @@
         database: document.getElementById('db_name_mu').value
       };
       
+      console.log('📤 Enviando dados:', {
+        ...data,
+        password: '***' // Não logar senha
+      });
+      
       showStatus('status-mu', 'loading', 'Testando conexão com o banco MuOnline...');
       
       try {
-        const response = await fetch('/api/install/test-connection', {
+        const url = '/api/install/test-connection';
+        console.log('📡 URL:', url);
+        
+        const response = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'muonline', ...data })
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(data)
         });
         
+        console.log('📥 Response status:', response.status);
+        console.log('📥 Response headers:', [...response.headers.entries()]);
+        
         const result = await response.json();
+        console.log('📥 Response data:', result);
         
         if (result.success) {
           showStatus('status-mu', 'success', `
@@ -464,15 +529,20 @@
           `);
         }
       } catch (error) {
+        console.error('❌ Erro ao testar conexão:', error);
         showStatus('status-mu', 'error', `
           <strong>Erro ao conectar</strong><br>
-          ${error.message}
+          ${error.message}<br><br>
+          <small>Verifique o console do navegador (F12) para mais detalhes</small>
         `);
       }
     }
     
     async function testConnectionWEB() {
+      console.log('🔍 Iniciando teste de conexão WEB...');
+      
       const data = {
+        type: 'webmu',
         host: document.getElementById('db_host').value,
         port: parseInt(document.getElementById('db_port').value),
         user: document.getElementById('db_user').value,
@@ -481,16 +551,27 @@
         createIfNotExists: document.getElementById('create_web_db').checked
       };
       
+      console.log('📤 Enviando dados:', {
+        ...data,
+        password: '***'
+      });
+      
       showStatus('status-web', 'loading', 'Testando conexão e criando database...');
       
       try {
         const response = await fetch('/api/install/test-connection', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'webmu', ...data })
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(data)
         });
         
+        console.log('📥 Response status:', response.status);
+        
         const result = await response.json();
+        console.log('📥 Response data:', result);
         
         if (result.success) {
           showStatus('status-web', 'success', `
@@ -510,9 +591,11 @@
           `);
         }
       } catch (error) {
+        console.error('❌ Erro ao testar conexão:', error);
         showStatus('status-web', 'error', `
           <strong>Erro ao conectar</strong><br>
-          ${error.message}
+          ${error.message}<br><br>
+          <small>Verifique o console (F12)</small>
         `);
       }
     }
@@ -524,9 +607,12 @@
         secret += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       document.getElementById('jwt_secret').value = secret;
+      console.log('🔑 JWT Secret gerado:', secret.length, 'caracteres');
     }
     
     async function finalizeInstall() {
+      console.log('🚀 Finalizando instalação...');
+      
       const finalData = {
         dbMU: installData.dbMU,
         dbWEB: installData.dbWEB,
@@ -534,16 +620,29 @@
         frontendUrl: document.getElementById('frontend_url').value || 'http://localhost:5173'
       };
       
+      console.log('📤 Dados finais:', {
+        ...finalData,
+        dbMU: finalData.dbMU ? '✓' : '✗',
+        dbWEB: finalData.dbWEB ? '✓' : '✗',
+        jwtSecret: '***'
+      });
+      
       showStatus('status-final', 'loading', 'Salvando configurações no .env...');
       
       try {
         const response = await fetch('/api/install/finalize', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify(finalData)
         });
         
+        console.log('📥 Response status:', response.status);
+        
         const result = await response.json();
+        console.log('📥 Response data:', result);
         
         if (result.success) {
           // Mostrar log
@@ -574,9 +673,11 @@
           `);
         }
       } catch (error) {
+        console.error('❌ Erro ao finalizar:', error);
         showStatus('status-final', 'error', `
           <strong>Erro</strong><br>
-          ${error.message}
+          ${error.message}<br><br>
+          <small>Verifique o console (F12)</small>
         `);
       }
     }
