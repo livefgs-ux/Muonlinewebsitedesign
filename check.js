@@ -212,30 +212,141 @@ function fixProblems() {
   log.title('🔧 FIX AUTOMÁTICO');
   
   const backendPath = path.join(process.cwd(), 'backend-nodejs');
+  let fixCount = 0;
   
-  // Fix 1: Criar .env se não existir
-  const envPath = path.join(backendPath, '.env');
+  console.log(`${colors.cyan}[DEBUG]${colors.reset} Backend path: ${backendPath}\n`);
+  
+  // Fix 1: Criar .env.example se não existir
   const envExamplePath = path.join(backendPath, '.env.example');
   
-  if (!fs.existsSync(envPath) && fs.existsSync(envExamplePath)) {
-    log.info('Criando .env a partir de .env.example...');
-    fs.copyFileSync(envExamplePath, envPath);
-    log.success('.env criado');
+  console.log(`${colors.cyan}[DEBUG]${colors.reset} Verificando: ${envExamplePath}`);
+  
+  if (!fs.existsSync(envExamplePath)) {
+    log.info('📝 Criando .env.example...');
+    
+    const envExampleTemplate = `# ════════════════════════════════════════
+# MEUMU ONLINE - CONFIGURAÇÃO DO BACKEND
+# ════════════════════════════════════════
+
+# SERVIDOR
+PORT=3001
+NODE_ENV=development
+
+# AUTENTICAÇÃO JWT
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-min-32-chars
+JWT_EXPIRES_IN=7d
+
+# DATABASE 1: MUONLINE (Servidor MU - READONLY)
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=sua_senha_mysql
+DB_NAME_MUONLINE=MuOnline
+
+# DATABASE 2: WEBMU (Website - READ/WRITE)
+DB_NAME_WEBMU=webmu
+
+# CONFIGURAÇÕES DE CONEXÃO
+DB_CONNECTION_LIMIT=10
+DB_QUEUE_LIMIT=0
+DB_TIMEOUT=10000
+
+# CORS (Frontend)
+FRONTEND_URL=http://localhost:5173
+CORS_ORIGINS=http://localhost:5173,http://localhost:3001
+
+# RATE LIMITING
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_AUTH_WINDOW_MS=900000
+RATE_LIMIT_AUTH_MAX_REQUESTS=5
+
+# SEGURANÇA
+SECURITY_MODE=development
+SECURITY_LOGS_ENABLED=true
+SECURITY_ALERTS_ENABLED=true
+LOGS_DIR=./logs
+
+# BCRYPT
+BCRYPT_ROUNDS=12
+
+# TABELAS DO MU ONLINE
+TABLE_ACCOUNTS=MEMB_INFO
+TABLE_CHARACTERS=Character
+TABLE_GUILDS=Guild
+
+# ADMIN CP
+ADMIN_EMAIL=admin@meumu.com
+ADMIN_PASSWORD=AdminMeuMU2024!
+
+# BACKUP
+BACKUP_ENABLED=false
+BACKUP_DIR=./backups
+BACKUP_RETENTION_DAYS=7
+
+# DEVELOPMENT/DEBUG
+DEBUG=false
+VERBOSE_ERRORS=true
+`;
+    
+    try {
+      fs.writeFileSync(envExamplePath, envExampleTemplate, 'utf8');
+      log.success('.env.example criado com sucesso!');
+      console.log(`${colors.cyan}[DEBUG]${colors.reset} Arquivo criado em: ${envExamplePath}`);
+      fixCount++;
+    } catch (error) {
+      log.error(`Erro ao criar .env.example: ${error.message}`);
+    }
+  } else {
+    log.info('.env.example já existe, pulando...');
   }
   
-  // Fix 2: Instalar dependências se faltarem
+  console.log('');
+  
+  // Fix 2: Criar .env se não existir
+  const envPath = path.join(backendPath, '.env');
+  
+  console.log(`${colors.cyan}[DEBUG]${colors.reset} Verificando: ${envPath}`);
+  
+  if (!fs.existsSync(envPath)) {
+    log.info('📝 Criando .env a partir de .env.example...');
+    
+    if (fs.existsSync(envExamplePath)) {
+      try {
+        fs.copyFileSync(envExamplePath, envPath);
+        log.success('.env criado com sucesso!');
+        console.log(`${colors.cyan}[DEBUG]${colors.reset} Arquivo criado em: ${envPath}`);
+        log.warn('⚠️  IMPORTANTE: Configure as credenciais em backend-nodejs/.env');
+        fixCount++;
+      } catch (error) {
+        log.error(`Erro ao criar .env: ${error.message}`);
+      }
+    } else {
+      log.error('Não foi possível criar .env (falta .env.example)');
+    }
+  } else {
+    log.info('.env já existe, pulando...');
+  }
+  
+  console.log('');
+  
+  // Fix 3: Instalar dependências se faltarem
   const nodeModulesPath = path.join(backendPath, 'node_modules');
   if (!fs.existsSync(nodeModulesPath)) {
-    log.info('Instalando dependências...');
+    log.info('Instalando dependências do backend...');
+    log.info('Isso pode levar alguns minutos...');
+    
     const result = runCommand('npm install', { cwd: backendPath });
     if (result.success) {
       log.success('Dependências instaladas');
+      fixCount++;
     } else {
       log.error('Falha ao instalar dependências');
+      log.info('💡 Tente manualmente: cd backend-nodejs && npm install');
     }
   }
   
-  // Fix 3: Criar diretórios de logs se não existirem
+  // Fix 4: Criar diretórios de logs se não existirem
   const logDirs = [
     path.join(backendPath, 'logs'),
     path.join(backendPath, 'logs', 'security'),
@@ -247,7 +358,16 @@ function fixProblems() {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
       log.success(`Criado: ${path.relative(process.cwd(), dir)}`);
+      fixCount++;
     }
+  }
+  
+  console.log('');
+  
+  if (fixCount > 0) {
+    log.success(`✅ ${fixCount} correção(ões) aplicada(s)!`);
+  } else {
+    log.info('✨ Nada para corrigir - tudo já está OK!');
   }
   
   console.log('');
@@ -389,35 +509,62 @@ function showLogs() {
   const logsPath = path.join(backendPath, 'logs');
   
   if (!fs.existsSync(logsPath)) {
-    log.warn('Diretório de logs não existe ainda');
-    log.info('Os logs serão criados quando o servidor iniciar');
+    log.warn('❌ Diretório de logs não existe ainda');
+    console.log('');
+    log.info('💡 Os logs serão criados quando:');
+    log.info('   1. O servidor iniciar (npm start)');
+    log.info('   2. Houver atividade de segurança');
+    log.info('   3. Houver erros ou alertas');
+    console.log('');
+    log.info('🚀 Para iniciar o servidor:');
+    log.info('   cd backend-nodejs');
+    log.info('   npm start');
+    console.log('');
     return;
   }
   
   // Listar arquivos de log
-  const files = fs.readdirSync(logsPath, { recursive: true, withFileTypes: true });
-  const logFiles = files
-    .filter(f => f.isFile())
-    .map(f => path.join(f.path || logsPath, f.name))
-    .filter(f => f.endsWith('.log') || f.endsWith('.json'));
+  let logFiles = [];
   
-  if (logFiles.length === 0) {
-    log.info('Nenhum log encontrado ainda');
+  try {
+    const files = fs.readdirSync(logsPath, { recursive: true, withFileTypes: true });
+    logFiles = files
+      .filter(f => f.isFile())
+      .map(f => path.join(f.path || logsPath, f.name))
+      .filter(f => f.endsWith('.log') || f.endsWith('.json'));
+  } catch (error) {
+    log.error('Erro ao ler diretório de logs');
     return;
   }
   
-  log.info(`${logFiles.length} arquivo(s) de log encontrado(s):\n`);
+  if (logFiles.length === 0) {
+    log.warn('📁 Diretório de logs existe mas está vazio');
+    console.log('');
+    log.info('💡 Logs serão criados quando o servidor iniciar');
+    log.info('');
+    log.info('🚀 Para iniciar o servidor:');
+    log.info('   cd backend-nodejs');
+    log.info('   npm start');
+    console.log('');
+    return;
+  }
+  
+  log.success(`✅ ${logFiles.length} arquivo(s) de log encontrado(s):\n`);
   
   for (const file of logFiles) {
     const stats = fs.statSync(file);
     const relPath = path.relative(process.cwd(), file);
     const size = (stats.size / 1024).toFixed(2);
     
-    console.log(`  ${relPath}`);
-    console.log(`    Tamanho: ${size} KB`);
-    console.log(`    Modificado: ${stats.mtime.toLocaleString()}`);
+    console.log(`  📄 ${relPath}`);
+    console.log(`     Tamanho: ${size} KB`);
+    console.log(`     Modificado: ${stats.mtime.toLocaleString()}`);
     console.log('');
   }
+  
+  log.info('💡 Para ver conteúdo dos logs:');
+  log.info('   tail -f backend-nodejs/logs/security/security.log');
+  console.log('');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -501,9 +648,40 @@ async function runInteractive() {
           
           if (shouldFix) {
             console.log('');
+            console.log('═'.repeat(60));
             fixProblems();
-            log.success('✅ Correções aplicadas!');
-            log.info('💡 Execute o diagnóstico novamente para verificar');
+            
+            // VERIFICAR SE OS ARQUIVOS FORAM CRIADOS
+            console.log('');
+            log.info('🔍 Verificando correções...');
+            console.log('');
+            
+            const backendPath = path.join(process.cwd(), 'backend-nodejs');
+            const envExamplePath = path.join(backendPath, '.env.example');
+            const envPath = path.join(backendPath, '.env');
+            const nodeModulesPath = path.join(backendPath, 'node_modules');
+            
+            if (fs.existsSync(envExamplePath)) {
+              log.success('.env.example ✓');
+            } else {
+              log.error('.env.example ainda não existe');
+            }
+            
+            if (fs.existsSync(envPath)) {
+              log.success('.env ✓');
+            } else {
+              log.error('.env ainda não existe');
+            }
+            
+            if (fs.existsSync(nodeModulesPath)) {
+              log.success('node_modules ✓');
+            } else {
+              log.warn('node_modules ainda não existe (normal se demorar)');
+            }
+            
+            console.log('');
+            log.success('✅ Processo de correção concluído!');
+            log.info('💡 Execute o diagnóstico novamente (opção 1) para confirmar');
           }
         } else {
           log.success('✅ TUDO OK! Nenhum problema encontrado.');

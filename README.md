@@ -11,13 +11,28 @@ Dark Medieval Fantasy · Multilíngue (PT/EN/ES) · 100% Responsivo
 - Node.js 18+ ([Download](https://nodejs.org))
 - MariaDB/MySQL
 
-### **Instalar:**
+### **Passo 1: Clonar/Baixar**
 
 ```bash
-node install.js
+git clone https://github.com/seu-usuario/meumu-online.git
+cd meumu-online
 ```
 
-### **Configurar:**
+### **Passo 2: Executar Diagnóstico + Auto-Fix**
+
+```bash
+node check.js
+# Escolha opção 1 (Diagnóstico)
+# Digite S quando perguntar para corrigir
+```
+
+**OU execute direto:**
+
+```bash
+node check.js fix
+```
+
+### **Passo 3: Configurar .env**
 
 Edite `backend-nodejs/.env`:
 
