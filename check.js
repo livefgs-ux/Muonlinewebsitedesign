@@ -332,18 +332,30 @@ VERBOSE_ERRORS=true
   
   // Fix 3: Instalar dependências se faltarem
   const nodeModulesPath = path.join(backendPath, 'node_modules');
+  
+  console.log(`${colors.cyan}[DEBUG]${colors.reset} Verificando: ${nodeModulesPath}`);
+  
   if (!fs.existsSync(nodeModulesPath)) {
-    log.info('Instalando dependências do backend...');
-    log.info('Isso pode levar alguns minutos...');
+    log.info('📦 Instalando dependências do backend...');
+    log.info('⏳ Isso pode levar alguns minutos...');
+    console.log('');
+    
+    console.log(`${colors.cyan}[DEBUG]${colors.reset} Executando: npm install em ${backendPath}`);
     
     const result = runCommand('npm install', { cwd: backendPath });
+    
+    console.log(`${colors.cyan}[DEBUG]${colors.reset} Resultado: ${JSON.stringify(result)}`);
+    
     if (result.success) {
-      log.success('Dependências instaladas');
+      log.success('✅ Dependências instaladas com sucesso!');
       fixCount++;
     } else {
-      log.error('Falha ao instalar dependências');
+      log.error('❌ Falha ao instalar dependências');
+      log.error(`Erro: ${result.error || 'Desconhecido'}`);
       log.info('💡 Tente manualmente: cd backend-nodejs && npm install');
     }
+  } else {
+    log.info('node_modules já existe, pulando...');
   }
   
   // Fix 4: Criar diretórios de logs se não existirem
@@ -676,7 +688,16 @@ async function runInteractive() {
             if (fs.existsSync(nodeModulesPath)) {
               log.success('node_modules ✓');
             } else {
-              log.warn('node_modules ainda não existe (normal se demorar)');
+              log.error('❌ node_modules NÃO foi criado!');
+              log.warn('');
+              log.warn('POSSÍVEIS CAUSAS:');
+              log.warn('  1. npm install falhou silenciosamente');
+              log.warn('  2. Erro de permissão');
+              log.warn('  3. Problema de rede');
+              log.warn('');
+              log.info('💡 Tente manualmente agora:');
+              log.info('   cd backend-nodejs');
+              log.info('   npm install');
             }
             
             console.log('');
@@ -691,6 +712,34 @@ async function runInteractive() {
       
       case '2':
         fixProblems();
+        
+        // Verificar resultado após fix manual (opção 2)
+        console.log('');
+        log.info('🔍 Verificando correções...');
+        console.log('');
+        
+        const backendPath = path.join(process.cwd(), 'backend-nodejs');
+        const envExamplePath = path.join(backendPath, '.env.example');
+        const envPath = path.join(backendPath, '.env');
+        const nodeModulesPath = path.join(backendPath, 'node_modules');
+        
+        if (fs.existsSync(envExamplePath)) {
+          log.success('.env.example ✓');
+        } else {
+          log.error('.env.example ainda não existe');
+        }
+        
+        if (fs.existsSync(envPath)) {
+          log.success('.env ✓');
+        } else {
+          log.error('.env ainda não existe');
+        }
+        
+        if (fs.existsSync(nodeModulesPath)) {
+          log.success('node_modules ✓');
+        } else {
+          log.error('❌ node_modules NÃO foi criado!');
+        }
         break;
       
       case '3':
