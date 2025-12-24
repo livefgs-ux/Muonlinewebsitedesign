@@ -485,23 +485,23 @@ function deployDev() {
   // ═══════════════════════════════════════════════════════════════
   // INSTRUÇÕES CLARAS ANTES DE INICIAR
   // ═══════════════════════════════════════════════════════════════
-  console.log(colors.cyan('╔══════════════════════════════════════════════════════════╗'));
-  console.log(colors.cyan('║') + colors.yellow('  📋 IMPORTANTE: PRÓXIMOS PASSOS                          ') + colors.cyan('║'));
-  console.log(colors.cyan('╠══════════════════════════════════════════════════════════╣'));
-  console.log(colors.cyan('║') + '  1️⃣  O servidor vai INICIAR e OCUPAR este terminal    ' + colors.cyan('║'));
-  console.log(colors.cyan('║') + '  2️⃣  DEIXE ESTA JANELA ABERTA (servidor rodando)      ' + colors.cyan('║'));
-  console.log(colors.cyan('║') + '  3️⃣  ABRA OUTRO TERMINAL para continuar trabalhando   ' + colors.cyan('║'));
-  console.log(colors.cyan('║') + '                                                       ' + colors.cyan('║'));
-  console.log(colors.cyan('║') + colors.green('  🌐 Acesse o INSTALADOR WEB:                           ') + colors.cyan('║'));
-  console.log(colors.cyan('║') + colors.white('     http://meumu.com:3001/install                      ') + colors.cyan('║'));
-  console.log(colors.cyan('║') + colors.white('     OU: http://SEU-IP:3001/install                     ') + colors.cyan('║'));
-  console.log(colors.cyan('║') + '                                                       ' + colors.cyan('║'));
-  console.log(colors.cyan('║') + colors.yellow('  💡 DICA: Rodando em BACKGROUND                        ') + colors.cyan('║'));
-  console.log(colors.cyan('║') + '     Para NÃO ocupar o terminal, use:                 ' + colors.cyan('║'));
-  console.log(colors.cyan('║') + '     Opção 5 (Deploy Produção - PM2)                  ' + colors.cyan('║'));
-  console.log(colors.cyan('║') + '                                                       ' + colors.cyan('║'));
-  console.log(colors.cyan('║') + colors.red('  ⚠️  Para PARAR: Pressione Ctrl+C                      ') + colors.cyan('║'));
-  console.log(colors.cyan('╚══════════════════════════════════════════════════════════╝'));
+  console.log(`${colors.cyan}╔══════════════════════════════════════════════════════════╗${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}${colors.yellow}  📋 IMPORTANTE: PRÓXIMOS PASSOS                          ${colors.reset}${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}╠══════════════════════════════════════════════════════════╣${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}  1️⃣  O servidor vai INICIAR e OCUPAR este terminal    ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}  2️⃣  DEIXE ESTA JANELA ABERTA (servidor rodando)      ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}  3️⃣  ABRA OUTRO TERMINAL para continuar trabalhando   ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}                                                       ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}${colors.green}  🌐 Acesse o INSTALADOR WEB:                           ${colors.reset}${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}     ${colors.blue}http://meumu.com:3001/install${colors.reset}                      ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}     ${colors.blue}OU: http://SEU-IP:3001/install${colors.reset}                     ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}                                                       ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}${colors.yellow}  💡 DICA: Rodando em BACKGROUND                        ${colors.reset}${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}     Para NÃO ocupar o terminal, use:                 ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}     Opção 5 (Deploy Produção - PM2)                  ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}                                                       ${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}║${colors.reset}${colors.red}  ⚠️  Para PARAR: Pressione Ctrl+C                      ${colors.reset}${colors.cyan}║${colors.reset}`);
+  console.log(`${colors.cyan}╚══════════════════════════════════════════════════════════╝${colors.reset}`);
   console.log('');
   
   log.info('Iniciando servidor em modo desenvolvimento...');
