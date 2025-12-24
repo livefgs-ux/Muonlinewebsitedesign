@@ -16,7 +16,9 @@
 
 export const API_CONFIG = {
   // URL BASE DO BACKEND (SEM BARRA NO FINAL)
-  BASE_URL: 'http://localhost:3001/api',
+  // Em produção, será a mesma origem (http://meumu.com:3001)
+  // Em desenvolvimento, localhost:3001
+  BASE_URL: import.meta.env.VITE_API_URL || window.location.origin + '/api',
   
   // TIMEOUT DE REQUISIÇÕES (ms)
   TIMEOUT: 30000,
@@ -30,11 +32,11 @@ export const API_CONFIG = {
     AUTH_LOGOUT: '/auth/logout',
     
     // Jogador
-    PLAYER_CHARACTERS: '/player/characters',
-    PLAYER_CHARACTER: '/player/character', // + /:name
-    PLAYER_DISTRIBUTE_POINTS: '/player/character', // + /:name/add-stats
-    PLAYER_RESET: '/player/character', // + /:name/reset
-    PLAYER_ACCOUNT_INFO: '/player/account-info',
+    PLAYER_CHARACTERS: '/characters',
+    PLAYER_CHARACTER: '/characters', // + /:name
+    PLAYER_DISTRIBUTE_POINTS: '/characters', // + /:name/add-stats
+    PLAYER_RESET: '/characters', // + /:name/reset
+    PLAYER_ACCOUNT_INFO: '/auth/me',
     
     // Rankings
     RANKING_PLAYERS: '/rankings/players',
@@ -43,8 +45,15 @@ export const API_CONFIG = {
     RANKING_GENS: '/rankings/gens',
     
     // Status do Servidor
-    SERVER_STATUS: '/status',
-    SERVER_STATUS_DETAILED: '/status/detailed',
+    SERVER_STATUS: '/server/status',
+    SERVER_STATUS_DETAILED: '/server/status',
+    
+    // Notícias
+    NEWS_LIST: '/news',
+    NEWS_DETAIL: '/news', // + /:id
+    
+    // Eventos
+    EVENTS_LIST: '/events',
     
     // WCoin Packages
     WCOIN_PACKAGES: '/wcoin/packages',
