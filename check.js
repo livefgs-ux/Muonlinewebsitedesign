@@ -71,6 +71,41 @@ function commandExists(command) {
   return result.success;
 }
 
+// Verificar permissões de escrita
+function checkPermissions() {
+  const testFile = path.join(process.cwd(), '.permission-test-' + Date.now());
+  
+  try {
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+    return { ok: true };
+  } catch (error) {
+    const currentDir = process.cwd();
+    const currentUser = process.env.USER || process.env.USERNAME || 'unknown';
+    
+    let ownerInfo = '';
+    if (process.platform !== 'win32') {
+      try {
+        const statCmd = `stat -c '%U:%G' "${currentDir}"`;
+        const result = runCommand(statCmd, { silent: true });
+        if (result.success) {
+          ownerInfo = result.output.trim();
+        }
+      } catch (e) {
+        // Ignorar
+      }
+    }
+    
+    return { 
+      ok: false, 
+      currentDir,
+      currentUser,
+      ownerInfo,
+      error: error.message 
+    };
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // 1. DIAGNÓSTICO COMPLETO
 // ═══════════════════════════════════════════════════════════════
@@ -133,6 +168,46 @@ function diagnosticSystem() {
   } else {
     log.warn('PM2: NÃO INSTALADO (opcional para produção)');
     checks.push({ name: 'PM2', status: 'OPTIONAL' });
+  }
+  
+  console.log('');
+  
+  // Verificar permissões
+  log.title('🔓 VERIFICANDO PERMISSÕES');
+  
+  const permCheck = checkPermissions();
+  
+  if (!permCheck.ok) {
+    log.error('❌ SEM PERMISSÃO DE ESCRITA NO DIRETÓRIO ATUAL!');
+    console.log('');
+    log.warn(`📂 Diretório: ${permCheck.currentDir}`);
+    log.warn(`👤 Seu usuário: ${permCheck.currentUser}`);
+    
+    if (permCheck.ownerInfo) {
+      log.warn(`👑 Dono do diretório: ${permCheck.ownerInfo}`);
+    }
+    
+    console.log('');
+    log.error('═'.repeat(60));
+    log.error('  SOLUÇÕES:');
+    log.error('═'.repeat(60));
+    console.log('');
+    
+    log.info('🔧 SOLUÇÃO 1 (RECOMENDADA): Corrigir ownership');
+    console.log('');
+    console.log(`   ${colors.green}sudo chown -R $USER:$USER ${permCheck.currentDir}${colors.reset}`);
+    console.log('');
+    
+    log.info('🔧 SOLUÇÃO 2: Executar com sudo');
+    console.log('');
+    console.log(`   ${colors.green}sudo node check.js${colors.reset}`);
+    console.log('');
+    
+    hasIssues = true;
+    checks.push({ name: 'Permissões', status: 'ERROR', error: permCheck.error });
+  } else {
+    log.success('✅ Permissões OK!');
+    checks.push({ name: 'Permissões', status: 'OK' });
   }
   
   console.log('');

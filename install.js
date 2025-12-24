@@ -63,6 +63,44 @@ function commandExists(command) {
   return result.success;
 }
 
+// Verificar permissões de escrita no diretório
+function checkPermissions() {
+  const testFile = path.join(process.cwd(), '.permission-test-' + Date.now());
+  
+  try {
+    // Tentar criar um arquivo de teste
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+    return { ok: true };
+  } catch (error) {
+    // Detectar informações do sistema
+    const currentDir = process.cwd();
+    const currentUser = process.env.USER || process.env.USERNAME || 'unknown';
+    
+    // Tentar obter informações do dono do diretório (apenas Unix/Linux)
+    let ownerInfo = '';
+    if (process.platform !== 'win32') {
+      try {
+        const statCmd = `stat -c '%U:%G' "${currentDir}"`;
+        const result = runCommand(statCmd, { silent: true });
+        if (result.success) {
+          ownerInfo = result.output.trim();
+        }
+      } catch (e) {
+        // Ignorar erro se stat não funcionar
+      }
+    }
+    
+    return { 
+      ok: false, 
+      currentDir,
+      currentUser,
+      ownerInfo,
+      error: error.message 
+    };
+  }
+}
+
 // Verificar requisitos
 function checkRequirements() {
   log.title('🔍 VERIFICANDO REQUISITOS');
@@ -102,6 +140,50 @@ function checkRequirements() {
   }
   
   log.success('\n✅ Todos os requisitos atendidos!\n');
+  
+  // Verificar permissões
+  log.title('🔓 VERIFICANDO PERMISSÕES');
+  
+  const permCheck = checkPermissions();
+  
+  if (!permCheck.ok) {
+    log.error('❌ SEM PERMISSÃO DE ESCRITA NO DIRETÓRIO ATUAL!');
+    console.log('');
+    log.warn(`📂 Diretório: ${permCheck.currentDir}`);
+    log.warn(`👤 Seu usuário: ${permCheck.currentUser}`);
+    
+    if (permCheck.ownerInfo) {
+      log.warn(`👑 Dono do diretório: ${permCheck.ownerInfo}`);
+    }
+    
+    console.log('');
+    log.error('═'.repeat(60));
+    log.error('  SOLUÇÕES:');
+    log.error('═'.repeat(60));
+    console.log('');
+    
+    log.info('🔧 SOLUÇÃO 1 (RECOMENDADA): Corrigir ownership');
+    console.log('');
+    console.log(`   ${colors.green}sudo chown -R $USER:$USER ${permCheck.currentDir}${colors.reset}`);
+    console.log('');
+    
+    log.info('🔧 SOLUÇÃO 2: Executar instalação com sudo');
+    console.log('');
+    console.log(`   ${colors.green}sudo node install.js${colors.reset}`);
+    console.log('');
+    
+    log.info('🔧 SOLUÇÃO 3: Usar diretório com permissões corretas');
+    console.log('');
+    console.log(`   ${colors.green}mkdir -p ~/meumu && cd ~/meumu${colors.reset}`);
+    console.log(`   ${colors.green}# Copie os arquivos para este diretório${colors.reset}`);
+    console.log(`   ${colors.green}node install.js${colors.reset}`);
+    console.log('');
+    
+    log.error(`Erro: ${permCheck.error}`);
+    process.exit(1);
+  }
+  
+  log.success('✅ Permissões OK!\n');
 }
 
 // Verificar estrutura de pastas
@@ -137,7 +219,7 @@ function checkDirectories() {
 }
 
 // Instalar dependências do backend
-function installBackendDependencies() {
+function installDependencies() {
   log.title('📦 INSTALANDO DEPENDÊNCIAS DO BACKEND');
   
   const backendPath = path.join(process.cwd(), 'backend-nodejs');
@@ -149,13 +231,34 @@ function installBackendDependencies() {
   
   log.info('Instalando dependências...');
   
-  const result = runCommand('npm install', { cwd: backendPath });
+  // Tentar npm install normal primeiro
+  let result = runCommand('npm install', { cwd: backendPath });
+  
+  // Se falhar com EACCES, tentar com --unsafe-perm
+  if (!result.success && result.error && result.error.includes('EACCES')) {
+    log.warn('⚠️  Permissão negada - tentando com --unsafe-perm...');
+    result = runCommand('npm install --unsafe-perm', { cwd: backendPath });
+  }
   
   if (!result.success) {
     log.error('Falha ao instalar dependências!');
-    log.info('\n💡 Tente manualmente:');
+    log.info('');
+    log.info('💡 TENTE MANUALMENTE:');
+    log.info('');
+    log.info('Opção 1 (Corrigir permissões):');
+    log.info(`   sudo chown -R $USER:$USER ${process.cwd()}`);
     log.info('   cd backend-nodejs');
     log.info('   npm install');
+    log.info('');
+    log.info('Opção 2 (Com sudo):');
+    log.info('   cd backend-nodejs');
+    log.info('   sudo npm install');
+    log.info(`   sudo chown -R $USER:$USER ${backendPath}/node_modules`);
+    log.info('');
+    log.info('Opção 3 (Flag unsafe-perm):');
+    log.info('   cd backend-nodejs');
+    log.info('   npm install --unsafe-perm');
+    log.info('');
     process.exit(1);
   }
   
@@ -332,7 +435,7 @@ ${colors.cyan}╔═════════════════════
   try {
     checkRequirements();
     checkDirectories();
-    installBackendDependencies();
+    installDependencies();
     checkEnvFile();
     setupGitHooks();
     testBackend();
