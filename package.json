@@ -18,8 +18,7 @@
     "check:fix": "node check.js fix",
     "check:security": "node check.js security",
     "deploy:dev": "node check.js dev",
-    "deploy:prod": "node check.js prod",
-    "cleanup": "node cleanup.js"
+    "deploy:prod": "node check.js prod"
   },
   "dependencies": {
     "react": "18.3.1",
