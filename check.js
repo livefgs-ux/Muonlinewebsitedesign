@@ -482,12 +482,32 @@ function deployDev() {
   log.success('✅ Configuração verificada');
   console.log('');
   
+  // ═══════════════════════════════════════════════════════════════
+  // INSTRUÇÕES CLARAS ANTES DE INICIAR
+  // ═══════════════════════════════════════════════════════════════
+  console.log(colors.cyan('╔══════════════════════════════════════════════════════════╗'));
+  console.log(colors.cyan('║') + colors.yellow('  📋 IMPORTANTE: PRÓXIMOS PASSOS                          ') + colors.cyan('║'));
+  console.log(colors.cyan('╠══════════════════════════════════════════════════════════╣'));
+  console.log(colors.cyan('║') + '  1️⃣  O servidor vai INICIAR e OCUPAR este terminal    ' + colors.cyan('║'));
+  console.log(colors.cyan('║') + '  2️⃣  DEIXE ESTA JANELA ABERTA (servidor rodando)      ' + colors.cyan('║'));
+  console.log(colors.cyan('║') + '  3️⃣  ABRA OUTRO TERMINAL para continuar trabalhando   ' + colors.cyan('║'));
+  console.log(colors.cyan('║') + '                                                       ' + colors.cyan('║'));
+  console.log(colors.cyan('║') + colors.green('  🌐 Acesse o INSTALADOR WEB:                           ') + colors.cyan('║'));
+  console.log(colors.cyan('║') + colors.white('     http://meumu.com:3001/install                      ') + colors.cyan('║'));
+  console.log(colors.cyan('║') + colors.white('     OU: http://SEU-IP:3001/install                     ') + colors.cyan('║'));
+  console.log(colors.cyan('║') + '                                                       ' + colors.cyan('║'));
+  console.log(colors.cyan('║') + colors.yellow('  💡 DICA: Rodando em BACKGROUND                        ') + colors.cyan('║'));
+  console.log(colors.cyan('║') + '     Para NÃO ocupar o terminal, use:                 ' + colors.cyan('║'));
+  console.log(colors.cyan('║') + '     Opção 5 (Deploy Produção - PM2)                  ' + colors.cyan('║'));
+  console.log(colors.cyan('║') + '                                                       ' + colors.cyan('║'));
+  console.log(colors.cyan('║') + colors.red('  ⚠️  Para PARAR: Pressione Ctrl+C                      ') + colors.cyan('║'));
+  console.log(colors.cyan('╚══════════════════════════════════════════════════════════╝'));
+  console.log('');
+  
   log.info('Iniciando servidor em modo desenvolvimento...');
   log.info('Porta: 3001');
   log.info('Hot reload: Ativado (nodemon)');
   console.log('');
-  
-  log.warn('Pressione Ctrl+C para parar\n');
   
   // Usar npm run dev se disponível, senão node direto
   const packageJsonPath = path.join(backendPath, 'package.json');

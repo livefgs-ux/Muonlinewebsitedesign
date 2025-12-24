@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MeuMU Online - Instalador Web</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .logo h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    
+    .logo p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1rem;
+    }
+    
+    .step {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .step.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin-top: 10px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+    }
+    
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .status.success {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    
+    .status.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    
+    .status.warning {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+    
+    .status.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+    
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .progress-bar {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    
+    .progress-fill {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      height: 100%;
+      transition: width 0.5s ease;
+    }
+    
+    .help-text {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 5px;
+    }
+    
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    @media (max-width: 600px) {
+      .two-cols {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .log-output {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      margin: 15px 0;
+    }
+    
+    .log-line {
+      margin-bottom: 5px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .log-line.success { color: #10b981; }
+    .log-line.error { color: #ef4444; }
+    .log-line.warning { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h1>⚔️ MeuMU Online</h1>
+      <p>Instalador Web - Configuração Rápida</p>
+    </div>
+    
+    <!-- STEP 1: Database MuOnline -->
+    <div class="step active" id="step1">
+      <h2 style="margin-bottom: 20px;">📦 Database do Servidor MU</h2>
+      
+      <div class="form-group">
+        <label>Host do MySQL/MariaDB</label>
+        <input type="text" id="db_host" value="localhost" placeholder="localhost">
+        <div class="help-text">Endereço do servidor de banco de dados</div>
+      </div>
+      
+      <div class="two-cols">
+        <div class="form-group">
+          <label>Porta</label>
+          <input type="number" id="db_port" value="3306" placeholder="3306">
+        </div>
+        
+        <div class="form-group">
+          <label>Usuário</label>
+          <input type="text" id="db_user" value="root" placeholder="root">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="db_password" placeholder="Senha do MySQL">
+      </div>
+      
+      <div class="form-group">
+        <label>Nome da Database do MU</label>
+        <input type="text" id="db_name_mu" value="MuOnline" placeholder="MuOnline">
+        <div class="help-text">Database onde estão as tabelas do servidor MU (MEMB_INFO, Character, etc)</div>
+      </div>
+      
+      <button class="btn" onclick="testConnectionMU()">Testar Conexão</button>
+      <button class="btn btn-secondary" onclick="nextStep()" style="margin-top: 10px;">Pular (configurar depois)</button>
+      
+      <div id="status-mu" style="margin-top: 20px;"></div>
+    </div>
+    
+    <!-- STEP 2: Database WebMU -->
+    <div class="step" id="step2">
+      <h2 style="margin-bottom: 20px;">🌐 Database do Website</h2>
+      
+      <div class="status info">
+        <span>ℹ️</span>
+        <div>
+          <strong>Database Separada</strong><br>
+          O website usa uma database própria para notícias, logs, eventos, etc.
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Nome da Database do Website</label>
+        <input type="text" id="db_name_web" value="webmu" placeholder="webmu">
+        <div class="help-text">Será criada automaticamente se não existir</div>
+      </div>
+      
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="create_web_db" checked style="width: auto; display: inline-block; margin-right: 8px;">
+          Criar database automaticamente
+        </label>
+      </div>
+      
+      <button class="btn" onclick="testConnectionWEB()">Testar & Criar Database</button>
+      <button class="btn btn-secondary" onclick="prevStep()" style="margin-top: 10px;">← Voltar</button>
+      
+      <div id="status-web" style="margin-top: 20px;"></div>
+    </div>
+    
+    <!-- STEP 3: JWT Secret -->
+    <div class="step" id="step3">
+      <h2 style="margin-bottom: 20px;">🔐 Segurança</h2>
+      
+      <div class="form-group">
+        <label>JWT Secret (Chave de Autenticação)</label>
+        <input type="text" id="jwt_secret" placeholder="Será gerado automaticamente" readonly>
+        <div class="help-text">Chave secreta para assinar tokens JWT (gerada automaticamente)</div>
+      </div>
+      
+      <button class="btn" onclick="generateJWTSecret()">🎲 Gerar Nova Chave</button>
+      
+      <div class="form-group" style="margin-top: 20px;">
+        <label>Domínio do Frontend (Opcional)</label>
+        <input type="text" id="frontend_url" placeholder="http://meumu.com" value="http://localhost:5173">
+        <div class="help-text">URL do seu site (para CORS). Deixe em branco se não souber</div>
+      </div>
+      
+      <button class="btn" onclick="finalizeInstall()" style="margin-top: 20px;">✅ Finalizar Instalação</button>
+      <button class="btn btn-secondary" onclick="prevStep()" style="margin-top: 10px;">← Voltar</button>
+      
+      <div id="status-final" style="margin-top: 20px;"></div>
+    </div>
+    
+    <!-- STEP 4: Concluído -->
+    <div class="step" id="step4">
+      <div style="text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
+        <h2 style="margin-bottom: 15px;">Instalação Concluída!</h2>
+        <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 30px;">
+          Seu backend está configurado e pronto para uso!
+        </p>
+      </div>
+      
+      <div class="status success">
+        <span>✅</span>
+        <div>
+          <strong>Backend Configurado</strong><br>
+          Todas as conexões foram testadas com sucesso
+        </div>
+      </div>
+      
+      <div class="log-output" id="final-log"></div>
+      
+      <h3 style="margin: 20px 0 15px 0;">🚀 Próximos Passos:</h3>
+      
+      <div class="status info">
+        <span>1️⃣</span>
+        <div>
+          <strong>Reiniciar o Servidor</strong><br>
+          Pressione Ctrl+C no terminal e execute: <code>node check.js</code> → Opção 4
+        </div>
+      </div>
+      
+      <div class="status info">
+        <span>2️⃣</span>
+        <div>
+          <strong>Acessar a API</strong><br>
+          API: <code>http://seu-dominio.com:3001/api</code>
+        </div>
+      </div>
+      
+      <div class="status info">
+        <span>3️⃣</span>
+        <div>
+          <strong>Configurar Frontend (Opcional)</strong><br>
+          Edite <code>src/utils/supabase/info.tsx</code> com a URL da API
+        </div>
+      </div>
+      
+      <button class="btn" onclick="location.reload()">🔄 Reinstalar</button>
+      <button class="btn btn-secondary" onclick="window.close()" style="margin-top: 10px;">Fechar</button>
+    </div>
+  </div>
+  
+  <script>
+    let currentStep = 1;
+    let installData = {};
+    
+    // Gerar JWT Secret automaticamente ao carregar
+    window.onload = function() {
+      generateJWTSecret();
+    };
+    
+    function showStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step' + step).classList.add('active');
+      currentStep = step;
+    }
+    
+    function nextStep() {
+      if (currentStep < 4) {
+        showStep(currentStep + 1);
+      }
+    }
+    
+    function prevStep() {
+      if (currentStep > 1) {
+        showStep(currentStep - 1);
+      }
+    }
+    
+    function showStatus(elementId, type, message) {
+      const el = document.getElementById(elementId);
+      const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️',
+        loading: '<div class="spinner"></div>'
+      };
+      
+      el.innerHTML = `
+        <div class="status ${type}">
+          ${icons[type]}
+          <div>${message}</div>
+        </div>
+      `;
+    }
+    
+    async function testConnectionMU() {
+      const data = {
+        host: document.getElementById('db_host').value,
+        port: parseInt(document.getElementById('db_port').value),
+        user: document.getElementById('db_user').value,
+        password: document.getElementById('db_password').value,
+        database: document.getElementById('db_name_mu').value
+      };
+      
+      showStatus('status-mu', 'loading', 'Testando conexão com o banco MuOnline...');
+      
+      try {
+        const response = await fetch('/api/install/test-connection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'muonline', ...data })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showStatus('status-mu', 'success', `
+            <strong>Conexão bem-sucedida!</strong><br>
+            Database: ${result.database}<br>
+            Tabelas encontradas: ${result.tables?.length || 0}
+          `);
+          
+          installData.dbMU = data;
+          
+          setTimeout(() => nextStep(), 1500);
+        } else {
+          showStatus('status-mu', 'error', `
+            <strong>Erro na conexão</strong><br>
+            ${result.error || 'Verifique as credenciais e tente novamente'}
+          `);
+        }
+      } catch (error) {
+        showStatus('status-mu', 'error', `
+          <strong>Erro ao conectar</strong><br>
+          ${error.message}
+        `);
+      }
+    }
+    
+    async function testConnectionWEB() {
+      const data = {
+        host: document.getElementById('db_host').value,
+        port: parseInt(document.getElementById('db_port').value),
+        user: document.getElementById('db_user').value,
+        password: document.getElementById('db_password').value,
+        database: document.getElementById('db_name_web').value,
+        createIfNotExists: document.getElementById('create_web_db').checked
+      };
+      
+      showStatus('status-web', 'loading', 'Testando conexão e criando database...');
+      
+      try {
+        const response = await fetch('/api/install/test-connection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'webmu', ...data })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showStatus('status-web', 'success', `
+            <strong>Sucesso!</strong><br>
+            Database: ${result.database}<br>
+            ${result.created ? 'Database criada' : 'Database já existia'}<br>
+            Tabelas: ${result.tables?.length || 0}
+          `);
+          
+          installData.dbWEB = data;
+          
+          setTimeout(() => nextStep(), 1500);
+        } else {
+          showStatus('status-web', 'error', `
+            <strong>Erro</strong><br>
+            ${result.error || 'Verifique as credenciais'}
+          `);
+        }
+      } catch (error) {
+        showStatus('status-web', 'error', `
+          <strong>Erro ao conectar</strong><br>
+          ${error.message}
+        `);
+      }
+    }
+    
+    function generateJWTSecret() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+      let secret = '';
+      for (let i = 0; i < 64; i++) {
+        secret += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('jwt_secret').value = secret;
+    }
+    
+    async function finalizeInstall() {
+      const finalData = {
+        dbMU: installData.dbMU,
+        dbWEB: installData.dbWEB,
+        jwtSecret: document.getElementById('jwt_secret').value,
+        frontendUrl: document.getElementById('frontend_url').value || 'http://localhost:5173'
+      };
+      
+      showStatus('status-final', 'loading', 'Salvando configurações no .env...');
+      
+      try {
+        const response = await fetch('/api/install/finalize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(finalData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Mostrar log
+          const logHtml = result.log.map(line => {
+            if (line.includes('✅') || line.includes('sucesso')) {
+              return `<div class="log-line success">${line}</div>`;
+            } else if (line.includes('❌') || line.includes('erro')) {
+              return `<div class="log-line error">${line}</div>`;
+            } else if (line.includes('⚠️')) {
+              return `<div class="log-line warning">${line}</div>`;
+            } else {
+              return `<div class="log-line">${line}</div>`;
+            }
+          }).join('');
+          
+          document.getElementById('final-log').innerHTML = logHtml;
+          
+          showStatus('status-final', 'success', `
+            <strong>Instalação concluída!</strong><br>
+            Arquivo .env atualizado com sucesso
+          `);
+          
+          setTimeout(() => nextStep(), 2000);
+        } else {
+          showStatus('status-final', 'error', `
+            <strong>Erro ao salvar</strong><br>
+            ${result.error || 'Tente novamente'}
+          `);
+        }
+      } catch (error) {
+        showStatus('status-final', 'error', `
+          <strong>Erro</strong><br>
+          ${error.message}
+        `);
+      }
+    }
+  </script>
+</body>
+</html>

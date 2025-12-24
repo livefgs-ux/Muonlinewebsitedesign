@@ -1,61 +1,38 @@
-# 🎮 MeuMU Online
+# ⚔️ MeuMU Online - Website Completo
 
-**Servidor Privado de Mu Online Completo**  
-Dark Medieval Fantasy · Multilíngue (PT/EN/ES) · 100% Responsivo
+**Servidor Privado de Mu Online com sistema web moderno, seguro e responsivo.**
 
 ---
 
-## 🚀 INSTALAÇÃO RÁPIDA
+## 🚀 **INSTALAÇÃO RÁPIDA (5 MINUTOS)**
 
-### **Requisitos:**
-- Node.js 18+ ([Download](https://nodejs.org))
-- MariaDB/MySQL
-
-### **Passo 1: Clonar/Baixar**
+### **NOVO: Instalador Web Visual! 🎉**
 
 ```bash
-git clone https://github.com/seu-usuario/meumu-online.git
-cd meumu-online
-```
+# 1. Entrar no diretório
+cd /home/meumu.com/public_html
 
-### **Passo 2: Executar Diagnóstico + Auto-Fix**
-
-```bash
+# 2. Iniciar servidor
 node check.js
-# Escolha opção 1 (Diagnóstico)
-# Digite S quando perguntar para corrigir
+# Digite: 4 (Deploy - Desenvolvimento)
+
+# 3. Abrir navegador
+# http://meumu.com:3001/install
+
+# 4. Seguir os 4 steps no navegador
+# → Configurar MySQL
+# → Criar database webmu
+# → Gerar JWT secret
+# → Finalizar
+
+# 5. Reiniciar servidor
+# Ctrl+C
+# node check.js → 4
+
+# PRONTO! Backend configurado! 🎉
 ```
 
-**OU execute direto:**
-
-```bash
-node check.js fix
-```
-
-### **Passo 3: Configurar .env**
-
-Edite `backend-nodejs/.env`:
-
-```env
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=sua_senha
-DB_NAME_MUONLINE=MuOnline
-DB_NAME_WEBMU=WebMU
-JWT_SECRET=gere_um_secret_de_64_caracteres
-```
-
-### **Iniciar:**
-
-```bash
-# Desenvolvimento
-npm run deploy:dev
-
-# Produção (PM2)
-npm run deploy:prod
-```
-
-**Acesse:** http://localhost:3001
+**📖 Guia detalhado:** [GUIA-RAPIDO-INSTALADOR.md](./GUIA-RAPIDO-INSTALADOR.md)
 
 ---
 

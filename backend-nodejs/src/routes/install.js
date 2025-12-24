@@ -177,6 +177,325 @@ router.post('/check-requirements', async (req, res) => {
 // ════════════════════════════════════════════════════════════════
 // ENDPOINT: Testar Conexão Database
 // ════════════════════════════════════════════════════════════════
+router.post('/test-connection', async (req, res) => {
+  const { type, host, port, user, password, database, createIfNotExists } = req.body;
+  
+  console.log(`🔍 Testando conexão ${type}:`, { host, port, database });
+  
+  try {
+    const mysql = require('mysql2/promise');
+    
+    // Conectar SEM database primeiro (para criar se necessário)
+    const connection = await mysql.createConnection({
+      host,
+      port: parseInt(port),
+      user,
+      password,
+      connectTimeout: 10000
+    });
+    
+    // Criar database se não existir (apenas para webmu)
+    let dbCreated = false;
+    if (createIfNotExists && type === 'webmu') {
+      try {
+        await connection.execute(`CREATE DATABASE IF NOT EXISTS \`${database}\``);
+        dbCreated = true;
+        console.log(`✅ Database ${database} criada/verificada`);
+      } catch (error) {
+        console.warn('Aviso ao criar database:', error.message);
+      }
+    }
+    
+    // Fechar conexão sem database
+    await connection.end();
+    
+    // Reconectar COM a database
+    const connWithDb = await mysql.createConnection({
+      host,
+      port: parseInt(port),
+      user,
+      password,
+      database,
+      connectTimeout: 10000
+    });
+    
+    // Testar query
+    const [testResult] = await connWithDb.execute('SELECT 1 as test');
+    
+    // Listar tabelas
+    const [tables] = await connWithDb.execute('SHOW TABLES');
+    
+    // Detectar tabelas importantes (se for database MU)
+    const tableList = tables.map(t => Object.values(t)[0]);
+    let importantTables = null;
+    
+    if (type === 'muonline') {
+      const tableNames = tableList.map(t => t.toLowerCase());
+      importantTables = {
+        MEMB_INFO: tableNames.some(t => t === 'memb_info'),
+        Character: tableNames.some(t => t === 'character'),
+        Guild: tableNames.some(t => t === 'guild'),
+        warehouse: tableNames.some(t => t.includes('warehouse'))
+      };
+      
+      console.log('Tabelas MU encontradas:', importantTables);
+    }
+    
+    await connWithDb.end();
+    
+    res.json({
+      success: true,
+      message: 'Conexão bem-sucedida!',
+      database,
+      created: dbCreated,
+      tables: tableList,
+      importantTables
+    });
+    
+  } catch (error) {
+    console.error('Erro ao testar conexão:', error);
+    
+    let friendlyError = error.message;
+    if (error.code === 'ECONNREFUSED') {
+      friendlyError = 'Conexão recusada. Verifique se MySQL está rodando.';
+    } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+      friendlyError = 'Usuário ou senha incorretos.';
+    } else if (error.code === 'ER_BAD_DB_ERROR') {
+      friendlyError = `Database "${database}" não existe. Marque a opção "Criar automaticamente".`;
+    } else if (error.code === 'ENOTFOUND') {
+      friendlyError = `Host "${host}" não encontrado.`;
+    }
+    
+    res.json({
+      success: false,
+      error: friendlyError,
+      code: error.code
+    });
+  }
+});
+
+// ════════════════════════════════════════════════════════════════
+// ENDPOINT: Finalizar Instalação
+// ════════════════════════════════���═══════════════════════════════
+router.post('/finalize', async (req, res) => {
+  const { dbMU, dbWEB, jwtSecret, frontendUrl } = req.body;
+  
+  console.log('🚀 Finalizando instalação...');
+  
+  const log = [];
+  const logEntry = (msg) => {
+    log.push(msg);
+    console.log(msg);
+  };
+  
+  try {
+    // ════════════════════════════════════════════════════════════
+    // 1. CRIAR/ATUALIZAR .ENV
+    // ════════════════════════════════════════════════════════════
+    logEntry('📝 Criando arquivo .env...');
+    
+    const envContent = `# ════════════════════════════════════════
+# MEUMU ONLINE - CONFIGURAÇÃO DO BACKEND
+# ════════════════════════════════════════
+# Gerado automaticamente em: ${new Date().toLocaleString('pt-BR')}
+
+# SERVIDOR
+PORT=3001
+NODE_ENV=development
+
+# AUTENTICAÇÃO JWT
+JWT_SECRET=${jwtSecret}
+JWT_EXPIRES_IN=7d
+
+# DATABASE 1: MUONLINE (Servidor MU - READONLY)
+DB_HOST=${dbMU.host}
+DB_PORT=${dbMU.port}
+DB_USER=${dbMU.user}
+DB_PASSWORD=${dbMU.password}
+DB_NAME_MUONLINE=${dbMU.database}
+
+# DATABASE 2: WEBMU (Website - READ/WRITE)
+DB_NAME_WEBMU=${dbWEB.database}
+
+# CONFIGURAÇÕES DE CONEXÃO
+DB_CONNECTION_LIMIT=10
+DB_QUEUE_LIMIT=0
+DB_TIMEOUT=10000
+
+# CORS (Frontend)
+FRONTEND_URL=${frontendUrl}
+CORS_ORIGINS=${frontendUrl},http://localhost:5173,http://localhost:3001
+
+# RATE LIMITING
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_AUTH_WINDOW_MS=900000
+RATE_LIMIT_AUTH_MAX_REQUESTS=5
+
+# SEGURANÇA
+SECURITY_MODE=development
+SECURITY_LOGS_ENABLED=true
+SECURITY_ALERTS_ENABLED=true
+LOGS_DIR=./logs
+
+# BCRYPT
+BCRYPT_ROUNDS=12
+
+# TABELAS DO MU ONLINE
+TABLE_ACCOUNTS=MEMB_INFO
+TABLE_CHARACTERS=Character
+TABLE_GUILDS=Guild
+
+# ADMIN CP
+ADMIN_EMAIL=admin@meumu.com
+ADMIN_PASSWORD=AdminMeuMU2024!
+
+# BACKUP
+BACKUP_ENABLED=false
+BACKUP_DIR=./backups
+BACKUP_RETENTION_DAYS=7
+
+# DEVELOPMENT/DEBUG
+DEBUG=false
+VERBOSE_ERRORS=true
+
+# INSTALAÇÃO COMPLETA
+INSTALLATION_COMPLETE=true
+`;
+    
+    const envPath = path.join(__dirname, '../../.env');
+    await fs.writeFile(envPath, envContent, 'utf8');
+    
+    logEntry('✅ Arquivo .env criado com sucesso!');
+    
+    // ════════════════════════════════════════════════════════════
+    // 2. CRIAR TABELAS NO DATABASE WEB
+    // ════════════════════════════════════════════════════════════
+    logEntry('📊 Criando tabelas no database WebMU...');
+    
+    const mysql = require('mysql2/promise');
+    const connWeb = await mysql.createConnection({
+      host: dbWEB.host,
+      port: parseInt(dbWEB.port),
+      user: dbWEB.user,
+      password: dbWEB.password,
+      database: dbWEB.database
+    });
+    
+    // Tabela de configurações
+    await connWeb.execute(`
+      CREATE TABLE IF NOT EXISTS web_config (
+        config_key VARCHAR(100) PRIMARY KEY,
+        config_value TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    logEntry('  ✓ Tabela web_config');
+    
+    // Tabela de notícias
+    await connWeb.execute(`
+      CREATE TABLE IF NOT EXISTS web_news (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(200) NOT NULL,
+        content TEXT NOT NULL,
+        author VARCHAR(50),
+        image_url VARCHAR(500),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        published BOOLEAN DEFAULT TRUE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    logEntry('  ✓ Tabela web_news');
+    
+    // Tabela de eventos
+    await connWeb.execute(`
+      CREATE TABLE IF NOT EXISTS web_events (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(200) NOT NULL,
+        description TEXT,
+        event_time DATETIME NOT NULL,
+        duration_minutes INT DEFAULT 60,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    logEntry('  ✓ Tabela web_events');
+    
+    // Tabela de downloads
+    await connWeb.execute(`
+      CREATE TABLE IF NOT EXISTS web_downloads (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        file_url VARCHAR(500),
+        version VARCHAR(20),
+        size_mb DECIMAL(10,2),
+        downloads INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    logEntry('  ✓ Tabela web_downloads');
+    
+    // Tabela de logs de auditoria
+    await connWeb.execute(`
+      CREATE TABLE IF NOT EXISTS web_audit_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(50),
+        action VARCHAR(100),
+        details TEXT,
+        ip_address VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    logEntry('  ✓ Tabela web_audit_logs');
+    
+    await connWeb.end();
+    
+    logEntry('✅ Todas as tabelas criadas com sucesso!');
+    
+    // ════════════════════════════════════════════════════════════
+    // 3. SALVAR LOG
+    // ════════════════════════════════════════════════════════════
+    logEntry('');
+    logEntry('════════════════════════════════════════');
+    logEntry('✅ INSTALAÇÃO CONCLUÍDA COM SUCESSO!');
+    logEntry('════════════════════════════════════════');
+    logEntry('');
+    logEntry('📋 Próximos passos:');
+    logEntry('  1. Pressione Ctrl+C no terminal');
+    logEntry('  2. Execute: node check.js');
+    logEntry('  3. Escolha: Opção 4 (Deploy Desenvolvimento)');
+    logEntry('');
+    logEntry(`🌐 API estará disponível em: http://localhost:3001/api`);
+    logEntry(`🔧 Health Check: http://localhost:3001/health`);
+    
+    const logFile = await createLog('success', log.join('\n'));
+    
+    res.json({
+      success: true,
+      message: 'Instalação concluída com sucesso!',
+      logFile,
+      log
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro na instalação:', error);
+    
+    logEntry(`❌ ERRO: ${error.message}`);
+    
+    const logFile = await createLog('error', log.join('\n') + `\n\nERRO DETALHADO:\n${error.stack}`);
+    
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      logFile,
+      log
+    });
+  }
+});
+
+// ════════════════════════════════════════════════════════════════
+// ENDPOINT: Testar Conexão Database (LEGADO - mantido para compatibilidade)
+// ════════════════════════════════════════════════════════════════
 router.post('/test-database', async (req, res) => {
   const { host, port, user, password, database, type } = req.body;
   
@@ -237,185 +556,6 @@ router.post('/test-database', async (req, res) => {
       success: false,
       error: friendlyError,
       technicalError: error.message
-    });
-  }
-});
-
-// ════════════════════════════════════════════════════════════════
-// ENDPOINT: Instalar
-// ════════════════════════════════════════════════════════════════
-router.post('/install', async (req, res) => {
-  const { domain, installPath, dbMU, dbWEB } = req.body;
-  
-  console.log('🚀 Iniciando instalação...');
-  console.log('Domínio:', domain);
-  console.log('Local:', installPath);
-  
-  const log = [];
-  const logEntry = (msg) => {
-    const timestamp = new Date().toLocaleTimeString('pt-BR');
-    log.push(`[${timestamp}] ${msg}`);
-    console.log(msg);
-  };
-  
-  try {
-    // ════════════════════════════════════════════════════════════
-    // 1. CRIAR ARQUIVO .ENV
-    // ════════════════════════════════════════════════════════════
-    logEntry('📝 Criando arquivo .env...');
-    
-    const envContent = `# MeuMU Online - Configuração Automática
-# Gerado em: ${new Date().toISOString()}
-
-# ═══════════════════════════════════════════════════════════════
-# DATABASE MU ONLINE (READONLY)
-# ═══════════════════════════════════════════════════════════════
-DB_MU_HOST=${dbMU.host}
-DB_MU_PORT=${dbMU.port}
-DB_MU_USER=${dbMU.user}
-DB_MU_PASSWORD=${dbMU.password}
-DB_MU_NAME=${dbMU.database}
-DB_CONNECTION_LIMIT=10
-DB_QUEUE_LIMIT=0
-
-# ═══════════════════════════════════════════════════════════════
-# DATABASE WEB (READ/WRITE)
-# ═══════════════════════════════════════════════════════════════
-DB_WEB_HOST=${dbWEB.host}
-DB_WEB_PORT=${dbWEB.port}
-DB_WEB_USER=${dbWEB.user}
-DB_WEB_PASSWORD=${dbWEB.password}
-DB_WEB_NAME=${dbWEB.database}
-
-# ═══════════════════════════════════════════════════════════════
-# SERVIDOR
-# ═══════════════════════════════════════════════════════════════
-PORT=3001
-NODE_ENV=production
-
-# ═══════════════════════════════════════════════════════════════
-# SEGURANÇA
-# ═══════════════════════════════════════════════════════════════
-JWT_SECRET=${generateSecret(64)}
-ALLOWED_ORIGINS=http://localhost:3001,http://${domain},http://${domain}:3001,https://${domain}
-
-# ═══════════════════════════════════════════════════════════════
-# SERVIDOR MU ONLINE
-# ═══════════════════════════════════════════════════════════════
-SERVER_NAME=MeuMU Online
-SERVER_VERSION=Season 19-2-3 - Épico
-SERVER_RATES_EXP=1000x
-SERVER_RATES_DROP=50%
-SERVER_MAX_RESET=500
-SERVER_MAX_GRAND_RESET=50
-`;
-    
-    const envPath = path.join(__dirname, '../../.env');
-    await fs.writeFile(envPath, envContent);
-    await fs.chmod(envPath, 0o600);
-    
-    logEntry('✅ Arquivo .env criado com sucesso!');
-    
-    // ════════════════════════════════════════════════════════════
-    // 2. CRIAR TABELAS NO DATABASE WEB
-    // ════════════════════════════════════════════════════════════
-    logEntry('📊 Criando tabelas no database Web...');
-    
-    const mysql = require('mysql2/promise');
-    const connWeb = await mysql.createConnection({
-      host: dbWEB.host,
-      port: parseInt(dbWEB.port),
-      user: dbWEB.user,
-      password: dbWEB.password,
-      database: dbWEB.database
-    });
-    
-    // Tabela de configurações
-    await connWeb.execute(`
-      CREATE TABLE IF NOT EXISTS web_config (
-        config_key VARCHAR(100) PRIMARY KEY,
-        config_value TEXT,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    `);
-    
-    // Tabela de notícias
-    await connWeb.execute(`
-      CREATE TABLE IF NOT EXISTS web_news (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        title VARCHAR(200) NOT NULL,
-        content TEXT NOT NULL,
-        author VARCHAR(50),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        published BOOLEAN DEFAULT TRUE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    `);
-    
-    // Tabela de downloads
-    await connWeb.execute(`
-      CREATE TABLE IF NOT EXISTS web_downloads (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        description TEXT,
-        file_url VARCHAR(500),
-        version VARCHAR(20),
-        size_mb DECIMAL(10,2),
-        downloads INT DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    `);
-    
-    await connWeb.end();
-    
-    logEntry('✅ Tabelas criadas com sucesso!');
-    
-    // ════════════════════════════════════════════════════════════
-    // 3. REINICIAR BACKEND COM PM2
-    // ════════════════════════════════════════════════════════════
-    logEntry('🔄 Reiniciando backend...');
-    
-    const pm2Restart = await runCommand('pm2 restart meumu-backend');
-    if (pm2Restart.success) {
-      logEntry('✅ Backend reiniciado com sucesso!');
-    } else {
-      logEntry('⚠️ Erro ao reiniciar backend (pode já estar rodando)');
-    }
-    
-    // ════════════════════════════════════════════════════════════
-    // 4. SALVAR LOG DE SUCESSO
-    // ════════════════════════════════════════════════════════════
-    const logFile = await createLog('success', log.join('\n'));
-    
-    res.json({
-      success: true,
-      message: 'Instalação concluída com sucesso!',
-      logFile,
-      log: log
-    });
-    
-  } catch (error) {
-    console.error('❌ Erro na instalação:', error);
-    
-    logEntry(`❌ ERRO: ${error.message}`);
-    
-    // Salvar log de erro
-    const logContent = log.join('\n') + `
-
-════════════════════════════════════════════════════════════════
-  ERRO DETALHADO
-════════════════════════════════════════════════════════════════
-
-${error.stack}
-`;
-    
-    const logFile = await createLog('error', logContent);
-    
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      logFile,
-      log: log
     });
   }
 });
