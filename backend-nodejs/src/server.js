@@ -51,13 +51,12 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Verificar se pasta /install existe (modo instalação)
-    const fs = require('fs');
-    const installPath = path.join(__dirname, '../../install');
-    const isInstallMode = fs.existsSync(installPath);
+    // MODO INSTALAÇÃO: Permitir TODAS as origens se JWT_SECRET não existir
+    // OU se .env não tiver INSTALLATION_COMPLETE
+    const isInstallComplete = process.env.INSTALLATION_COMPLETE === 'true';
     
-    // Durante instalação, permitir TODAS as origens
-    if (isInstallMode || !process.env.JWT_SECRET) {
+    if (!isInstallComplete || !process.env.JWT_SECRET) {
+      console.log('🔓 CORS: Modo instalação - permitindo origem:', origin || '(sem origin)');
       return callback(null, true);
     }
     
