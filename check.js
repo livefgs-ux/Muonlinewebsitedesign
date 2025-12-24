@@ -15,9 +15,15 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { createInterface } from 'readline';
+import { fileURLToPath } from 'url';
+
+// ESM __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Cores
 const colors = {
@@ -434,7 +440,7 @@ ${colors.yellow}Digite o número da opção:${colors.reset} `);
 }
 
 async function interactiveMenu() {
-  const readline = require('readline').createInterface({
+  const readline = createInterface({
     input: process.stdin,
     output: process.stdout
   });

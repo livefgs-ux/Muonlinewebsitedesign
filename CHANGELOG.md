@@ -4,6 +4,42 @@
 
 ---
 
+## 🔧 **[FIX CRÍTICO: ESM] - 24/12/2024 (17:00)**
+
+### **PROBLEMA IDENTIFICADO:**
+- ❌ `package.json` configurado como ESM (`"type": "module"`)
+- ❌ `install.js` e `check.js` usando CommonJS (`require()`)
+- ❌ Erro: `require is not defined in ES module scope`
+
+### **SOLUÇÃO IMPLEMENTADA:**
+- ✅ Convertidos `install.js` e `check.js` para **ESM puro**
+- ✅ Trocado `require()` por `import`
+- ✅ Adicionado `import { fileURLToPath } from 'url'` para `__dirname`
+- ✅ Trocado `require('readline')` por `import { createInterface }`
+
+### **MUDANÇAS TÉCNICAS:**
+```javascript
+// ANTES (CommonJS):
+const fs = require('fs');
+const path = require('path');
+
+// DEPOIS (ESM):
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+```
+
+### **RESULTADO:**
+- ✅ `node install.js` funciona perfeitamente
+- ✅ `node check.js` funciona perfeitamente
+- ✅ 100% compatível com o package.json ESM
+- ✅ Zero erros de módulos
+
+---
+
 ## 🎯 **[REESTRUTURAÇÃO COMPLETA] - 24/12/2024**
 
 ### **MUDANÇA CRÍTICA: Sistema Multiplataforma**

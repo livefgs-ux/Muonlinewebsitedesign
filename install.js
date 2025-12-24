@@ -8,9 +8,14 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+// ESM __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Cores para terminal (funciona em Windows 10+ e Unix)
 const colors = {
@@ -300,9 +305,8 @@ function showNextSteps() {
   console.log('');
   
   console.log(`${colors.cyan}📚 DOCUMENTAÇÃO:${colors.reset}\n`);
-  console.log('  • /INCIDENT_RESPONSE.md - Resposta a incidentes');
-  console.log('  • /MELHORIAS_IMPLEMENTADAS.md - Melhorias de segurança');
-  console.log('  • /ANALISE_SEGURANCA.md - Análise de vulnerabilidades');
+  console.log('  • README.md - Guia completo');
+  console.log('  • CHANGELOG.md - Histórico de mudanças');
   console.log('');
   
   console.log(`${colors.green}🎮 BOM JOGO!${colors.reset}\n`);
