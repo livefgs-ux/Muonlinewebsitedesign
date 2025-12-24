@@ -12,7 +12,14 @@
     "dev:all": "concurrently \"npm run dev\" \"npm run server\"",
     "validate": "tsx shared/cli-validator.ts",
     "validate:list": "tsx shared/cli-validator.ts list",
-    "validate:add": "tsx shared/cli-validator.ts add"
+    "validate:add": "tsx shared/cli-validator.ts add",
+    "install": "node install.js",
+    "check": "node check.js",
+    "check:fix": "node check.js fix",
+    "check:security": "node check.js security",
+    "deploy:dev": "node check.js dev",
+    "deploy:prod": "node check.js prod",
+    "cleanup": "node cleanup.js"
   },
   "dependencies": {
     "react": "18.3.1",

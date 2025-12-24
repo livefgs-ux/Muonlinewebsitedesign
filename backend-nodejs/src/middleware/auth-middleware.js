@@ -1,9 +1,12 @@
 /**
  * Middleware de Autenticação JWT
+ * ATUALIZADO COM SEGURANÇA AVANÇADA
  */
 
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config/auth');
+const { logAudit, EventTypes } = require('./audit-log');
+const { getRealIp } = require('./security');
 
 /**
  * Verificar se o token JWT é válido
@@ -14,6 +17,12 @@ const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader) {
+      // Logar tentativa de acesso não autorizado
+      logAudit(EventTypes.UNAUTHORIZED_ACCESS, {
+        reason: 'Token não fornecido',
+        path: req.path
+      }, req);
+      
       return res.status(401).json({
         success: false,
         error: 'Token não fornecido'
@@ -24,6 +33,11 @@ const verifyToken = (req, res, next) => {
     const parts = authHeader.split(' ');
     
     if (parts.length !== 2 || parts[0] !== 'Bearer') {
+      logAudit(EventTypes.UNAUTHORIZED_ACCESS, {
+        reason: 'Formato de token inválido',
+        path: req.path
+      }, req);
+      
       return res.status(401).json({
         success: false,
         error: 'Formato de token inválido'
@@ -35,6 +49,12 @@ const verifyToken = (req, res, next) => {
     // Verificar token
     jwt.verify(token, jwtSecret, (err, decoded) => {
       if (err) {
+        // Logar token inválido
+        logAudit(EventTypes.INVALID_TOKEN, {
+          reason: err.message,
+          path: req.path
+        }, req);
+        
         return res.status(401).json({
           success: false,
           error: 'Token inválido ou expirado'
@@ -43,11 +63,21 @@ const verifyToken = (req, res, next) => {
 
       // Adicionar dados do usuário na requisição
       req.user = decoded;
+      
+      // Adicionar IP real
+      req.user.currentIp = getRealIp(req);
+      
       next();
     });
 
   } catch (error) {
     console.error('❌ Erro no middleware de autenticação:', error);
+    
+    logAudit(EventTypes.UNAUTHORIZED_ACCESS, {
+      reason: 'Erro no middleware',
+      error: error.message
+    }, req);
+    
     return res.status(500).json({
       success: false,
       error: 'Erro ao verificar autenticação'

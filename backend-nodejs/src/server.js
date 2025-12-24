@@ -12,10 +12,24 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
+// ═══════════════════════════════════════════════════════════════
+// VALIDAR VARIÁVEIS DE AMBIENTE (ANTES DE TUDO!)
+// ═══════════════════════════════════════════════════════════════
+const { validateEnv } = require('./utils/validate-env');
+validateEnv(); // Bloqueia startup se faltar variáveis críticas
+
 // Importar configurações
 const { testConnection, closePool } = require('./config/database');
 const logger = require('./middleware/logger');
 const { errorHandler, notFound } = require('./middleware/error-handler');
+
+// Importar middlewares de segurança avançada
+const { 
+  forceHttps, 
+  addRealIp, 
+  xssMiddleware 
+} = require('./middleware/security');
+const { detectSuspiciousPatterns } = require('./middleware/security-alerts');
 
 // Importar rotas
 const authRoutes = require('./routes/auth');
@@ -38,10 +52,39 @@ const PORT = process.env.PORT || 3001;
 // MIDDLEWARES DE SEGURANÇA
 // ==================================
 
-// Helmet - Headers de segurança (modificado para permitir assets do React)
+// Helmet - Headers de segurança COMPLETOS (Safe Vibe Coding)
 app.use(helmet({
-  contentSecurityPolicy: false, // Desabilitar para permitir assets do React
-  crossOriginEmbedderPolicy: false
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // React precisa de inline styles
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
+    },
+  },
+  crossOriginEmbedderPolicy: false, // React precisa
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  dnsPrefetchControl: { allow: false },
+  frameguard: { action: "deny" },
+  hidePoweredBy: true,
+  hsts: {
+    maxAge: 31536000, // 1 ano
+    includeSubDomains: true,
+    preload: true
+  },
+  ieNoOpen: true,
+  noSniff: true,
+  referrerPolicy: { policy: "no-referrer" },
+  xssFilter: true,
+  permittedCrossDomainPolicies: { permittedPolicies: "none" }
 }));
 
 // CORS - Configurar domínios permitidos
@@ -83,6 +126,12 @@ const limiter = rateLimit({
 });
 
 app.use('/api/', limiter);
+
+// Middlewares de segurança avançada
+app.use(forceHttps);
+app.use(addRealIp);
+app.use(xssMiddleware);
+app.use(detectSuspiciousPatterns);
 
 // ==================================
 // MIDDLEWARES GERAIS

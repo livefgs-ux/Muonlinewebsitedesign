@@ -1,5 +1,6 @@
 /**
  * Rotas de Autenticação
+ * ATUALIZADO COM SEGURANÇA AVANÇADA
  */
 
 const express = require('express');
@@ -13,11 +14,36 @@ const {
 const { validateLogin, validateRegister } = require('../utils/validators');
 const { verifyToken } = require('../middleware/auth-middleware');
 
+// Importar middlewares de segurança
+const {
+  loginRateLimiter,
+  registerRateLimiter,
+  validateEmailMiddleware,
+  validatePasswordStrength,
+  xssMiddleware
+} = require('../middleware/security');
+
+// Aplicar sanitização XSS em todas as rotas
+router.use(xssMiddleware);
+
 // POST /api/auth/login - Login
-router.post('/login', validateLogin, login);
+// Rate limit: 5 tentativas por 15 minutos
+router.post('/login', 
+  loginRateLimiter,
+  validateLogin, 
+  login
+);
 
 // POST /api/auth/register - Registro
-router.post('/register', validateRegister, register);
+// Rate limit: 3 registros por hora
+// Validações: Email temporário + Senha forte
+router.post('/register', 
+  registerRateLimiter,
+  validateEmailMiddleware,
+  validatePasswordStrength,
+  validateRegister, 
+  register
+);
 
 // POST /api/auth/verify - Verificar token
 router.post('/verify', verifyToken, verifyTokenRoute);
