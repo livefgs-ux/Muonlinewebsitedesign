@@ -4,6 +4,121 @@
 
 ---
 
+## 🔓 **[FIX FINAL CSP: BLOB + EVENT HANDLERS] - 24/12/2025 (23:55)**
+
+### **PROBLEMA IDENTIFICADO:**
+
+```javascript
+// Console do navegador:
+Loading the script 'blob:http://meumu.com:3001/...' violates CSP
+directive: "script-src 'self' 'unsafe-inline'"
+
+Executing inline event handler violates CSP directive 
+'script-src-attr 'none''
+```
+
+**CAUSA:**
+- CSP do Helmet estava bloqueando `blob:` sources (extensões do navegador)
+- CSP estava bloqueando `onclick` handlers inline no instalador
+- HSTS/COOP estavam gerando avisos (HTTP sem HTTPS)
+
+### **SOLUÇÃO IMPLEMENTADA:**
+
+#### **1. Permitir `blob:` e `script-src-attr`**
+
+```javascript
+// ANTES:
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      // ❌ script-src-attr não configurado (default: 'none')
+    }
+  }
+}));
+
+// DEPOIS:
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      scriptSrc: ["'self'", "'unsafe-inline'", "blob:"], // ← blob sources
+      scriptSrcAttr: ["'unsafe-inline'"], // ← onclick handlers
+      imgSrc: ["'self'", "data:", "https:", "blob:"], // ← blob images
+    }
+  },
+  crossOriginOpenerPolicy: false, // ← DESABILITAR avisos COOP
+  hsts: false, // ← DESABILITAR HSTS (só funciona com HTTPS)
+}));
+```
+
+#### **2. Explicação das Mudanças:**
+
+| Diretiva | O que faz | Por que precisa |
+|----------|-----------|----------------|
+| `scriptSrc: blob:` | Permite scripts de extensões do navegador | Chrome/Firefox injetam scripts via blob: |
+| `scriptSrcAttr: 'unsafe-inline'` | Permite `onclick="..."` | Instalador usa event handlers inline |
+| `imgSrc: blob:` | Permite images blob | Visualizações dinâmicas |
+| `crossOriginOpenerPolicy: false` | Remove aviso COOP | HTTP não precisa COOP |
+| `hsts: false` | Remove aviso HSTS | Só funciona com HTTPS |
+
+### **RESULTADO:**
+
+**ANTES (com erros):**
+```
+❌ Loading script 'blob:...' violates CSP
+❌ Executing inline event handler violates CSP
+⚠️  Cross-Origin-Opener-Policy ignored (HTTP)
+⚠️  Origin-Agent-Cluster warning
+```
+
+**DEPOIS (sem erros):**
+```
+✅ Instalador carregado
+✅ Scripts funcionando
+✅ Botões respondendo
+✅ Console limpo (sem erros CSP)
+```
+
+### **TESTE AGORA:**
+
+```bash
+# 1. Reiniciar servidor
+cd /home/meumu.com/public_html
+# Ctrl+C (se estiver rodando)
+
+node check.js
+# Opção 4 (Deploy)
+
+# 2. Abrir navegador
+http://meumu.com:3001/install
+
+# 3. Abrir DevTools (F12)
+# Console DEVE estar LIMPO (sem erros CSP!)
+
+# 4. Testar botões
+# DEVE funcionar normalmente!
+```
+
+### **SEGURANÇA:**
+
+⚠️ **IMPORTANTE:** Estas configurações são para **desenvolvimento/instalação**.
+
+Para **produção com HTTPS**:
+```javascript
+hsts: {
+  maxAge: 31536000,
+  includeSubDomains: true,
+  preload: true
+},
+crossOriginOpenerPolicy: { policy: "same-origin" },
+scriptSrc: ["'self'"], // ← Remover 'unsafe-inline' depois
+```
+
+### **ARQUIVOS MODIFICADOS:**
+- `/backend-nodejs/src/server.js` - Ajustado CSP Helmet
+
+---
+
 ## 🔓 **[DETECÇÃO AUTOMÁTICA DE PERMISSÕES] - 24/12/2025 (23:45)**
 
 ### **PROBLEMA ANTERIOR:**

@@ -68,8 +68,9 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"], // React precisa de inline styles
-      scriptSrc: ["'self'", "'unsafe-inline'"], // ← PERMITIR inline scripts
-      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "blob:"], // ← PERMITIR inline + blobs
+      scriptSrcAttr: ["'unsafe-inline'"], // ← PERMITIR onclick handlers
+      imgSrc: ["'self'", "data:", "https:", "blob:"], // ← Permitir blob images
       connectSrc: ["'self'"],
       fontSrc: ["'self'", "data:"],
       objectSrc: ["'none'"],
@@ -81,15 +82,12 @@ app.use(helmet({
     },
   },
   crossOriginEmbedderPolicy: false, // React precisa
+  crossOriginOpenerPolicy: false, // ← DESABILITAR avisos COOP (funciona sem HTTPS)
   crossOriginResourcePolicy: { policy: "cross-origin" },
   dnsPrefetchControl: { allow: false },
   frameguard: { action: "deny" },
   hidePoweredBy: true,
-  hsts: {
-    maxAge: 31536000, // 1 ano
-    includeSubDomains: true,
-    preload: true
-  },
+  hsts: false, // ← DESABILITAR HSTS (só funciona com HTTPS)
   ieNoOpen: true,
   noSniff: true,
   referrerPolicy: { policy: "no-referrer" },
