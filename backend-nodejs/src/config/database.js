@@ -12,7 +12,7 @@ require('dotenv').config();
 
 const poolMU = mysql.createPool({
   host: process.env.DB_MU_HOST || '127.0.0.1',
-  port: process.env.DB_MU_PORT || 3306,
+  port: parseInt(process.env.DB_MU_PORT) || 3306,
   user: process.env.DB_MU_USER || 'root',
   password: process.env.DB_MU_PASSWORD || '',
   database: process.env.DB_MU_NAME || 'muonline',
@@ -21,7 +21,6 @@ const poolMU = mysql.createPool({
   queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0
-  // Removido: family: 4 (não é opção válida no MySQL2)
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -30,7 +29,7 @@ const poolMU = mysql.createPool({
 
 const poolWEB = mysql.createPool({
   host: process.env.DB_WEB_HOST || '127.0.0.1',
-  port: process.env.DB_WEB_PORT || 3306,
+  port: parseInt(process.env.DB_WEB_PORT) || 3306,
   user: process.env.DB_WEB_USER || 'root',
   password: process.env.DB_WEB_PASSWORD || '',
   database: process.env.DB_WEB_NAME || 'webmu',
@@ -39,7 +38,6 @@ const poolWEB = mysql.createPool({
   queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0
-  // Removido: family: 4 (não é opção válida no MySQL2)
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -49,7 +47,7 @@ const poolWEB = mysql.createPool({
 const testConnection = async () => {
   // Se não tiver .env, não conectar (modo instalação)
   if (!process.env.DB_MU_PASSWORD && !process.env.DB_WEB_PASSWORD) {
-    console.log('⚠️  Arquivo .env não encontrado (modo instalação)');
+    console.log('⚠️  Arquivo .env não configurado (modo instalação)');
     console.log('📦 Use o instalador em: http://seudominio.com:3001/install\n');
     return false; // Retorna false mas não bloqueia servidor
   }
@@ -95,10 +93,10 @@ const testConnection = async () => {
     return true;
   } else {
     console.error('\n💡 Dicas de diagnóstico:');
-    console.error('   1. Verifique se o MariaDB está rodando');
+    console.error('   1. Verifique se o MariaDB está rodando: sudo systemctl status mariadb');
     console.error('   2. Verifique as credenciais no arquivo .env');
-    console.error('   3. Verifique se as databases existem');
-    console.error('   4. Execute o instalador: http://seudominio.com/install\n');
+    console.error('   3. Verifique se as databases existem: mysql -u root -p -e "SHOW DATABASES;"');
+    console.error('   4. Execute o instalador: http://seudominio.com:3001/install\n');
     return false;
   }
 };

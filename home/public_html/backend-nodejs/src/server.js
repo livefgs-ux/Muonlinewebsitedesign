@@ -216,26 +216,23 @@ app.use('/setup-api', setupRoutes);
 
 const frontendPath = path.join(__dirname, '../../dist');
 if (fs.existsSync(frontendPath)) {
-  // Servir arquivos estáticos do frontend
+  // Servir arquivos estáticos
   app.use(express.static(frontendPath));
   
-  // React Router - todas as rotas que NÃO são /api/* vão para index.html
+  // React Router - todas as rotas que não são /api/* vão para index.html
   app.get('*', (req, res, next) => {
-    // Se for rota da API, pular para próximo handler
-    if (req.path.startsWith('/api/') || 
-        req.path.startsWith('/health') || 
-        req.path.startsWith('/install') || 
-        req.path.startsWith('/setup-api')) {
+    // Se for rota da API, ignorar
+    if (req.path.startsWith('/api/') || req.path.startsWith('/health') || req.path.startsWith('/install') || req.path.startsWith('/setup-api')) {
       return next();
     }
     
-    // Caso contrário, servir o index.html do React
+    // Caso contrário, servir o frontend
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
   
   console.log('⚛️  Frontend React disponível na raiz');
 } else {
-  // Se não tiver frontend buildado, mostrar info da API
+  // Se não tiver frontend buildado, mostrar info
   app.get('/', (req, res) => {
     res.json({
       success: true,
@@ -282,21 +279,20 @@ const startServer = async () => {
     
     if (!dbConnected) {
       console.log('⚠️  Banco não conectado - Modo Instalação ativado');
-      console.log('📦 Acesse: http://meumu.com:3001/install para configurar\n');
+      console.log('📦 Acesse: http://seu-ip:3001/install para configurar\n');
       // NÃO BLOQUEIA - permite instalador funcionar
     }
     
     // Iniciar servidor HTTP
-    const server = app.listen(PORT, '0.0.0.0', () => {
+    const server = app.listen(PORT, () => {
       console.log('================================================');
       console.log(`✅ Servidor rodando na porta ${PORT}`);
       console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`📡 API URL: http://meumu.com:${PORT}`);
-      console.log(`📊 Health Check: http://meumu.com:${PORT}/health`);
-      console.log(`⚛️  Frontend: http://meumu.com:${PORT}/`);
+      console.log(`📡 API URL: http://localhost:${PORT}`);
+      console.log(`📊 Health Check: http://localhost:${PORT}/health`);
       
       if (!dbConnected) {
-        console.log(`📦 Instalador: http://meumu.com:${PORT}/install`);
+        console.log(`📦 Instalador: http://localhost:${PORT}/install`);
       }
       
       console.log('================================================');
