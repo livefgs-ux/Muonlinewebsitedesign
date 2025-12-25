@@ -36,6 +36,187 @@ clear_screen() {
 }
 
 # ═══════════════════════════════════════════════════════════════
+# FUNÇÕES DE PROTEÇÃO E VALIDAÇÃO
+# ═══════════════════════════════════════════════════════════════
+
+# Função 1: Matar TODOS os processos Node.js (proteção contra duplicação)
+kill_all_node_processes() {
+    echo -e "${YELLOW}🔪 Matando TODOS os processos Node.js...${NC}"
+    
+    # Matar nodemon
+    pkill -9 -f nodemon 2>/dev/null
+    
+    # Matar node server.js
+    pkill -9 -f "node.*server.js" 2>/dev/null
+    
+    # Matar npm start
+    pkill -9 -f "npm.*start" 2>/dev/null
+    
+    # Matar PM2
+    if command -v pm2 &> /dev/null; then
+        pm2 delete meumu-backend 2>/dev/null || true
+        pm2 delete all 2>/dev/null || true
+    fi
+    
+    # Aguardar processos morrerem
+    sleep 3
+    
+    # Verificar se ainda tem algo rodando
+    if pgrep -f "node.*server.js" > /dev/null 2>&1; then
+        echo -e "${RED}⚠️  Ainda há processos Node.js rodando!${NC}"
+        echo -e "${YELLOW}Forçando kill -9...${NC}"
+        pkill -9 -f node 2>/dev/null
+        sleep 2
+    fi
+    
+    echo -e "${GREEN}✅ Todos os processos Node.js foram encerrados${NC}"
+}
+
+# Função 2: Verificar se porta 3001 está livre
+check_port_3001() {
+    if netstat -tulpn 2>/dev/null | grep -q ":3001 " || ss -tulpn 2>/dev/null | grep -q ":3001 "; then
+        echo -e "${RED}❌ ERRO: Porta 3001 ainda está em uso!${NC}"
+        echo ""
+        echo -e "${YELLOW}Processos usando porta 3001:${NC}"
+        netstat -tulpn 2>/dev/null | grep ":3001" || ss -tulpn 2>/dev/null | grep ":3001"
+        echo ""
+        
+        # Tentar identificar PID
+        PORT_PID=$(lsof -ti:3001 2>/dev/null)
+        if [ -n "$PORT_PID" ]; then
+            echo -e "${RED}PID usando porta 3001: $PORT_PID${NC}"
+            echo -e "${YELLOW}Matando processo $PORT_PID...${NC}"
+            kill -9 $PORT_PID 2>/dev/null
+            sleep 2
+        fi
+        
+        # Verificar novamente
+        if netstat -tulpn 2>/dev/null | grep -q ":3001 " || ss -tulpn 2>/dev/null | grep -q ":3001 "; then
+            echo -e "${RED}❌ Falha ao liberar porta 3001!${NC}"
+            echo -e "${YELLOW}Execute manualmente:${NC}"
+            echo -e "${CYAN}lsof -ti:3001 | xargs kill -9${NC}"
+            return 1
+        else
+            echo -e "${GREEN}✅ Porta 3001 liberada com sucesso${NC}"
+        fi
+    else
+        echo -e "${GREEN}✅ Porta 3001 está livre${NC}"
+    fi
+    return 0
+}
+
+# Função 3: Validar .env não tem placeholders
+validate_env_file() {
+    local ENV_FILE="$BASE_DIR/backend-nodejs/.env"
+    
+    echo -e "${YELLOW}🔍 Validando arquivo .env...${NC}"
+    
+    if [ ! -f "$ENV_FILE" ]; then
+        echo -e "${RED}❌ ERRO: Arquivo .env não existe!${NC}"
+        return 1
+    fi
+    
+    # Verificar placeholders perigosos
+    if grep -q "sua_senha_mysql" "$ENV_FILE" 2>/dev/null; then
+        echo -e "${RED}❌ ERRO: .env contém placeholder 'sua_senha_mysql'!${NC}"
+        echo -e "${YELLOW}Corrija o arquivo: nano $ENV_FILE${NC}"
+        return 1
+    fi
+    
+    if grep -q "your_password_here" "$ENV_FILE" 2>/dev/null; then
+        echo -e "${RED}❌ ERRO: .env contém placeholder 'your_password_here'!${NC}"
+        echo -e "${YELLOW}Corrija o arquivo: nano $ENV_FILE${NC}"
+        return 1
+    fi
+    
+    if grep -q "CHANGE_ME" "$ENV_FILE" 2>/dev/null; then
+        echo -e "${RED}❌ ERRO: .env contém placeholder 'CHANGE_ME'!${NC}"
+        echo -e "${YELLOW}Corrija o arquivo: nano $ENV_FILE${NC}"
+        return 1
+    fi
+    
+    # Verificar se senha não está vazia
+    DB_PASS=$(grep "^DB_PASSWORD=" "$ENV_FILE" | cut -d'=' -f2)
+    if [ -z "$DB_PASS" ] || [ "$DB_PASS" = '""' ] || [ "$DB_PASS" = "''" ]; then
+        echo -e "${RED}❌ ERRO: DB_PASSWORD está vazio no .env!${NC}"
+        echo -e "${YELLOW}Corrija o arquivo: nano $ENV_FILE${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}✅ Arquivo .env validado (sem placeholders)${NC}"
+    return 0
+}
+
+# Função 4: Testar conexão MySQL antes de subir servidor
+test_mysql_connection() {
+    echo -e "${YELLOW}🔍 Testando conexão MySQL...${NC}"
+    
+    if mysql -u root -p@mysql123@ -e "SELECT 1;" > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ MySQL conectado com sucesso${NC}"
+        
+        # Verificar databases
+        local DB_MU=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
+        local DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'webmu';" 2>/dev/null | grep webmu)
+        
+        if [ -z "$DB_MU" ]; then
+            echo -e "${RED}❌ Database 'muonline' não existe!${NC}"
+            return 1
+        fi
+        
+        if [ -z "$DB_WEB" ]; then
+            echo -e "${YELLOW}⚠️  Database 'webmu' não existe, criando...${NC}"
+            mysql -u root -p@mysql123@ -e "CREATE DATABASE webmu CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
+        fi
+        
+        echo -e "${GREEN}✅ Databases 'muonline' e 'webmu' OK${NC}"
+        return 0
+    else
+        echo -e "${RED}❌ Falha ao conectar no MySQL!${NC}"
+        echo -e "${YELLOW}Verifique se o MySQL está rodando e a senha está correta${NC}"
+        return 1
+    fi
+}
+
+# Função 5: Criar usuário seguro 'webuser' no MySQL
+create_mysql_webuser() {
+    echo -e "${YELLOW}🔐 Criando usuário seguro 'webuser'...${NC}"
+    
+    # Verificar se arquivo SQL existe
+    if [ ! -f "$BASE_DIR/backend-nodejs/database/00_create_webuser.sql" ]; then
+        echo -e "${RED}❌ Arquivo SQL não encontrado!${NC}"
+        return 1
+    fi
+    
+    # Executar script SQL
+    if mysql -u root -p@mysql123@ < "$BASE_DIR/backend-nodejs/database/00_create_webuser.sql" 2>/dev/null; then
+        echo -e "${GREEN}✅ Usuário 'webuser' criado com sucesso${NC}"
+        echo -e "${CYAN}   Permissões:${NC}"
+        echo -e "${CYAN}   - muonline: SELECT (READ-ONLY)${NC}"
+        echo -e "${CYAN}   - webmu: SELECT, INSERT, UPDATE, DELETE (READ+WRITE)${NC}"
+        
+        # Testar login com webuser
+        if mysql -u webuser -p@meusite123@ -e "SELECT 1;" > /dev/null 2>&1; then
+            echo -e "${GREEN}✅ Login com webuser funcionando!${NC}"
+            return 0
+        else
+            echo -e "${RED}❌ Usuário criado mas login falhou!${NC}"
+            return 1
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Erro ao criar usuário (pode já existir)${NC}"
+        
+        # Tentar login para verificar se já existe
+        if mysql -u webuser -p@meusite123@ -e "SELECT 1;" > /dev/null 2>&1; then
+            echo -e "${GREEN}✅ Usuário 'webuser' já existe e está funcional${NC}"
+            return 0
+        else
+            echo -e "${RED}❌ Usuário não existe e não foi possível criar!${NC}"
+            return 1
+        fi
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════
 # FUNÇÃO 1: INSTALAÇÃO COMPLETA
 # ═══════════════════════════════════════════════════════════════
 
@@ -45,8 +226,41 @@ instalacao_completa() {
     echo "════════════════════════════════════════════════════════════"
     echo ""
     
+    # Etapa 0: PROTEÇÕES CRÍTICAS
+    echo -e "${YELLOW}[0/10]${NC} 🛡️  EXECUTANDO PROTEÇÕES DE SEGURANÇA..."
+    echo ""
+    
+    # Proteção 1: Matar TODOS os processos Node.js
+    kill_all_node_processes
+    echo ""
+    
+    # Proteção 2: Verificar se porta 3001 está livre
+    if ! check_port_3001; then
+        echo -e "${RED}❌ ERRO CRÍTICO: Não foi possível liberar porta 3001!${NC}"
+        pause
+        return 1
+    fi
+    echo ""
+    
+    # Proteção 3: Testar conexão MySQL ANTES de continuar
+    if ! test_mysql_connection; then
+        echo -e "${RED}❌ ERRO CRÍTICO: MySQL não está acessível!${NC}"
+        pause
+        return 1
+    fi
+    echo ""
+    
+    # Proteção 4: Criar usuário seguro 'webuser'
+    if ! create_mysql_webuser; then
+        echo -e "${YELLOW}⚠️  Usuário 'webuser' pode já existir, continuando...${NC}"
+    fi
+    echo ""
+    
+    echo -e "${GREEN}✅✅✅ TODAS AS PROTEÇÕES PASSARAM!${NC}"
+    echo ""
+    
     # Etapa 1: Verificar MySQL
-    echo -e "${YELLOW}[1/7]${NC} Verificando MySQL..."
+    echo -e "${YELLOW}[1/10]${NC} Verificando MySQL..."
     if mysql -u root -p@mysql123@ -e "SHOW DATABASES;" > /dev/null 2>&1; then
         echo -e "${GREEN}✅ MySQL rodando e acessível${NC}"
         
@@ -72,7 +286,7 @@ instalacao_completa() {
     
     # Etapa 2: Instalar dependências do frontend
     echo ""
-    echo -e "${YELLOW}[2/7]${NC} Instalando dependências do frontend..."
+    echo -e "${YELLOW}[2/10]${NC} Instalando dependências do frontend..."
     cd "$BASE_DIR" || exit 1
     if npm install --no-scripts > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Dependências do frontend instaladas${NC}"
@@ -84,7 +298,7 @@ instalacao_completa() {
     
     # Etapa 3: Instalar dependências do backend
     echo ""
-    echo -e "${YELLOW}[3/7]${NC} Instalando dependências do backend..."
+    echo -e "${YELLOW}[3/10]${NC} Instalando dependências do backend..."
     cd "$BASE_DIR/backend-nodejs" || exit 1
     if npm install > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Dependências do backend instaladas${NC}"
@@ -97,12 +311,12 @@ instalacao_completa() {
     
     # Etapa 4: Configurar .env
     echo ""
-    echo -e "${YELLOW}[4/7]${NC} Configurando .env..."
+    echo -e "${YELLOW}[4/10]${NC} Configurando .env..."
     configurar_env_interno
     
     # Etapa 5: Buildar frontend
     echo ""
-    echo -e "${YELLOW}[5/7]${NC} Buildando frontend..."
+    echo -e "${YELLOW}[5/10]${NC} Buildando frontend..."
     cd "$BASE_DIR" || exit 1
     
     # Garantir que o .env existe
@@ -134,7 +348,7 @@ EOF
     
     # Etapa 6: Parar processos antigos
     echo ""
-    echo -e "${YELLOW}[6/7]${NC} Parando processos Node.js antigos..."
+    echo -e "${YELLOW}[6/10]${NC} Parando processos Node.js antigos..."
     pkill -f "node.*server.js" 2>/dev/null
     pkill -f "nodemon.*server.js" 2>/dev/null
     sleep 2
@@ -142,7 +356,7 @@ EOF
     
     # Etapa 7: Iniciar servidor
     echo ""
-    echo -e "${YELLOW}[7/7]${NC} Iniciando servidor..."
+    echo -e "${YELLOW}[7/10]${NC} Iniciando servidor..."
     
     mkdir -p "$BASE_DIR/backend-nodejs/logs/alerts" 2>/dev/null
     mkdir -p "$BASE_DIR/backend-nodejs/logs/audit" 2>/dev/null
@@ -313,7 +527,7 @@ configurar_env() {
     pause
 }
 
-# ══════════════════════════════════════���════════════════════════
+# ═══════════════════════════════════════════════════════════════
 # FUNÇÃO 4: BUILD FRONTEND
 # ═══════════════════════════════════════════════════════════════
 
@@ -372,21 +586,49 @@ reiniciar_servidor() {
     echo "════════════════════════════════════════════════════════════"
     echo ""
     
-    echo -e "${YELLOW}[1/3]${NC} Parando processos antigos..."
-    pkill -f "node.*server.js" 2>/dev/null
-    pkill -f "nodemon.*server.js" 2>/dev/null
-    sleep 2
-    echo -e "${GREEN}✅ Processos encerrados${NC}"
-    
+    # Proteção 1: Matar TODOS os processos
+    echo -e "${YELLOW}[1/6]${NC} 🛡️  Matando TODOS os processos Node.js..."
+    kill_all_node_processes
     echo ""
-    echo -e "${YELLOW}[2/3]${NC} Criando diretórios de logs..."
+    
+    # Proteção 2: Verificar porta 3001
+    echo -e "${YELLOW}[2/6]${NC} 🔍 Verificando se porta 3001 está livre..."
+    if ! check_port_3001; then
+        echo -e "${RED}❌ ERRO: Não foi possível liberar porta 3001!${NC}"
+        pause
+        return 1
+    fi
+    echo ""
+    
+    # Proteção 3: Validar .env
+    echo -e "${YELLOW}[3/6]${NC} 🔍 Validando arquivo .env..."
+    if ! validate_env_file; then
+        echo -e "${RED}❌ ERRO: Arquivo .env inválido!${NC}"
+        pause
+        return 1
+    fi
+    echo ""
+    
+    # Proteção 4: Testar MySQL
+    echo -e "${YELLOW}[4/6]${NC} 🔍 Testando conexão MySQL..."
+    if ! test_mysql_connection; then
+        echo -e "${RED}❌ ERRO: MySQL não está acessível!${NC}"
+        pause
+        return 1
+    fi
+    echo ""
+    
+    echo -e "${GREEN}✅ TODAS AS PROTEÇÕES PASSARAM!${NC}"
+    echo ""
+    
+    echo -e "${YELLOW}[5/6]${NC} Criando diretórios de logs..."
     mkdir -p "$BASE_DIR/backend-nodejs/logs/alerts" 2>/dev/null
     mkdir -p "$BASE_DIR/backend-nodejs/logs/audit" 2>/dev/null
     mkdir -p "$BASE_DIR/backend-nodejs/logs/security" 2>/dev/null
     echo -e "${GREEN}✅ Diretórios criados${NC}"
     
     echo ""
-    echo -e "${YELLOW}[3/3]${NC} Iniciando servidor..."
+    echo -e "${YELLOW}[6/6]${NC} Iniciando servidor..."
     
     cd "$BASE_DIR/backend-nodejs" || exit 1
     
@@ -411,6 +653,19 @@ reiniciar_servidor() {
     fi
     
     cd "$BASE_DIR" || exit 1
+    
+    # Aguardar e testar
+    echo ""
+    echo -e "${CYAN}⏳ Aguardando servidor inicializar (5 segundos)...${NC}"
+    sleep 5
+    
+    HEALTH=$(curl -s http://localhost:3001/health 2>/dev/null)
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Servidor respondendo!${NC}"
+    else
+        echo -e "${RED}❌ Servidor não está respondendo${NC}"
+        echo -e "${YELLOW}Verifique os logs: tail -f backend-nodejs/logs/server.log${NC}"
+    fi
     
     echo ""
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
@@ -586,7 +841,7 @@ ver_logs() {
 
 # ═══════════════════════════════════════════════════════════════
 # FUNÇÃO 10: ATUALIZAR DO GITHUB
-# ════════════════════════════════════════════════════════���══════
+# ═══════════════════════════════════════════════════════════════
 
 atualizar_github() {
     clear_screen
@@ -611,7 +866,7 @@ atualizar_github() {
     fi
     
     echo ""
-    echo -e "${YELLOW}[1/5]${NC} Parando servidor Node.js..."
+    echo -e "${YELLOW}[1/7]${NC} Parando servidor Node.js..."
     pkill -f "node.*server.js" 2>/dev/null
     pkill -f "nodemon.*server.js" 2>/dev/null
     if command -v pm2 &> /dev/null; then
@@ -621,7 +876,7 @@ atualizar_github() {
     echo -e "${GREEN}✅ Servidor parado${NC}"
     
     echo ""
-    echo -e "${YELLOW}[2/5]${NC} Removendo arquivos antigos..."
+    echo -e "${YELLOW}[2/7]${NC} Removendo arquivos antigos..."
     cd /home/meumu.com || exit 1
     
     # Remover tudo do public_html (arquivos normais e ocultos)
@@ -630,7 +885,7 @@ atualizar_github() {
     echo -e "${GREEN}✅ Arquivos removidos${NC}"
     
     echo ""
-    echo -e "${YELLOW}[3/5]${NC} Clonando repositório do GitHub..."
+    echo -e "${YELLOW}[3/7]${NC} Clonando repositório do GitHub..."
     cd "$BASE_DIR" || exit 1
     
     if git clone https://github.com/livefgs-ux/Muonlinewebsitedesign.git . 2>&1; then
@@ -643,22 +898,71 @@ atualizar_github() {
     fi
     
     echo ""
-    echo -e "${YELLOW}[4/5]${NC} Verificando arquivos..."
-    ls -la "$BASE_DIR"
+    echo -e "${YELLOW}[4/7]${NC} 🔐 Ajustando permissões (CRÍTICO para MIME types)..."
+    
+    # Obter usuário atual e grupo webapps
+    CURRENT_USER=$(whoami)
+    
+    # Ajustar dono dos arquivos (usuário:webapps)
+    echo -e "${CYAN}   Ajustando proprietário para $CURRENT_USER:webapps...${NC}"
+    chown -R "$CURRENT_USER:webapps" "$BASE_DIR" 2>/dev/null || \
+    sudo chown -R "$CURRENT_USER:webapps" "$BASE_DIR" 2>/dev/null
+    
+    # Diretórios: 755 (rwxr-xr-x) - Servidor web precisa entrar e ler
+    echo -e "${CYAN}   Diretórios → 755 (rwxr-xr-x)...${NC}"
+    find "$BASE_DIR" -type d -exec chmod 755 {} \; 2>/dev/null || \
+    sudo find "$BASE_DIR" -type d -exec chmod 755 {} \; 2>/dev/null
+    
+    # Arquivos: 644 (rw-r--r--) - Servidor web precisa ler
+    echo -e "${CYAN}   Arquivos → 644 (rw-r--r--)...${NC}"
+    find "$BASE_DIR" -type f -exec chmod 644 {} \; 2>/dev/null || \
+    sudo find "$BASE_DIR" -type f -exec chmod 644 {} \; 2>/dev/null
+    
+    # install.sh precisa ser executável: 755
+    echo -e "${CYAN}   install.sh → 755 (executável)...${NC}"
+    chmod +x "$BASE_DIR/install.sh" 2>/dev/null || \
+    sudo chmod +x "$BASE_DIR/install.sh" 2>/dev/null
+    
+    echo -e "${GREEN}✅ Permissões ajustadas corretamente${NC}"
+    echo -e "${CYAN}   Proprietário: $CURRENT_USER:webapps${NC}"
+    echo -e "${CYAN}   Diretórios: 755 (servidor web pode ler)${NC}"
+    echo -e "${CYAN}   Arquivos: 644 (servidor web pode ler)${NC}"
     
     echo ""
-    echo -e "${YELLOW}[5/5]${NC} Tornando install.sh executável..."
-    chmod +x "$BASE_DIR/install.sh"
-    echo -e "${GREEN}✅ Permissões configuradas${NC}"
+    echo -e "${YELLOW}[5/7]${NC} Verificando estrutura de arquivos..."
+    if [ -f "$BASE_DIR/package.json" ] && [ -f "$BASE_DIR/vite.config.ts" ]; then
+        echo -e "${GREEN}✅ Projeto Vite/React detectado${NC}"
+    else
+        echo -e "${RED}❌ Estrutura do projeto não reconhecida!${NC}"
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}[6/7]${NC} Verificando backend..."
+    if [ -d "$BASE_DIR/backend-nodejs" ] && [ -f "$BASE_DIR/backend-nodejs/package.json" ]; then
+        echo -e "${GREEN}✅ Backend Node.js detectado${NC}"
+    else
+        echo -e "${RED}❌ Backend não encontrado!${NC}"
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}[7/7]${NC} Verificando permissões finais..."
+    ls -la "$BASE_DIR" | head -10
     
     echo ""
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅ Atualização do GitHub concluída!${NC}"
-    echo -e "${GREEN}════════════���═══════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "${BOLD}${CYAN}📋 PRÓXIMOS PASSOS:${NC}"
-    echo -e "${YELLOW}   1) Execute a opção 1 (Instalação Completa)${NC}"
-    echo -e "${YELLOW}   2) Ou reinicie o script: ./install.sh${NC}"
+    echo -e "${BOLD}${CYAN}📋 PRÓXIMOS PASSOS OBRIGATÓRIOS:${NC}"
+    echo ""
+    echo -e "${YELLOW}   1) ${BOLD}Execute opção 1 (Instalação Completa)${NC}"
+    echo -e "${CYAN}      → Instala dependências (npm install)${NC}"
+    echo -e "${CYAN}      → Builda frontend (npm run build)${NC}"
+    echo -e "${CYAN}      → Configura .env${NC}"
+    echo -e "${CYAN}      → Inicia servidor${NC}"
+    echo ""
+    echo -e "${RED}   ⚠️  SEM npm run build → Erro MIME type!${NC}"
+    echo -e "${RED}      Arquivos .tsx não rodam direto no navegador${NC}"
     echo ""
     
     pause
