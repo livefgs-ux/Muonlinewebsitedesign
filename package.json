@@ -13,7 +13,6 @@
     "validate": "tsx shared/cli-validator.ts",
     "validate:list": "tsx shared/cli-validator.ts list",
     "validate:add": "tsx shared/cli-validator.ts add",
-    "install": "node install.js",
     "check": "node check.js",
     "check:fix": "node check.js fix",
     "check:security": "node check.js security",

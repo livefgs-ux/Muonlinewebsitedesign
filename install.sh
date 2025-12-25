@@ -74,7 +74,7 @@ instalacao_completa() {
     echo ""
     echo -e "${YELLOW}[2/7]${NC} Instalando dependências do frontend..."
     cd "$BASE_DIR" || exit 1
-    if npm install > /dev/null 2>&1; then
+    if npm install --no-scripts > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Dependências do frontend instaladas${NC}"
     else
         echo -e "${RED}❌ Falha ao instalar dependências do frontend${NC}"
@@ -181,12 +181,12 @@ instalacao_completa() {
 instalar_dependencias() {
     clear_screen
     echo -e "${BOLD}📦 INSTALAÇÃO DE DEPENDÊNCIAS${NC}"
-    echo "════════════════════════════════���═══════════════════════════"
+    echo "════════════════════════════════════════════════════════════"
     echo ""
     
     echo -e "${YELLOW}[1/2]${NC} Instalando dependências do frontend..."
     cd "$BASE_DIR" || exit 1
-    npm install
+    npm install --no-scripts
     echo -e "${GREEN}✅ Frontend OK${NC}"
     
     echo ""
@@ -394,7 +394,7 @@ reiniciar_servidor() {
 
 # ═══════════════════════════════════════════════════════════════
 # FUNÇÃO 6: VERIFICAR MYSQL
-# ═══════════════════════════════════════════════════════════════
+# ═════════════════════════��═════════════════════════════════════
 
 verificar_mysql() {
     clear_screen
@@ -483,7 +483,7 @@ verificar_portas() {
 health_check() {
     clear_screen
     echo -e "${BOLD}💚 HEALTH CHECK${NC}"
-    echo "════════════════════════════════════════════════════════════"
+    echo "���═══════════════════════════════════════════════════════════"
     echo ""
     
     echo -e "${CYAN}🔍 Testando endpoint /health...${NC}"
