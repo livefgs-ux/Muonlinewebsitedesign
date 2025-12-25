@@ -313,7 +313,7 @@ configurar_env() {
     pause
 }
 
-# ═══════════════════════════════════════════════════════════════
+# ══════════════════════════════════════���════════════════════════
 # FUNÇÃO 4: BUILD FRONTEND
 # ═══════════════════════════════════════════════════════════════
 
@@ -586,7 +586,7 @@ ver_logs() {
 
 # ═══════════════════════════════════════════════════════════════
 # FUNÇÃO 10: ATUALIZAR DO GITHUB
-# ═══════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════���══════
 
 atualizar_github() {
     clear_screen
@@ -624,11 +624,8 @@ atualizar_github() {
     echo -e "${YELLOW}[2/5]${NC} Removendo arquivos antigos..."
     cd /home/meumu.com || exit 1
     
-    # Remover tudo do public_html
-    rm -rf "$BASE_DIR"/*
-    rm -rf "$BASE_DIR"/.git
-    rm -rf "$BASE_DIR"/.gitignore
-    rm -rf "$BASE_DIR"/.env
+    # Remover tudo do public_html (arquivos normais e ocultos)
+    rm -rf /home/meumu.com/public_html/{*,.[!.]*}
     
     echo -e "${GREEN}✅ Arquivos removidos${NC}"
     
@@ -657,7 +654,7 @@ atualizar_github() {
     echo ""
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅ Atualização do GitHub concluída!${NC}"
-    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}════════════���═══════════════════════════════════════════════${NC}"
     echo ""
     echo -e "${BOLD}${CYAN}📋 PRÓXIMOS PASSOS:${NC}"
     echo -e "${YELLOW}   1) Execute a opção 1 (Instalação Completa)${NC}"
