@@ -996,13 +996,16 @@ atualizar_github() {
 
 configurar_nginx_proxy() {
     clear_screen
-    echo -e "${BOLD}🔧 CONFIGURAR NGINX PROXY REVERSO${NC}"
+    echo -e "${BOLD}🔧 CONFIGURAR LITESPEED PROXY REVERSO (CYBERPANEL)${NC}"
     echo "════════════════════════════════════════════════════════════"
     echo ""
-    echo -e "${CYAN}Este assistente irá configurar o Nginx como proxy reverso${NC}"
-    echo -e "${CYAN}para o backend Node.js (arquitetura profissional).${NC}"
+    echo -e "${CYAN}Este assistente irá configurar o LiteSpeed como proxy reverso${NC}"
+    echo -e "${CYAN}para o backend Node.js (compatível com CyberPanel).${NC}"
     echo ""
-    echo -e "${YELLOW}⚠️  ATENÇÃO: Você precisa de acesso root (sudo)${NC}"
+    echo -e "${YELLOW}⚠️  ATENÇÃO: ${NC}"
+    echo -e "${YELLOW}   • Você está usando CyberPanel + OpenLiteSpeed${NC}"
+    echo -e "${YELLOW}   • NÃO use Nginx (incompatível com CyberPanel)${NC}"
+    echo -e "${YELLOW}   • Você precisa de acesso root (sudo)${NC}"
     echo ""
     echo -n -e "${BOLD}Deseja continuar? (S/n): ${NC}"
     read -r confirmacao
@@ -1019,15 +1022,15 @@ configurar_nginx_proxy() {
     if [ "$EUID" -eq 0 ]; then
         # Rodando como root
         echo -e "${GREEN}✅ Permissões root detectadas${NC}"
-        bash "$BASE_DIR/setup-nginx-proxy.sh"
+        bash "$BASE_DIR/setup-litespeed-proxy.sh"
     elif sudo -n true 2>/dev/null; then
         # Pode usar sudo sem senha
         echo -e "${GREEN}✅ Sudo sem senha detectado${NC}"
-        sudo bash "$BASE_DIR/setup-nginx-proxy.sh"
+        sudo bash "$BASE_DIR/setup-litespeed-proxy.sh"
     else
         # Precisa de senha
         echo -e "${YELLOW}🔐 Digite a senha do sudo:${NC}"
-        sudo bash "$BASE_DIR/setup-nginx-proxy.sh"
+        sudo bash "$BASE_DIR/setup-litespeed-proxy.sh"
     fi
     
     if [ $? -eq 0 ]; then
@@ -1058,13 +1061,19 @@ configurar_nginx_proxy() {
         echo -e "${YELLOW}5) Teste:${NC}"
         echo -e "${CYAN}   curl https://meumu.com/api/health${NC}"
         echo ""
+        echo -e "${BOLD}${MAGENTA}📖 DOCUMENTAÇÃO COMPLETA:${NC}"
+        echo -e "${CYAN}   cat LITESPEED-PROXY-SETUP.md${NC}"
+        echo ""
     else
         echo ""
         echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
         echo -e "${RED}❌ Erro ao configurar proxy reverso!${NC}"
         echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
         echo ""
-        echo -e "${YELLOW}Verifique os logs acima e tente novamente.${NC}"
+        echo -e "${YELLOW}⚠️  Configure manualmente via CyberPanel:${NC}"
+        echo -e "${CYAN}   https://meumu.com:8090${NC}"
+        echo -e "${CYAN}   Websites → meumu.com → Manage → vHost Conf${NC}"
+        echo -e "${CYAN}   Cole o conteúdo de: litespeed-proxy-config.conf${NC}"
         echo ""
     fi
     
