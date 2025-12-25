@@ -21,16 +21,25 @@ const getApiBaseUrl = () => {
   
   // Produção
   if (import.meta.env.MODE === 'production') {
-    // OPÇÃO 1: Proxy reverso via .htaccess (padrão)
-    // Se não funcionar, altere para OPÇÃO 2 descomentar a linha abaixo
-    return '/api';
-    
-    // OPÇÃO 2: API exposta na porta 3001
-    // Descomente a linha abaixo se o proxy não funcionar:
-    // return 'https://meumu.com:3001/api';
+    // Verificar se estamos acessando via HTTPS (www.meumu.com)
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      // Usar o domínio atual com porta 3001
+      return `${window.location.protocol}//${window.location.hostname}:3001/api`;
+    }
+    // HTTP direto (meumu.com:3001)
+    return 'http://meumu.com:3001/api';
   }
   
-  // Desenvolvimento
+  // Desenvolvimento - usar IP/hostname do servidor
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // Se estiver acessando via IP ou domínio, usar o mesmo hostname
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `http://${hostname}:3001/api`;
+    }
+  }
+  
+  // Fallback para localhost
   return 'http://localhost:3001/api';
 };
 
