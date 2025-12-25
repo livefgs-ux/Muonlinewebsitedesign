@@ -181,7 +181,7 @@ instalacao_completa() {
 instalar_dependencias() {
     clear_screen
     echo -e "${BOLD}📦 INSTALAÇÃO DE DEPENDÊNCIAS${NC}"
-    echo "════════════════════════════════════════════════════════════"
+    echo "════════════════════════════════���═══════════════════════════"
     echo ""
     
     echo -e "${YELLOW}[1/2]${NC} Instalando dependências do frontend..."
@@ -219,37 +219,52 @@ configurar_env_interno() {
     else
         echo -e "${YELLOW}⚠️  .env.production não encontrado. Criando...${NC}"
         cat > "$BASE_DIR/backend-nodejs/.env.production" << 'EOF'
+# ═══════════════════════════════════════════════════════════════
 # MEUMU ONLINE - CONFIGURAÇÃO DE PRODUÇÃO
-PORT=3001
-FRONTEND_URL=http://meumu.com:3001
+# ═══════════════════════════════════════════════════════════════
 
-# DATABASE MUONLINE (Servidor MU - Read Only)
+# SEGURANÇA - JWT (ALTERAR EM PRODUÇÃO!)
+JWT_SECRET=meumu_secret_key_2024_super_secure_change_this_in_production_now_12345678
+
+# DATABASE PRINCIPAL (Host, User, Password compartilhados)
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=@mysql123@
+
+# DATABASES (Nomes)
+DB_NAME_MUONLINE=muonline
+DB_NAME_WEBMU=webmu
+
+# DATABASE MUONLINE (Servidor MU - Read Only) - Compatibilidade
 DB_MU_HOST=127.0.0.1
 DB_MU_PORT=3306
 DB_MU_USER=root
 DB_MU_PASSWORD=@mysql123@
 DB_MU_NAME=muonline
 
-# DATABASE WEBMU (Website - Read + Write)
+# DATABASE WEBMU (Website - Read + Write) - Compatibilidade
 DB_WEB_HOST=127.0.0.1
 DB_WEB_PORT=3306
 DB_WEB_USER=root
 DB_WEB_PASSWORD=@mysql123@
 DB_WEB_NAME=webmu
 
+# SERVIDOR
+PORT=3001
+FRONTEND_URL=http://meumu.com:3001
+
 # POOL DE CONEXÕES
 DB_CONNECTION_LIMIT=10
 DB_QUEUE_LIMIT=0
-
-# SEGURANÇA - JWT
-JWT_SECRET=meumu_secret_key_2024_super_secure_change_this_in_production
-JWT_EXPIRES_IN=7d
 
 # RATE LIMITING
 RATE_LIMIT_AUTH_WINDOW=15
 RATE_LIMIT_AUTH_MAX=5
 RATE_LIMIT_API_WINDOW=1
 RATE_LIMIT_API_MAX=100
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX_REQUESTS=100
 
 # LOGS E AUDITORIA
 LOG_LEVEL=info
@@ -258,6 +273,10 @@ ENABLE_SECURITY_ALERTS=true
 
 # AMBIENTE
 NODE_ENV=production
+
+# SEGURANÇA
+ALLOWED_ORIGINS=http://meumu.com:3001,http://localhost:3001
+SESSION_SECRET=meumu_session_secret_change_this_12345678
 EOF
         cp "$BASE_DIR/backend-nodejs/.env.production" "$BASE_DIR/backend-nodejs/.env"
         echo -e "${GREEN}✅ .env criado e configurado${NC}"
