@@ -8,43 +8,47 @@
 
 ---
 
-## 🚀 INSTALAÇÃO AUTOMÁTICA (1 COMANDO)
+## 🚀 INSTALAÇÃO AUTOMÁTICA (RECOMENDADO)
+
+### **PASSO 1: Baixar arquivos do Figma Make**
+
+Copie estes 2 arquivos para o servidor:
+
+1. `/backend-nodejs/.env.production` → Copiar para `/home/meumu.com/public_html/backend-nodejs/`
+2. `/install.sh` → Copiar para `/home/meumu.com/public_html/`
+
+### **PASSO 2: Executar instalador**
 
 ```bash
 cd /home/meumu.com/public_html
-chmod +x install-meumu.sh
-./install-meumu.sh
+chmod +x install.sh
+./install.sh
 ```
 
-**Pronto! O script vai:**
-1. ✅ Verificar MySQL
-2. ✅ Copiar .env correto
-3. ✅ Instalar dependências (se necessário)
-4. ✅ Rebuildar frontend
-5. ✅ Reiniciar servidor Node.js
-6. ✅ Testar conexões
+**O script vai fazer tudo automaticamente:**
+- ✅ Verificar MySQL
+- ✅ Copiar .env correto
+- ✅ Rebuildar frontend
+- ✅ Reiniciar servidor Node.js
+- ✅ Testar conexões
 
 ---
 
-## 🔧 INSTALAÇÃO MANUAL (SE PREFERIR)
+## 🔧 INSTALAÇÃO MANUAL (3 COMANDOS)
 
-### 1️⃣ Copiar .env correto:
-```bash
-cd /home/meumu.com/public_html/backend-nodejs
-cp .env.production .env
-```
+Se preferir fazer manualmente:
 
-### 2️⃣ Rebuildar frontend:
 ```bash
+# 1. Copiar .env
 cd /home/meumu.com/public_html
-npm run build
-```
+cp backend-nodejs/.env.production backend-nodejs/.env
 
-### 3️⃣ Reiniciar servidor:
-```bash
-cd /home/meumu.com/public_html/backend-nodejs
+# 2. Rebuildar frontend
+npm run build
+
+# 3. Reiniciar servidor
 pkill -f "node.*server.js"
-npm start
+cd backend-nodejs && npm start &
 ```
 
 ---
@@ -112,7 +116,7 @@ npm start
 ## 📁 ARQUIVOS CRIADOS
 
 - `/backend-nodejs/.env.production` → Configuração correta do backend
-- `/install-meumu.sh` → Script de instalação automática
+- `/install.sh` → Script de instalação automática
 - `/INSTALL.md` → Este guia
 
 ---
