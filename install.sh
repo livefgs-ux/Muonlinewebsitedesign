@@ -105,6 +105,20 @@ instalacao_completa() {
     echo -e "${YELLOW}[5/7]${NC} Buildando frontend..."
     cd "$BASE_DIR" || exit 1
     
+    # Garantir que o .env existe
+    if [ ! -f ".env" ]; then
+        echo -e "${YELLOW}⚠️  Criando .env do frontend...${NC}"
+        cat > .env << 'EOF'
+# ═══════════════════════════════════════════════════════════════
+# MEUMU ONLINE - CONFIGURAÇÃO DO FRONTEND
+# ═══════════════════════════════════════════════════════════════
+
+# URL da API Backend (Node.js)
+VITE_API_URL=http://meumu.com:3001/api
+EOF
+        echo -e "${GREEN}✅ .env do frontend criado${NC}"
+    fi
+    
     if [ -d "dist" ]; then
         mv dist "dist.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null
     fi
@@ -310,6 +324,20 @@ build_frontend() {
     echo ""
     
     cd "$BASE_DIR" || exit 1
+    
+    # Garantir que o .env existe
+    if [ ! -f ".env" ]; then
+        echo -e "${YELLOW}⚠️  Criando .env do frontend...${NC}"
+        cat > .env << 'EOF'
+# ═══════════════════════════════════════════════════════════════
+# MEUMU ONLINE - CONFIGURAÇÃO DO FRONTEND
+# ═══════════════════════════════════════════════════════════════
+
+# URL da API Backend (Node.js)
+VITE_API_URL=http://meumu.com:3001/api
+EOF
+        echo -e "${GREEN}✅ .env do frontend criado${NC}"
+    fi
     
     if [ -d "dist" ]; then
         echo -e "${YELLOW}⚠️  Fazendo backup do dist antigo...${NC}"
@@ -608,7 +636,7 @@ menu_principal() {
     done
 }
 
-# ═══════════════════════════════════════════════════════════════
+# ════��══════════════════════════════════════════════════════════
 # INICIAR
 # ═══════════════════════════════════════════════════════════════
 

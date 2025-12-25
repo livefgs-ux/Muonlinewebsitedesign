@@ -18,7 +18,7 @@ export const API_CONFIG = {
   // URL BASE DO BACKEND (SEM BARRA NO FINAL)
   // Em produção, será a mesma origem (http://meumu.com:3001)
   // Em desenvolvimento, localhost:3001
-  BASE_URL: import.meta.env.VITE_API_URL || window.location.origin + '/api',
+  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
   
   // TIMEOUT DE REQUISIÇÕES (ms)
   TIMEOUT: 30000,
