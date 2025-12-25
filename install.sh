@@ -585,6 +585,89 @@ ver_logs() {
 }
 
 # ═══════════════════════════════════════════════════════════════
+# FUNÇÃO 10: ATUALIZAR DO GITHUB
+# ═══════════════════════════════════════════════════════════════
+
+atualizar_github() {
+    clear_screen
+    echo -e "${BOLD}🔄 ATUALIZAR DO GITHUB${NC}"
+    echo "════════════════════════════════════════════════════════════"
+    echo ""
+    echo -e "${RED}⚠️  ATENÇÃO: Esta operação irá:${NC}"
+    echo -e "${RED}   • Apagar TODOS os arquivos do diretório atual${NC}"
+    echo -e "${RED}   • Baixar versão fresh do GitHub${NC}"
+    echo -e "${RED}   • Substituir TUDO (inclusive configurações locais)${NC}"
+    echo ""
+    echo -e "${YELLOW}Diretório: $BASE_DIR${NC}"
+    echo -e "${YELLOW}Repositório: https://github.com/livefgs-ux/Muonlinewebsitedesign${NC}"
+    echo ""
+    echo -n -e "${BOLD}Tem certeza que deseja continuar? (S/n): ${NC}"
+    read -r confirmacao
+    
+    if [[ ! "$confirmacao" =~ ^[Ss]$ ]]; then
+        echo -e "${YELLOW}❌ Operação cancelada!${NC}"
+        pause
+        return 0
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}[1/5]${NC} Parando servidor Node.js..."
+    pkill -f "node.*server.js" 2>/dev/null
+    pkill -f "nodemon.*server.js" 2>/dev/null
+    if command -v pm2 &> /dev/null; then
+        pm2 delete meumu-backend 2>/dev/null || true
+    fi
+    sleep 2
+    echo -e "${GREEN}✅ Servidor parado${NC}"
+    
+    echo ""
+    echo -e "${YELLOW}[2/5]${NC} Removendo arquivos antigos..."
+    cd /home/meumu.com || exit 1
+    
+    # Remover tudo do public_html
+    rm -rf "$BASE_DIR"/*
+    rm -rf "$BASE_DIR"/.git
+    rm -rf "$BASE_DIR"/.gitignore
+    rm -rf "$BASE_DIR"/.env
+    
+    echo -e "${GREEN}✅ Arquivos removidos${NC}"
+    
+    echo ""
+    echo -e "${YELLOW}[3/5]${NC} Clonando repositório do GitHub..."
+    cd "$BASE_DIR" || exit 1
+    
+    if git clone https://github.com/livefgs-ux/Muonlinewebsitedesign.git . 2>&1; then
+        echo -e "${GREEN}✅ Repositório clonado com sucesso${NC}"
+    else
+        echo -e "${RED}❌ Falha ao clonar repositório!${NC}"
+        echo -e "${YELLOW}Verifique sua conexão com a internet${NC}"
+        pause
+        return 1
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}[4/5]${NC} Verificando arquivos..."
+    ls -la "$BASE_DIR"
+    
+    echo ""
+    echo -e "${YELLOW}[5/5]${NC} Tornando install.sh executável..."
+    chmod +x "$BASE_DIR/install.sh"
+    echo -e "${GREEN}✅ Permissões configuradas${NC}"
+    
+    echo ""
+    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}✅ Atualização do GitHub concluída!${NC}"
+    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "${BOLD}${CYAN}📋 PRÓXIMOS PASSOS:${NC}"
+    echo -e "${YELLOW}   1) Execute a opção 1 (Instalação Completa)${NC}"
+    echo -e "${YELLOW}   2) Ou reinicie o script: ./install.sh${NC}"
+    echo ""
+    
+    pause
+}
+
+# ═══════════════════════════════════════════════════════════════
 # MENU PRINCIPAL
 # ═══════════════════════════════════════════════════════════════
 
@@ -605,6 +688,8 @@ menu_principal() {
         echo -e "${CYAN} 8)${NC} 💚 Health Check"
         echo -e "${CYAN} 9)${NC} 📋 Ver Logs"
         echo ""
+        echo -e "${YELLOW}10)${NC} 🔄 Atualizar do GitHub (Clone Fresh)"
+        echo ""
         echo -e "${RED} 0)${NC} ❌ Sair"
         echo ""
         echo -e "${MAGENTA}════════════════════════════════════════════════════════════${NC}"
@@ -622,6 +707,7 @@ menu_principal() {
             7) verificar_portas ;;
             8) health_check ;;
             9) ver_logs ;;
+            10) atualizar_github ;;
             0) 
                 clear_screen
                 echo -e "${GREEN}Até logo! 👋${NC}"
@@ -636,7 +722,7 @@ menu_principal() {
     done
 }
 
-# ════��══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 # INICIAR
 # ═══════════════════════════════════════════════════════════════
 
