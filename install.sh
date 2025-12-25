@@ -328,9 +328,20 @@ instalacao_completa() {
 # ═══════════════════════════════════════════════════════════════
 
 # URL da API Backend (Node.js)
+# ⚠️  IMPORTANTE: Usar HTTP (sem 's') para evitar Mixed Content Error!
+# Frontend e Backend DEVEM usar o MESMO protocolo
 VITE_API_URL=http://meumu.com:3001/api
 EOF
         echo -e "${GREEN}✅ .env do frontend criado${NC}"
+    else
+        # Verificar se .env tem HTTPS (problema de Mixed Content)
+        if grep -q "https://" ".env" 2>/dev/null; then
+            echo -e "${RED}⚠️  .env do frontend tem HTTPS! Corrigindo para HTTP...${NC}"
+            sed -i 's|https://|http://|g' .env
+            echo -e "${GREEN}✅ .env corrigido (HTTP)${NC}"
+        else
+            echo -e "${GREEN}✅ .env do frontend já existe e está correto${NC}"
+        fi
     fi
     
     if [ -d "dist" ]; then
@@ -548,9 +559,20 @@ build_frontend() {
 # ═══════════════════════════════════════════════════════════════
 
 # URL da API Backend (Node.js)
+# ⚠️  IMPORTANTE: Usar HTTP (sem 's') para evitar Mixed Content Error!
+# Frontend e Backend DEVEM usar o MESMO protocolo
 VITE_API_URL=http://meumu.com:3001/api
 EOF
         echo -e "${GREEN}✅ .env do frontend criado${NC}"
+    else
+        # Verificar se .env tem HTTPS (problema de Mixed Content)
+        if grep -q "https://" ".env" 2>/dev/null; then
+            echo -e "${RED}⚠️  .env do frontend tem HTTPS! Corrigindo para HTTP...${NC}"
+            sed -i 's|https://|http://|g' .env
+            echo -e "${GREEN}✅ .env corrigido (HTTP)${NC}"
+        else
+            echo -e "${GREEN}✅ .env do frontend já existe e está correto${NC}"
+        fi
     fi
     
     if [ -d "dist" ]; then
