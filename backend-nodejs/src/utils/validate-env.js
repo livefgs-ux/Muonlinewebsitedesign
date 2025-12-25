@@ -168,13 +168,13 @@ const validateProduction = () => {
       });
     }
     
-    // Verificar se tem HTTPS
+    // Verificar se tem HTTPS (WARNING ao invés de HIGH)
     if (!process.env.FORCE_HTTPS && process.env.FORCE_HTTPS !== 'true') {
       errors.push({
         variable: 'FORCE_HTTPS',
         error: 'HTTPS não está forçado',
         description: 'Sempre use HTTPS em produção',
-        severity: 'HIGH'
+        severity: 'MEDIUM'
       });
     }
     

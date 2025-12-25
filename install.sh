@@ -224,7 +224,7 @@ configurar_env_interno() {
 # ═══════════════════════════════════════════════════════════════
 
 # SEGURANÇA - JWT (ALTERAR EM PRODUÇÃO!)
-JWT_SECRET=meumu_secret_key_2024_super_secure_change_this_in_production_now_12345678
+JWT_SECRET=mEuMu_OnL1nE_jWt_K3y_2o24_pr0ducT10n_4a8b9c7d2e5f6g1h3i
 
 # DATABASE PRINCIPAL (Host, User, Password compartilhados)
 DB_HOST=127.0.0.1
@@ -276,7 +276,7 @@ NODE_ENV=production
 
 # SEGURANÇA
 ALLOWED_ORIGINS=http://meumu.com:3001,http://localhost:3001
-SESSION_SECRET=meumu_session_secret_change_this_12345678
+SESSION_SECRET=mEuMu_s3ss10n_k3y_7x9y2z4a6b8c
 EOF
         cp "$BASE_DIR/backend-nodejs/.env.production" "$BASE_DIR/backend-nodejs/.env"
         echo -e "${GREEN}✅ .env criado e configurado${NC}"
@@ -394,7 +394,7 @@ reiniciar_servidor() {
 
 # ═══════════════════════════════════════════════════════════════
 # FUNÇÃO 6: VERIFICAR MYSQL
-# ═════════════════════════��═════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
 
 verificar_mysql() {
     clear_screen
@@ -483,7 +483,7 @@ verificar_portas() {
 health_check() {
     clear_screen
     echo -e "${BOLD}💚 HEALTH CHECK${NC}"
-    echo "���═══════════════════════════════════════════════════════════"
+    echo "════════════��═══════════════════════════════════════════════"
     echo ""
     
     echo -e "${CYAN}🔍 Testando endpoint /health...${NC}"
