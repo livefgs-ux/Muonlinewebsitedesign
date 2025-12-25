@@ -991,6 +991,87 @@ atualizar_github() {
 }
 
 # ═══════════════════════════════════════════════════════════════
+# FUNÇÃO 11: CONFIGURAR NGINX PROXY REVERSO
+# ═══════════════════════════════════════════════════════════════
+
+configurar_nginx_proxy() {
+    clear_screen
+    echo -e "${BOLD}🔧 CONFIGURAR NGINX PROXY REVERSO${NC}"
+    echo "════════════════════════════════════════════════════════════"
+    echo ""
+    echo -e "${CYAN}Este assistente irá configurar o Nginx como proxy reverso${NC}"
+    echo -e "${CYAN}para o backend Node.js (arquitetura profissional).${NC}"
+    echo ""
+    echo -e "${YELLOW}⚠️  ATENÇÃO: Você precisa de acesso root (sudo)${NC}"
+    echo ""
+    echo -n -e "${BOLD}Deseja continuar? (S/n): ${NC}"
+    read -r confirmacao
+    
+    if [[ ! "$confirmacao" =~ ^[Ss]$ ]]; then
+        echo -e "${YELLOW}❌ Operação cancelada!${NC}"
+        pause
+        return 0
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}Verificando permissões...${NC}"
+    
+    if [ "$EUID" -eq 0 ]; then
+        # Rodando como root
+        echo -e "${GREEN}✅ Permissões root detectadas${NC}"
+        bash "$BASE_DIR/setup-nginx-proxy.sh"
+    elif sudo -n true 2>/dev/null; then
+        # Pode usar sudo sem senha
+        echo -e "${GREEN}✅ Sudo sem senha detectado${NC}"
+        sudo bash "$BASE_DIR/setup-nginx-proxy.sh"
+    else
+        # Precisa de senha
+        echo -e "${YELLOW}🔐 Digite a senha do sudo:${NC}"
+        sudo bash "$BASE_DIR/setup-nginx-proxy.sh"
+    fi
+    
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+        echo -e "${GREEN}✅ Proxy reverso configurado!${NC}"
+        echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+        echo ""
+        echo -e "${BOLD}${CYAN}📋 PRÓXIMOS PASSOS:${NC}"
+        echo ""
+        echo -e "${YELLOW}1) Configure o backend para produção:${NC}"
+        echo -e "${CYAN}   cd backend-nodejs${NC}"
+        echo -e "${CYAN}   cp .env.production .env${NC}"
+        echo -e "${CYAN}   nano .env (verificar NODE_ENV=production)${NC}"
+        echo ""
+        echo -e "${YELLOW}2) Configure o frontend:${NC}"
+        echo -e "${CYAN}   cd ..${NC}"
+        echo -e "${CYAN}   echo 'VITE_API_URL=https://meumu.com/api' > .env${NC}"
+        echo ""
+        echo -e "${YELLOW}3) Rebuild frontend:${NC}"
+        echo -e "${CYAN}   npm run build${NC}"
+        echo ""
+        echo -e "${YELLOW}4) Reinicie o backend:${NC}"
+        echo -e "${CYAN}   cd backend-nodejs${NC}"
+        echo -e "${CYAN}   pkill -f node${NC}"
+        echo -e "${CYAN}   npm start${NC}"
+        echo ""
+        echo -e "${YELLOW}5) Teste:${NC}"
+        echo -e "${CYAN}   curl https://meumu.com/api/health${NC}"
+        echo ""
+    else
+        echo ""
+        echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
+        echo -e "${RED}❌ Erro ao configurar proxy reverso!${NC}"
+        echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
+        echo ""
+        echo -e "${YELLOW}Verifique os logs acima e tente novamente.${NC}"
+        echo ""
+    fi
+    
+    pause
+}
+
+# ═══════════════════════════════════════════════════════════════
 # MENU PRINCIPAL
 # ═══════════════════════════════════════════════════════════════
 
@@ -1013,6 +1094,8 @@ menu_principal() {
         echo ""
         echo -e "${YELLOW}10)${NC} 🔄 Atualizar do GitHub (Clone Fresh)"
         echo ""
+        echo -e "${YELLOW}11)${NC} 🔧 Configurar Nginx Proxy Reverso"
+        echo ""
         echo -e "${RED} 0)${NC} ❌ Sair"
         echo ""
         echo -e "${MAGENTA}════════════════════════════════════════════════════════════${NC}"
@@ -1031,6 +1114,7 @@ menu_principal() {
             8) health_check ;;
             9) ver_logs ;;
             10) atualizar_github ;;
+            11) configurar_nginx_proxy ;;
             0) 
                 clear_screen
                 echo -e "${GREEN}Até logo! 👋${NC}"

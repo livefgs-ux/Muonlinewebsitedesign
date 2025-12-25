@@ -287,16 +287,32 @@ const startServer = async () => {
     }
     
     // Iniciar servidor HTTP
-    const server = app.listen(PORT, '0.0.0.0', () => {
+    // Produção: escuta APENAS localhost (proxy reverso Nginx)
+    // Desenvolvimento: escuta todas as interfaces (acesso direto via porta 3001)
+    const HOST = process.env.NODE_ENV === 'production' ? '127.0.0.1' : '0.0.0.0';
+    
+    const server = app.listen(PORT, HOST, () => {
       console.log('================================================');
       console.log(`✅ Servidor rodando na porta ${PORT}`);
       console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`📡 API URL: http://meumu.com:${PORT}`);
-      console.log(`📊 Health Check: http://meumu.com:${PORT}/health`);
-      console.log(`⚛️  Frontend: http://meumu.com:${PORT}/`);
+      console.log(`🔒 Escutando: ${HOST}:${PORT}`);
+      
+      if (process.env.NODE_ENV === 'production') {
+        console.log(`📡 API URL: https://meumu.com/api (via Nginx proxy)`);
+        console.log(`📊 Health Check: https://meumu.com/api/health`);
+        console.log(`⚛️  Frontend: https://meumu.com`);
+        console.log(`🔐 SEGURANÇA: Porta 3001 acessível APENAS internamente`);
+      } else {
+        console.log(`📡 API URL: http://meumu.com:${PORT}`);
+        console.log(`📊 Health Check: http://meumu.com:${PORT}/health`);
+        console.log(`⚛️  Frontend: http://meumu.com:${PORT}/`);
+      }
       
       if (!dbConnected) {
-        console.log(`📦 Instalador: http://meumu.com:${PORT}/install`);
+        const installUrl = process.env.NODE_ENV === 'production' 
+          ? `https://meumu.com/api/install` 
+          : `http://meumu.com:${PORT}/install`;
+        console.log(`📦 Instalador: ${installUrl}`);
       }
       
       console.log('================================================');
