@@ -67,15 +67,31 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"], // React precisa de inline styles
-      scriptSrc: ["'self'", "'unsafe-inline'", "blob:"], // ← PERMITIR inline + blobs
-      scriptSrcAttr: ["'unsafe-inline'"], // ← PERMITIR onclick handlers
-      imgSrc: ["'self'", "data:", "https:", "blob:"], // ← Permitir blob images
+      styleSrc: [
+        "'self'", 
+        "'unsafe-inline'",
+        "https://fonts.googleapis.com"  // ✅ Google Fonts
+      ],
+      scriptSrc: ["'self'", "'unsafe-inline'", "blob:"],
+      scriptSrcAttr: ["'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
       connectSrc: ["'self'"],
-      fontSrc: ["'self'", "data:"],
+      fontSrc: [
+        "'self'", 
+        "data:",
+        "https://fonts.gstatic.com"  // ✅ Google Fonts
+      ],
       objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
+      mediaSrc: [
+        "'self'",
+        "https://www.youtube.com",    // ✅ YouTube
+        "https://youtube.com"
+      ],
+      frameSrc: [
+        "'self'",
+        "https://www.youtube.com",    // ✅ YouTube Embed
+        "https://youtube.com"
+      ],
       baseUri: ["'self'"],
       formAction: ["'self'"],
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
@@ -94,6 +110,12 @@ app.use(helmet({
   xssFilter: true,
   permittedCrossDomainPolicies: { permittedPolicies: "none" }
 }));
+
+// ✅ Uniformizar headers Origin-Agent-Cluster
+app.use((req, res, next) => {
+  res.setHeader('Origin-Agent-Cluster', '?1');
+  next();
+});
 
 // CORS - Configurar domínios permitidos
 const allowedOrigins = process.env.ALLOWED_ORIGINS 

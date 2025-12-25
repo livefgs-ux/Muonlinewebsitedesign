@@ -32,19 +32,16 @@ export function RankingsSection() {
   const [topResets, setTopResets] = useState<RankingPlayer[]>([]);
   const [topPK, setTopPK] = useState<RankingPlayer[]>([]);
   const [topGuilds, setTopGuilds] = useState<RankingGuild[]>([]);
-  const [topEvents, setTopEvents] = useState<RankingPlayer[]>([]);
   
   // Loading states
   const [loadingResets, setLoadingResets] = useState(true);
   const [loadingPK, setLoadingPK] = useState(true);
   const [loadingGuilds, setLoadingGuilds] = useState(true);
-  const [loadingEvents, setLoadingEvents] = useState(true);
   
   // Error states
   const [errorResets, setErrorResets] = useState<string | null>(null);
   const [errorPK, setErrorPK] = useState<string | null>(null);
   const [errorGuilds, setErrorGuilds] = useState<string | null>(null);
-  const [errorEvents, setErrorEvents] = useState<string | null>(null);
   
   // Carregar rankings ao montar o componente
   useEffect(() => {
@@ -62,7 +59,6 @@ export function RankingsSection() {
     loadTopResets();
     loadTopPK();
     loadTopGuilds();
-    loadTopEvents();
   };
   
   // Carregar Top Resets
@@ -113,21 +109,6 @@ export function RankingsSection() {
       setErrorGuilds(error.message || 'Erro ao carregar ranking');
     } finally {
       setLoadingGuilds(false);
-    }
-  };
-  
-  // Carregar Top Events
-  const loadTopEvents = async () => {
-    try {
-      setLoadingEvents(true);
-      setErrorEvents(null);
-      const data = await api.rankings.getTopEvents(10);
-      setTopEvents(data);
-    } catch (error: any) {
-      console.error('❌ Erro ao carregar Top Events:', error);
-      setErrorEvents(error.message || 'Erro ao carregar ranking');
-    } finally {
-      setLoadingEvents(false);
     }
   };
   
@@ -232,18 +213,6 @@ export function RankingsSection() {
                 </div>
                 <div className="text-2xl text-ethereal">{topGuilds[0]?.score || 0} Score</div>
               </Card>
-
-              {/* Top #1 Events */}
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30 p-6 hover:border-gold/60 transition-all">
-                <div className="flex items-center gap-3 mb-4">
-                  <Trophy className="w-8 h-8 text-purple-500" />
-                  <div>
-                    <div className="text-sm text-gray-400">Events</div>
-                    <div className="text-lg text-white">{topEvents[0]?.name || '---'}</div>
-                  </div>
-                </div>
-                <div className="text-2xl text-purple-500">{topEvents[0]?.points || 0} Points</div>
-              </Card>
             </div>
           </div>
 
@@ -261,10 +230,6 @@ export function RankingsSection() {
               <TabsTrigger value="guilds" className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold">
                 <Users className="w-4 h-4 mr-2" />
                 Guilds
-              </TabsTrigger>
-              <TabsTrigger value="events" className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold">
-                <Trophy className="w-4 h-4 mr-2" />
-                Events
               </TabsTrigger>
             </TabsList>
 
@@ -289,19 +254,19 @@ export function RankingsSection() {
                       </thead>
                       <tbody>
                         {topResets.map((player) => {
-                          const medal = getRankMedal(player.rank);
+                          const medal = getRankMedal(player.position);
                           return (
                             <motion.tr
-                              key={player.rank}
+                              key={player.position}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.3, delay: player.rank * 0.05 }}
+                              transition={{ duration: 0.3, delay: player.position * 0.05 }}
                               className="border-b border-gold/10 hover:bg-gold/5 transition-colors"
                             >
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
                                   <medal.icon className={`w-5 h-5 ${medal.color}`} />
-                                  <span className="text-white">#{player.rank}</span>
+                                  <span className="text-white">#{player.position}</span>
                                 </div>
                               </td>
                               <td className="px-6 py-4 text-gold">{player.name}</td>
@@ -340,20 +305,20 @@ export function RankingsSection() {
                       </thead>
                       <tbody>
                         {topPK.map((player) => {
-                          const medal = getRankMedal(player.rank);
+                          const medal = getRankMedal(player.position);
                           const kdRatio = player.deaths ? (player.kills! / player.deaths).toFixed(2) : player.kills;
                           return (
                             <motion.tr
-                              key={player.rank}
+                              key={player.position}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.3, delay: player.rank * 0.05 }}
+                              transition={{ duration: 0.3, delay: player.position * 0.05 }}
                               className="border-b border-gold/10 hover:bg-gold/5 transition-colors"
                             >
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
                                   <medal.icon className={`w-5 h-5 ${medal.color}`} />
-                                  <span className="text-white">#{player.rank}</span>
+                                  <span className="text-white">#{player.position}</span>
                                 </div>
                               </td>
                               <td className="px-6 py-4 text-gold">{player.name}</td>
@@ -392,75 +357,25 @@ export function RankingsSection() {
                       </thead>
                       <tbody>
                         {topGuilds.map((guild) => {
-                          const medal = getRankMedal(guild.rank);
+                          const medal = getRankMedal(guild.position);
                           return (
                             <motion.tr
-                              key={guild.rank}
+                              key={guild.position}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.3, delay: guild.rank * 0.05 }}
+                              transition={{ duration: 0.3, delay: guild.position * 0.05 }}
                               className="border-b border-gold/10 hover:bg-gold/5 transition-colors"
                             >
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
                                   <medal.icon className={`w-5 h-5 ${medal.color}`} />
-                                  <span className="text-white">#{guild.rank}</span>
+                                  <span className="text-white">#{guild.position}</span>
                                 </div>
                               </td>
                               <td className="px-6 py-4 text-gold font-semibold">{guild.name}</td>
                               <td className="px-6 py-4 text-gray-300">{guild.master}</td>
                               <td className="px-6 py-4 text-center text-ethereal">{guild.members}</td>
                               <td className="px-6 py-4 text-center text-gold font-semibold">{guild.score.toLocaleString()}</td>
-                            </motion.tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </Card>
-            </TabsContent>
-
-            {/* Tab Content: Events */}
-            <TabsContent value="events">
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30">
-                {loadingEvents ? (
-                  <LoadingState />
-                ) : errorEvents ? (
-                  <ErrorState message={errorEvents} onRetry={loadTopEvents} />
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gold/20">
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Rank</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Player</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Class</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Points</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Wins</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {topEvents.map((player) => {
-                          const medal = getRankMedal(player.rank);
-                          return (
-                            <motion.tr
-                              key={player.rank}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.3, delay: player.rank * 0.05 }}
-                              className="border-b border-gold/10 hover:bg-gold/5 transition-colors"
-                            >
-                              <td className="px-6 py-4">
-                                <div className="flex items-center gap-2">
-                                  <medal.icon className={`w-5 h-5 ${medal.color}`} />
-                                  <span className="text-white">#{player.rank}</span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 text-gold">{player.name}</td>
-                              <td className="px-6 py-4 text-gray-300">{player.class}</td>
-                              <td className="px-6 py-4 text-center text-purple-500 font-semibold">{player.points?.toLocaleString()}</td>
-                              <td className="px-6 py-4 text-center text-ethereal">{player.wins}</td>
                             </motion.tr>
                           );
                         })}
