@@ -271,8 +271,8 @@ LOG_LEVEL=info
 ENABLE_AUDIT_LOG=true
 ENABLE_SECURITY_ALERTS=true
 
-# AMBIENTE
-NODE_ENV=production
+# AMBIENTE (development = HTTP, production = HTTPS forçado)
+NODE_ENV=development
 
 # SEGURANÇA
 ALLOWED_ORIGINS=http://meumu.com:3001,http://localhost:3001
@@ -483,7 +483,7 @@ verificar_portas() {
 health_check() {
     clear_screen
     echo -e "${BOLD}💚 HEALTH CHECK${NC}"
-    echo "════════════��═══════════════════════════════════════════════"
+    echo "═══════════════════════════════════════════════════════════"
     echo ""
     
     echo -e "${CYAN}🔍 Testando endpoint /health...${NC}"
