@@ -3,7 +3,7 @@
  * Gerenciamento completo de eventos do servidor
  */
 
-const db = require('../config/database');
+const { poolWEB } = require('../config/database'); // ✅ CORRIGIDO: usar poolWEB
 const { validateRequired } = require('../utils/validators');
 
 /**
@@ -12,7 +12,7 @@ const { validateRequired } = require('../utils/validators');
  */
 exports.getActiveEvents = async (req, res, next) => {
   try {
-    const [events] = await db.query(`
+    const [events] = await poolWEB.query(`
       SELECT 
         id, name, name_en, name_es, name_de, name_zh, name_ru, name_fil, name_vi,
         description, description_en, description_es, description_de, 
@@ -42,7 +42,7 @@ exports.getActiveEvents = async (req, res, next) => {
  */
 exports.getFeaturedEvents = async (req, res, next) => {
   try {
-    const [events] = await db.query(`
+    const [events] = await poolWEB.query(`
       SELECT 
         id, name, name_en, name_es, name_de, name_zh, name_ru, name_fil, name_vi,
         description, description_en, description_es, description_de,
@@ -74,7 +74,7 @@ exports.getEventById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const [events] = await db.query(`
+    const [events] = await poolWEB.query(`
       SELECT * FROM events WHERE id = ?
     `, [id]);
 
@@ -102,7 +102,7 @@ exports.getNextOccurrence = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const [events] = await db.query(`
+    const [events] = await poolWEB.query(`
       SELECT schedule_type, interval_hours, interval_minutes,
              daily_times, weekly_day, weekly_time, specific_datetime
       FROM events 
@@ -214,7 +214,7 @@ exports.getNextOccurrence = async (req, res, next) => {
  */
 exports.getAllEventsAdmin = async (req, res, next) => {
   try {
-    const [events] = await db.query(`
+    const [events] = await poolWEB.query(`
       SELECT * FROM events
       ORDER BY priority DESC, name ASC
     `);
@@ -255,7 +255,7 @@ exports.createEvent = async (req, res, next) => {
     }
 
     // Inserir evento
-    const [result] = await db.query(`
+    const [result] = await poolWEB.query(`
       INSERT INTO events (
         name, name_en, name_es, name_de, name_zh, name_ru, name_fil, name_vi,
         description, description_en, description_es, description_de,
@@ -266,7 +266,7 @@ exports.createEvent = async (req, res, next) => {
         duration, is_active, is_featured, priority, rewards,
         min_level, max_level, min_reset,
         created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       name, name_en, name_es, name_de, name_zh, name_ru, name_fil, name_vi,
       description, description_en, description_es, description_de,
@@ -301,7 +301,7 @@ exports.updateEvent = async (req, res, next) => {
     const updates = req.body;
 
     // Verificar se evento existe
-    const [existing] = await db.query('SELECT id FROM events WHERE id = ?', [id]);
+    const [existing] = await poolWEB.query('SELECT id FROM events WHERE id = ?', [id]);
     if (existing.length === 0) {
       return res.status(404).json({
         success: false,
@@ -346,7 +346,7 @@ exports.updateEvent = async (req, res, next) => {
 
     updateValues.push(id);
 
-    await db.query(`
+    await poolWEB.query(`
       UPDATE events 
       SET ${updateFields.join(', ')}
       WHERE id = ?
@@ -369,7 +369,7 @@ exports.deleteEvent = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const [result] = await db.query('DELETE FROM events WHERE id = ?', [id]);
+    const [result] = await poolWEB.query('DELETE FROM events WHERE id = ?', [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({
@@ -395,7 +395,7 @@ exports.toggleEventStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    await db.query(`
+    await poolWEB.query(`
       UPDATE events 
       SET is_active = NOT is_active
       WHERE id = ?
@@ -416,7 +416,7 @@ exports.toggleEventStatus = async (req, res, next) => {
  */
 exports.getEventStats = async (req, res, next) => {
   try {
-    const [stats] = await db.query(`
+    const [stats] = await poolWEB.query(`
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN is_active = TRUE THEN 1 ELSE 0 END) as active,
@@ -425,7 +425,7 @@ exports.getEventStats = async (req, res, next) => {
       FROM events
     `);
 
-    const [byType] = await db.query(`
+    const [byType] = await poolWEB.query(`
       SELECT 
         schedule_type,
         COUNT(*) as count

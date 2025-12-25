@@ -8,38 +8,44 @@
  */
 
 // Base URL da API (Backend Node.js)
-// MODO 1: Produção com proxy reverso (via .htaccess)
-// MODO 2: Produção com porta 3001 exposta diretamente
-// MODO 3: Desenvolvimento local
+// MODO 1: Produção com proxy reverso OpenLiteSpeed (RECOMENDADO)
+// MODO 2: Desenvolvimento local
 
 // Detectar automaticamente qual modo usar
 const getApiBaseUrl = () => {
-  // Variável de ambiente customizada
+  // 1. Variável de ambiente customizada (mais alta prioridade)
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
   
-  // Produção
+  // 2. Produção com HTTPS (usar proxy reverso)
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    // ✅ HTTPS: usar proxy reverso (sem porta!)
+    // OpenLiteSpeed vai rotear /api para localhost:3001
+    return `https://${window.location.hostname}/api`;
+  }
+  
+  // 3. Produção com HTTP (porta 3001 direta)
   if (import.meta.env.MODE === 'production') {
-    // Verificar se estamos acessando via HTTPS (www.meumu.com)
-    if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-      // Usar o domínio atual com porta 3001
-      return `${window.location.protocol}//${window.location.hostname}:3001/api`;
-    }
-    // HTTP direto (meumu.com:3001)
     return 'http://meumu.com:3001/api';
   }
   
-  // Desenvolvimento - usar IP/hostname do servidor
+  // 4. Desenvolvimento - detectar hostname
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     // Se estiver acessando via IP ou domínio, usar o mesmo hostname
     if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      const protocol = window.location.protocol; // http: ou https:
+      // Se for HTTPS, usar proxy reverso (sem porta)
+      if (protocol === 'https:') {
+        return `${protocol}//${hostname}/api`;
+      }
+      // HTTP: usar porta 3001 direta
       return `http://${hostname}:3001/api`;
     }
   }
   
-  // Fallback para localhost
+  // 5. Fallback para localhost
   return 'http://localhost:3001/api';
 };
 
