@@ -154,6 +154,9 @@ export interface Translations {
     email: string;
     confirmPassword: string;
     forgotPassword: string;
+    forgotPasswordMessage: string; // 🔥 NOVO
+    backToLogin: string; // 🔥 NOVO
+    sendResetLink: string; // 🔥 NOVO
     noAccount: string;
     hasAccount: string;
     loginButton: string;
@@ -549,6 +552,9 @@ export const translations: Record<Language, Translations> = {
       email: 'E-mail',
       confirmPassword: 'Confirmar Senha',
       forgotPassword: 'Esqueceu a senha?',
+      forgotPasswordMessage: 'Por favor, insira o e-mail da conta',
+      backToLogin: 'Voltar para Login',
+      sendResetLink: 'Enviar Link de Recuperação',
       noAccount: 'Não tem uma conta?',
       hasAccount: 'Já tem uma conta?',
       loginButton: 'Entrar',
@@ -850,6 +856,9 @@ export const translations: Record<Language, Translations> = {
       email: 'Email',
       confirmPassword: 'Confirm Password',
       forgotPassword: 'Forgot password?',
+      forgotPasswordMessage: 'Please enter your account email',
+      backToLogin: 'Back to Login',
+      sendResetLink: 'Send Reset Link',
       noAccount: "Don't have an account?",
       hasAccount: 'Already have an account?',
       loginButton: 'Sign In',
@@ -1149,6 +1158,9 @@ export const translations: Record<Language, Translations> = {
       email: 'Correo',
       confirmPassword: 'Confirmar Contraseña',
       forgotPassword: '¿Olvidaste tu contraseña?',
+      forgotPasswordMessage: 'Por favor, ingresa el correo de tu cuenta',
+      backToLogin: 'Volver al Login',
+      sendResetLink: 'Enviar Enlace de Recuperación',
       noAccount: '¿No tienes cuenta?',
       hasAccount: '¿Ya tienes cuenta?',
       loginButton: 'Entrar',

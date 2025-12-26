@@ -48,23 +48,26 @@ function AppContent() {
   // Estado separado para AdminCP
   const [adminSession, setAdminSession] = useState<any>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  
-  // 🔥 NOVO: Flag para indicar que login acabou de acontecer
-  const [loginJustCompleted, setLoginJustCompleted] = useState(false);
 
   const handleLoginSuccess = () => {
-    // Marcar que login acabou de completar
-    setLoginJustCompleted(true);
+    // 🔥 REDIRECIONAR IMEDIATAMENTE
+    console.log('✅ Login bem-sucedido! Redirecionando para dashboard...');
+    setCurrentSection('dashboard');
   };
   
-  // 🔥 NOVO: Efeito para redirecionar quando isLoggedIn atualizar
+  // 🔥 MONITORAR isLoggedIn para proteger rotas
   useEffect(() => {
-    if (loginJustCompleted && isLoggedIn) {
-      console.log('✅ isLoggedIn atualizado! Redirecionando agora...');
+    // Se usuário está logado mas está em home ou login, redirecionar para dashboard
+    if (isLoggedIn && (currentSection === 'home' || currentSection === 'login')) {
+      console.log('✅ Usuário logado detectado! Redirecionando para dashboard...');
       setCurrentSection('dashboard');
-      setLoginJustCompleted(false); // Reset flag
     }
-  }, [isLoggedIn, loginJustCompleted]);
+    // Se usuário não está logado mas está no dashboard, redirecionar para home
+    else if (!isLoggedIn && currentSection === 'dashboard') {
+      console.log('⚠️ Usuário não logado! Redirecionando para home...');
+      setCurrentSection('home');
+    }
+  }, [isLoggedIn, currentSection]);
 
   const handleLogout = () => {
     setCurrentSection('home');
