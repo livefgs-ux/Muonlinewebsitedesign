@@ -92,39 +92,23 @@ const login = async (req, res) => {
     console.log(`✅ Senha correta para: ${username}`);
     
     // ========================================================================
-    // PÓS-LOGIN: MIGRAÇÃO PROGRESSIVA DE SENHA (BCRYPT)
+    // ⚠️ MIGRAÇÃO AUTOMÁTICA DESABILITADA!
     // ========================================================================
-    // Estratégia: Se a senha NÃO for bcrypt, migrar agora (no momento do login)
-    // Vantagens:
-    // - Zero risco: só migra quem logou com sucesso
-    // - Progressivo: não afeta quem nunca loga
-    // - Reversível: se der erro, login continua funcionando
-    // - Aumenta segurança gradualmente
+    // MOTIVO: MU Online Season 19 EXIGE SHA-256 no banco de dados.
+    //         Se migrarmos para bcrypt, o JOGO não consegue validar a senha!
+    // 
+    // REGRA DE OURO: O site deve usar o MESMO algoritmo que o servidor do jogo.
+    // 
+    // ❌ NÃO MIGRAR: SHA-256 → bcrypt (quebra compatibilidade com o jogo)
+    // ✅ MANTER: SHA-256 (site E jogo funcionam)
+    // 
+    // Se precisar de bcrypt no futuro, seria necessário:
+    // 1) Modificar o servidor do jogo para aceitar bcrypt (impossível em Season 19)
+    // 2) Usar dual-hash (site=bcrypt, jogo=SHA-256) - complexo demais
+    // 3) Aceitar que SHA-256 é suficiente para jogos (padrão da indústria)
     // ========================================================================
     
-    // Verificar se já é bcrypt (começa com $2a$, $2b$ ou $2y$)
-    if (!account.pwd.startsWith('$2')) {
-      try {
-        console.log(`🔐 Senha legada detectada (${account.pwd.length} chars), migrando para bcrypt...`);
-        
-        // Gerar hash bcrypt da senha
-        const bcryptHash = await hashPassword(password);
-        
-        // Atualizar no banco (Season 19: account, Season 6: memb___id)
-        const updateSql = `UPDATE ${tables.accounts} SET password = ? WHERE account = ?`;
-        await executeQuery(updateSql, [bcryptHash, account.username]);
-        
-        console.log(`✅ Senha migrada para bcrypt: ${account.username}`);
-        
-      } catch (err) {
-        // IMPORTANTE: NÃO bloquear login se a migração falhar
-        // O usuário consegue logar mesmo se o UPDATE falhar
-        console.error(`⚠️ Falha ao migrar senha para bcrypt (${account.username}):`, err.message);
-        console.log(`⚠️ Login continua funcionando com hash legado`);
-      }
-    } else {
-      console.log(`✅ Senha já está em bcrypt (seguro)`);
-    }
+    console.log(`🔐 Mantendo hash SHA-256 (compatibilidade com servidor MU)`);
     
     // Verificar se é admin (ctl1_code >= 8 no Season 6)
     // No Season 19, pode usar outro campo - ajustar conforme necessário

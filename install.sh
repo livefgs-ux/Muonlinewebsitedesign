@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="483"
-VERSION_DATE="2025-12-26 18:45 CET"
+VERSION="485"
+VERSION_DATE="2025-12-26 19:15 CET"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -445,7 +445,7 @@ EOF
     fi
     
     echo ""
-    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅✅✅ INSTALAÇÃO COMPLETA COM SUCESSO! ✅✅✅${NC}"
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     echo ""
@@ -618,7 +618,7 @@ build_frontend() {
 # ═══════════════════════════════════════════════════════════════
 
 # URL da API Backend (através do proxy OpenLiteSpeed)
-# ���️  IMPORTANTE: Usar URL RELATIVA para funcionar com HTTPS!
+# ⚠️  IMPORTANTE: Usar URL RELATIVA para funcionar com HTTPS!
 # 
 # ✅ CORRETO: /api (URL relativa - usa protocolo do site)
 # ❌ ERRADO: http://meumu.com:3001/api (Mixed Content!)
@@ -860,7 +860,7 @@ verificar_portas() {
 health_check() {
     clear_screen
     echo -e "${BOLD}💚 HEALTH CHECK${NC}"
-    echo "════════════════════════════════════════════��═════════════"
+    echo "═════════════════════════════════════════════════════════"
     echo ""
     
     echo -e "${CYAN}🔍 Testando endpoint /health...${NC}"
@@ -926,7 +926,7 @@ ver_logs() {
     fi
     
     echo ""
-    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
     echo -e "${YELLOW}Para ver logs em tempo real: tail -f backend-nodejs/logs/server.log${NC}"
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     

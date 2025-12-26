@@ -246,11 +246,12 @@ const successResponse = (res, data, message = 'Operação realizada com sucesso'
 
 /**
  * Resposta de erro padronizada
+ * IMPORTANTE: Retorna "message" para compatibilidade com frontend
  */
 const errorResponse = (res, error, statusCode = 400) => {
   return res.status(statusCode).json({
     success: false,
-    error: error.message || error
+    message: error.message || error  // ✅ MUDADO: "error" → "message"
   });
 };
 
