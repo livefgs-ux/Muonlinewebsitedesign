@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
 VERSION="481"
-VERSION_DATE="2024-12-26"
+VERSION_DATE="2025-12-26 17:45 CET"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -860,7 +860,7 @@ verificar_portas() {
 health_check() {
     clear_screen
     echo -e "${BOLD}💚 HEALTH CHECK${NC}"
-    echo "══════════════════════════════════════��════════════════════"
+    echo "══════════════════════════════════════════════════════════"
     echo ""
     
     echo -e "${CYAN}🔍 Testando endpoint /health...${NC}"
