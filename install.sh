@@ -326,23 +326,36 @@ instalacao_completa() {
         echo -e "${YELLOW}⚠️  Criando .env do frontend...${NC}"
         cat > .env << 'EOF'
 # ═══════════════════════════════════════════════════════════════
-# MEUMU ONLINE - CONFIGURAÇÃO DO FRONTEND
+# MEUMU ONLINE - CONFIGURAÇÃO DO FRONTEND (HTTPS)
 # ═══════════════════════════════════════════════════════════════
 
-# URL da API Backend (Node.js)
-# ⚠️  IMPORTANTE: Usar HTTP (sem 's') para evitar Mixed Content Error!
-# Frontend e Backend DEVEM usar o MESMO protocolo
-VITE_API_URL=http://meumu.com:3001/api
+# URL da API Backend (através do proxy OpenLiteSpeed)
+# ⚠️  IMPORTANTE: Usar URL RELATIVA para funcionar com HTTPS!
+# 
+# ✅ CORRETO: /api (URL relativa - usa protocolo do site)
+# ❌ ERRADO: http://meumu.com:3001/api (Mixed Content!)
+# 
+# Com URL relativa (/api):
+# - Navegador usa HTTPS automaticamente
+# - OpenLiteSpeed proxy redireciona para porta 3001
+# - Sem erro de Mixed Content
+# - Cadeado verde no navegador
+#
+VITE_API_URL=/api
 EOF
-        echo -e "${GREEN}✅ .env do frontend criado${NC}"
+        echo -e "${GREEN}✅ .env do frontend criado (HTTPS pronto)${NC}"
     else
-        # Verificar se .env tem HTTPS (problema de Mixed Content)
-        if grep -q "https://" ".env" 2>/dev/null; then
-            echo -e "${RED}⚠️  .env do frontend tem HTTPS! Corrigindo para HTTP...${NC}"
-            sed -i 's|https://|http://|g' .env
-            echo -e "${GREEN}✅ .env corrigido (HTTP)${NC}"
+        # Verificar e corrigir .env para URL relativa
+        if grep -q "VITE_API_URL=http" ".env" 2>/dev/null; then
+            echo -e "${YELLOW}⚠️  .env do frontend tem URL absoluta! Corrigindo para URL relativa...${NC}"
+            sed -i 's|VITE_API_URL=.*|VITE_API_URL=/api|g' .env
+            echo -e "${GREEN}✅ .env corrigido (URL relativa para HTTPS)${NC}"
+        elif ! grep -q "VITE_API_URL" ".env" 2>/dev/null; then
+            echo -e "${YELLOW}⚠️  Adicionando VITE_API_URL ao .env...${NC}"
+            echo "VITE_API_URL=/api" >> .env
+            echo -e "${GREEN}✅ VITE_API_URL adicionada${NC}"
         else
-            echo -e "${GREEN}✅ .env do frontend já existe e está correto${NC}"
+            echo -e "${GREEN}✅ .env do frontend já está correto${NC}"
         fi
     fi
     
@@ -493,8 +506,8 @@ configurar_env_interno() {
     else
         echo -e "${YELLOW}⚠️  .env.production não encontrado. Criando...${NC}"
         cat > "$BASE_DIR/backend-nodejs/.env.production" << 'EOF'
-# ═══════════════════════════════════════════════════════════════
-# MEUMU ONLINE - CONFIGURAÇÃO DE PRODUÇÃO
+# ═══════════════���═══════════════════════════════════════════════
+# MEUMU ONLINE - CONFIGURAÇÃO DE PRODUÇÃO (HTTPS)
 # ═══════════════════════════════════════════════════════════════
 
 # SEGURANÇA - JWT (ALTERAR EM PRODUÇÃO!)
@@ -527,30 +540,34 @@ DB_WEB_NAME=meuweb
 
 # SERVIDOR
 PORT=3001
-FRONTEND_URL=http://meumu.com:3001
+FRONTEND_URL=https://meumu.com
 
 # POOL DE CONEXÕES
 DB_CONNECTION_LIMIT=10
 DB_QUEUE_LIMIT=0
 
-# RATE LIMITING
+# RATE LIMITING (VALORES AUMENTADOS PARA PRODUÇÃO)
+# ⚠️  IMPORTANTE: Rate limit aumentado para evitar bloqueios durante uso normal
 RATE_LIMIT_AUTH_WINDOW=15
-RATE_LIMIT_AUTH_MAX=5
+RATE_LIMIT_AUTH_MAX=20
 RATE_LIMIT_API_WINDOW=1
-RATE_LIMIT_API_MAX=100
+RATE_LIMIT_API_MAX=500
 RATE_LIMIT_WINDOW_MS=60000
-RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_MAX_REQUESTS=500
 
 # LOGS E AUDITORIA
 LOG_LEVEL=info
 ENABLE_AUDIT_LOG=true
 ENABLE_SECURITY_ALERTS=true
 
-# AMBIENTE (development = HTTP, production = HTTPS forçado)
-NODE_ENV=development
+# AMBIENTE (production = HTTPS pronto)
+NODE_ENV=production
 
-# SEGURANÇA
-ALLOWED_ORIGINS=http://meumu.com:3001,http://localhost:3001
+# SEGURANÇA - CORS (PERMITIR HTTPS E HTTP)
+# ⚠️  IMPORTANTE: Permitir tanto HTTPS (produção) quanto HTTP (desenvolvimento)
+ALLOWED_ORIGINS=https://meumu.com,http://meumu.com,http://meumu.com:3001,https://meumu.com:3001
+
+# SESSION
 SESSION_SECRET=mEuMu_s3ss10n_k3y_7x9y2z4a6b8c
 EOF
         cp "$BASE_DIR/backend-nodejs/.env.production" "$BASE_DIR/backend-nodejs/.env"
@@ -591,23 +608,36 @@ build_frontend() {
         echo -e "${YELLOW}⚠️  Criando .env do frontend...${NC}"
         cat > .env << 'EOF'
 # ═══════════════════════════════════════════════════════════════
-# MEUMU ONLINE - CONFIGURAÇÃO DO FRONTEND
-# ═══════════════════════════════════════════════════════════════
+# MEUMU ONLINE - CONFIGURAÇÃO DO FRONTEND (HTTPS)
+# ════════════════════════════════════��══════════════════════════
 
-# URL da API Backend (Node.js)
-# ⚠️  IMPORTANTE: Usar HTTP (sem 's') para evitar Mixed Content Error!
-# Frontend e Backend DEVEM usar o MESMO protocolo
-VITE_API_URL=http://meumu.com:3001/api
+# URL da API Backend (através do proxy OpenLiteSpeed)
+# ⚠️  IMPORTANTE: Usar URL RELATIVA para funcionar com HTTPS!
+# 
+# ✅ CORRETO: /api (URL relativa - usa protocolo do site)
+# ❌ ERRADO: http://meumu.com:3001/api (Mixed Content!)
+# 
+# Com URL relativa (/api):
+# - Navegador usa HTTPS automaticamente
+# - OpenLiteSpeed proxy redireciona para porta 3001
+# - Sem erro de Mixed Content
+# - Cadeado verde no navegador
+#
+VITE_API_URL=/api
 EOF
-        echo -e "${GREEN}✅ .env do frontend criado${NC}"
+        echo -e "${GREEN}✅ .env do frontend criado (HTTPS pronto)${NC}"
     else
-        # Verificar se .env tem HTTPS (problema de Mixed Content)
-        if grep -q "https://" ".env" 2>/dev/null; then
-            echo -e "${RED}⚠️  .env do frontend tem HTTPS! Corrigindo para HTTP...${NC}"
-            sed -i 's|https://|http://|g' .env
-            echo -e "${GREEN}✅ .env corrigido (HTTP)${NC}"
+        # Verificar e corrigir .env para URL relativa
+        if grep -q "VITE_API_URL=http" ".env" 2>/dev/null; then
+            echo -e "${YELLOW}⚠️  .env do frontend tem URL absoluta! Corrigindo para URL relativa...${NC}"
+            sed -i 's|VITE_API_URL=.*|VITE_API_URL=/api|g' .env
+            echo -e "${GREEN}✅ .env corrigido (URL relativa para HTTPS)${NC}"
+        elif ! grep -q "VITE_API_URL" ".env" 2>/dev/null; then
+            echo -e "${YELLOW}⚠️  Adicionando VITE_API_URL ao .env...${NC}"
+            echo "VITE_API_URL=/api" >> .env
+            echo -e "${GREEN}✅ VITE_API_URL adicionada${NC}"
         else
-            echo -e "${GREEN}✅ .env do frontend já existe e está correto${NC}"
+            echo -e "${GREEN}✅ .env do frontend já está correto${NC}"
         fi
     fi
     
@@ -1137,7 +1167,7 @@ configurar_litespeed_interno() {
     fi
 }
 
-# ═══════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════���════════════════════
 # MENU PRINCIPAL
 # ═══════════════════════════════════════════════════════════════
 
