@@ -4,7 +4,7 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="480"
+VERSION="481"
 VERSION_DATE="2024-12-26"
 # ═══════════════════════════════════════════════════════════════
 
@@ -473,7 +473,7 @@ EOF
 
 instalar_dependencias() {
     clear_screen
-    echo -e "${BOLD}���� INSTALAÇÃO DE DEPENDÊNCIAS${NC}"
+    echo -e "${BOLD} INSTALAÇÃO DE DEPENDÊNCIAS${NC}"
     echo "════════════════════════════════════════════════════════════"
     echo ""
     
@@ -860,7 +860,7 @@ verificar_portas() {
 health_check() {
     clear_screen
     echo -e "${BOLD}💚 HEALTH CHECK${NC}"
-    echo "═══════════════════════════════════════════════════════════"
+    echo "══════════════════════════════════════��════════════════════"
     echo ""
     
     echo -e "${CYAN}🔍 Testando endpoint /health...${NC}"
