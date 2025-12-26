@@ -32,6 +32,7 @@ export const API_CONFIG = {
     AUTH_REGISTER: '/auth/register',
     AUTH_VERIFY: '/auth/verify',
     AUTH_LOGOUT: '/auth/logout',
+    AUTH_FORGOT_PASSWORD: '/auth/forgot-password',
     
     // Jogador
     PLAYER_CHARACTERS: '/characters',

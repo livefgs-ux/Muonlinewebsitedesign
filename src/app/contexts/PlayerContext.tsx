@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
 import { API_CONFIG, getApiUrl, getAuthHeaders } from '../config/api';
 
 interface Character {
@@ -40,21 +39,14 @@ interface PlayerContextType {
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
-  const { isLoggedIn, user } = useAuth();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [playerStats, setPlayerStats] = useState<PlayerStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      refreshCharacters();
-    } else {
-      setCharacters([]);
-      setSelectedCharacter(null);
-      setPlayerStats(null);
-    }
-  }, [isLoggedIn]);
+    refreshCharacters();
+  }, []);
 
   const refreshCharacters = async () => {
     const token = localStorage.getItem('auth_token');
