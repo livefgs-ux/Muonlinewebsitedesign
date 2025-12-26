@@ -36,26 +36,45 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 🛡️ PROTEÇÃO: Prevenir múltiplas chamadas simultâneas
+    if (loginLoading) {
+      console.log('⚠️ Login já está em andamento, ignorando duplo clique');
+      return;
+    }
+    
     setLoginError('');
     setLoginSuccess('');
     setLoginLoading(true);
 
-    const result = await login(loginUsername, loginPassword);
-    
-    setLoginLoading(false);
-    
-    if (result.success) {
-      setLoginSuccess(result.message);
-      setTimeout(() => {
-        onLoginSuccess?.();
-      }, 1000);
-    } else {
-      setLoginError(result.message);
+    try {
+      const result = await login(loginUsername, loginPassword);
+      
+      if (result.success) {
+        setLoginSuccess(result.message);
+        setTimeout(() => {
+          onLoginSuccess?.();
+        }, 1000);
+      } else {
+        setLoginError(result.message);
+      }
+    } catch (error) {
+      console.error('Erro no login:', error);
+      setLoginError('Erro inesperado ao fazer login');
+    } finally {
+      setLoginLoading(false);
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 🛡️ PROTEÇÃO: Prevenir múltiplas chamadas simultâneas
+    if (registerLoading) {
+      console.log('⚠️ Registro já está em andamento, ignorando duplo clique');
+      return;
+    }
+    
     setRegisterError('');
     setRegisterSuccess('');
 
@@ -77,19 +96,24 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
 
     setRegisterLoading(true);
 
-    const result = await register(registerUsername, registerEmail, registerPassword);
-    
-    setRegisterLoading(false);
-    
-    if (result.success) {
-      setRegisterSuccess(result.message);
-      // Limpar campos
-      setRegisterUsername('');
-      setRegisterEmail('');
-      setRegisterPassword('');
-      setRegisterConfirmPassword('');
-    } else {
-      setRegisterError(result.message);
+    try {
+      const result = await register(registerUsername, registerEmail, registerPassword);
+      
+      if (result.success) {
+        setRegisterSuccess(result.message);
+        // Limpar campos
+        setRegisterUsername('');
+        setRegisterEmail('');
+        setRegisterPassword('');
+        setRegisterConfirmPassword('');
+      } else {
+        setRegisterError(result.message);
+      }
+    } catch (error) {
+      console.error('Erro no registro:', error);
+      setRegisterError('Erro inesperado ao criar conta');
+    } finally {
+      setRegisterLoading(false);
     }
   };
 

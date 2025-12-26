@@ -153,13 +153,16 @@ app.use(cors({
 }));
 
 // Rate Limiting - Proteção contra abuso
+// ⚠️ IMPORTANTE: Aumentado temporariamente para debug (muitas requisições do frontend)
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutos
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // 100 requests por IP
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 1 * 60 * 1000, // 1 minuto (reduzido)
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // 1000 requests (MUITO AUMENTADO para debug)
   message: {
     success: false,
-    error: 'Muitas requisições. Tente novamente mais tarde.'
-  }
+    message: 'Muitas requisições. Tente novamente mais tarde.' // Mudado "error" para "message"
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
 app.use('/api/', limiter);
