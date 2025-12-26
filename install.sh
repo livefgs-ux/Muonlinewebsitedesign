@@ -1043,8 +1043,8 @@ configurar_litespeed_proxy() {
     echo -e "${YELLOW}   • NÃO use Nginx (incompatível com CyberPanel)${NC}"
     echo -e "${YELLOW}   • Você precisa de acesso root (sudo)${NC}"
     echo ""
-    echo -n -e "${BOLD}Deseja continuar? (S/n): ${NC}"
-    read -r confirmacao
+    echo ""
+    read -r -p "$(echo -e ${BOLD}Deseja continuar? '(S/n): '${NC})" confirmacao
     
     if [[ ! "$confirmacao" =~ ^[Ss]$ ]]; then
         echo -e "${YELLOW}❌ Operação cancelada!${NC}"
@@ -1116,7 +1116,7 @@ configurar_litespeed_proxy() {
     pause
 }
 
-# ═══════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 # FUNÇÃO AUXILIAR: Configurar LiteSpeed (versão silenciosa)
 # ═══════════════════════════════════════════════════════════════
 
@@ -1137,7 +1137,7 @@ configurar_litespeed_interno() {
     fi
 }
 
-# ════════════════════════════════��══════════════════════════════
+# ═══════════════════════════════════════════════════════════════
 # MENU PRINCIPAL
 # ═══════════════════════════════════════════════════════════════
 
@@ -1165,9 +1165,7 @@ menu_principal() {
         echo -e "${RED} 0)${NC} ❌ Sair"
         echo ""
         echo -e "${MAGENTA}════════════════════════════════════════════════════════════${NC}"
-        echo -n -e "${BOLD}Escolha uma opção: ${NC}"
-        
-        read -r opcao
+        read -r -p "$(echo -e ${BOLD}Escolha uma opção: ${NC})" opcao
         
         case $opcao in
             1) instalacao_completa ;;
