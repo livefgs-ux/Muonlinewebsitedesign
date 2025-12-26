@@ -26,13 +26,20 @@ const hashPasswordMD5 = (password) => {
 };
 
 /**
- * Comparar senha com hash (suporta MD5 e Bcrypt)
+ * Comparar senha com hash (suporta SHA-256, MD5 e Bcrypt)
  * DETECTA AUTOMATICAMENTE o formato do hash
  */
 const comparePassword = async (password, hash) => {
   try {
     // Remover espaços em branco
     const cleanHash = hash.trim();
+    
+    // SHA-256 hash tem sempre 64 caracteres hexadecimais
+    if (cleanHash.length === 64 && /^[a-f0-9]+$/i.test(cleanHash)) {
+      console.log('🔐 Detectado hash SHA-256');
+      const sha256Hash = crypto.createHash('sha256').update(password).digest('hex');
+      return sha256Hash.toLowerCase() === cleanHash.toLowerCase();
+    }
     
     // MD5 hash tem sempre 32 caracteres hexadecimais
     if (cleanHash.length === 32 && /^[a-f0-9]+$/i.test(cleanHash)) {

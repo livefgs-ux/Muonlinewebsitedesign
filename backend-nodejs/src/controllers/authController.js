@@ -75,7 +75,15 @@ const login = async (req, res) => {
       const crypto = require('crypto');
       const testMD5 = crypto.createHash('md5').update(password).digest('hex');
       console.log(`🔍 DEBUG - MD5 da senha enviada: ${testMD5}`);
-      console.log(`🔍 DEBUG - Senhas coincidem? ${testMD5.toLowerCase() === account.pwd.toLowerCase()}`);
+      console.log(`🔍 DEBUG - Hash no banco (lowercase): ${account.pwd.toLowerCase()}`);
+      console.log(`🔍 DEBUG - Senhas coincidem (case insensitive)? ${testMD5.toLowerCase() === account.pwd.toLowerCase()}`);
+      console.log(`🔍 DEBUG - Senhas coincidem (case sensitive)? ${testMD5 === account.pwd}`);
+      
+      // TESTE: Verificar se hash tem espaços ou caracteres estranhos
+      const hashTrimmed = account.pwd.trim();
+      console.log(`🔍 DEBUG - Hash sem espaços: ${hashTrimmed}`);
+      console.log(`🔍 DEBUG - Hash mudou após trim? ${hashTrimmed !== account.pwd}`);
+      console.log(`🔍 DEBUG - Coincidem após trim? ${testMD5.toLowerCase() === hashTrimmed.toLowerCase()}`);
       
       return errorResponse(res, 'Usuário ou senha incorretos', 401);
     }
@@ -210,15 +218,15 @@ const register = async (req, res) => {
     console.log(`✅ Email disponível`);
     
     // ========================================================================
-    // GERAR HASH DA SENHA (MD5 para MU Online)
+    // GERAR HASH DA SENHA (SHA-256 para MU Online Season 19)
     // ========================================================================
     
-    // MU Online usa MD5 por padrão
-    const { hashPasswordMD5 } = require('../utils/helpers');
-    const hashedPassword = hashPasswordMD5(password);
+    // MU Online Season 19 usa SHA-256
+    const crypto = require('crypto');
+    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
     
-    console.log(`🔐 Senha hashada em MD5: ${hashedPassword}`);
-    console.log(`🔐 Tamanho do hash: ${hashedPassword.length} caracteres (deve ser 32)`);
+    console.log(`🔐 Senha hashada em SHA-256: ${hashedPassword}`);
+    console.log(`🔐 Tamanho do hash: ${hashedPassword.length} caracteres (deve ser 64)`);
     
     // ========================================================================
     // INSERIR NOVA CONTA - COMPATÍVEL COM SEASON 19
