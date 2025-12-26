@@ -226,24 +226,54 @@ const register = async (req, res) => {
     
     if (isSeason19) {
       // ========================================================================
-      // SEASON 19: Estrutura simplificada
+      // SEASON 19: APENAS CAMPOS ESSENCIAIS (Regra de Ouro)
       // ========================================================================
-      console.log(`💾 Preparando INSERT para Season 19...`);
+      // 🎯 REGRA DE OURO: Nunca adapte o banco para o código errado.
+      //    Sempre adapte o código ao banco do servidor.
+      // 
+      // ✅ INSERIMOS APENAS: account, password, email
+      // ❌ NÃO inserimos: blocked, vip_level, cash_credits, etc.
+      // ❌ NÃO criamos personagem (character_info) - isso é feito no client!
+      // ========================================================================
+      
+      console.log(`💾 Preparando INSERT para Season 19 (APENAS ESSENCIAIS)...`);
+      
+      // Verificar quais colunas existem na tabela
+      const checkColumnsSql = `
+        SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = '${tables.accounts}'
+        AND COLUMN_NAME IN ('created_at', 'guid')
+      `;
+      
+      const columnsResult = await executeQuery(checkColumnsSql);
+      const hasCreatedAt = columnsResult.data.some(row => row.COLUMN_NAME === 'created_at');
+      const hasGuid = columnsResult.data.some(row => row.COLUMN_NAME === 'guid');
+      
+      console.log(`📊 Colunas detectadas: created_at=${hasCreatedAt}, guid=${hasGuid}`);
+      
+      // Montar INSERT apenas com colunas que SABEMOS que existem
+      const columns = ['account', 'password', 'email'];
+      const values = ['?', '?', '?'];
+      const params = [cleanUsername, hashedPassword, email];
+      
+      if (hasCreatedAt) {
+        columns.push('created_at');
+        values.push('NOW()');
+      }
       
       insertSql = `
         INSERT INTO ${tables.accounts} 
-        (account, password, email, created_at, blocked, vip_level, cash_credits)
-        VALUES (?, ?, ?, NOW(), 0, 0, 0)
+        (${columns.join(', ')})
+        VALUES (${values.join(', ')})
       `;
       
-      insertParams = [
-        cleanUsername,     // account
-        hashedPassword,    // password (MD5)
-        email             // email
-      ];
+      insertParams = params;
       
       console.log(`📝 INSERT SQL: ${insertSql}`);
       console.log(`📝 Parâmetros: [${cleanUsername}, ${hashedPassword.substring(0, 8)}..., ${email}]`);
+      console.log(`✅ REGRA DE OURO: Inserindo APENAS campos essenciais (sem forçar colunas extras)`);
       
     } else {
       // ========================================================================
