@@ -161,23 +161,23 @@ const getTopGuilds = async (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
     const offset = parseInt(req.query.offset) || 0;
     
+    // QUERY SIMPLIFICADA - sem JOIN (evita erro se guild_members não existir)
     const sql = `
       SELECT 
-        g.name,
-        g.emblem,
-        g.score,
-        COUNT(gm.guid) as members
-      FROM ${tables.guild} g
-      LEFT JOIN ${tables.guildMember} gm ON g.guid = gm.guild_id
-      GROUP BY g.guid, g.name, g.emblem, g.score
-      ORDER BY g.score DESC
+        name,
+        emblem,
+        score,
+        member_count as members
+      FROM ${tables.guild}
+      WHERE score > 0
+      ORDER BY score DESC
       LIMIT ? OFFSET ?
     `;
     
     const result = await executeQueryMU(sql, [limit, offset]);
     
     if (!result.success) {
-      console.error('❌ Erro SQL:', result.error);
+      console.error('❌ Erro SQL no ranking de guilds:', result.error);
       return errorResponse(res, 'Erro ao buscar ranking de guilds', 500);
     }
     

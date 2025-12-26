@@ -21,6 +21,8 @@ const login = async (req, res) => {
   try {
     const { username, password } = req.body;
     
+    console.log(`\n🔐 Tentativa de login: ${username}`);
+    
     // Buscar usuário no banco
     const sql = `SELECT memb___id, memb__pwd, mail_addr, bloc_code, ctl1_code 
                  FROM ${tables.accounts} 
@@ -29,13 +31,17 @@ const login = async (req, res) => {
     const result = await executeQuery(sql, [username]);
     
     if (!result.success || result.data.length === 0) {
+      console.log(`❌ Usuário não encontrado: ${username}`);
       return errorResponse(res, 'Usuário ou senha incorretos', 401);
     }
     
     const account = result.data[0];
+    console.log(`✅ Usuário encontrado: ${account.memb___id}`);
+    console.log(`🔑 Hash da senha no banco: ${account.memb__pwd.substring(0, 10)}...`);
     
     // Verificar se a conta está bloqueada
     if (account.bloc_code === '1') {
+      console.log(`🚫 Conta bloqueada: ${username}`);
       return errorResponse(res, 'Conta bloqueada. Entre em contato com o suporte.', 403);
     }
     
@@ -43,11 +49,15 @@ const login = async (req, res) => {
     const passwordMatch = await comparePassword(password, account.memb__pwd);
     
     if (!passwordMatch) {
+      console.log(`❌ Senha incorreta para: ${username}`);
       return errorResponse(res, 'Usuário ou senha incorretos', 401);
     }
     
+    console.log(`✅ Senha correta para: ${username}`);
+    
     // Verificar se é admin (ctl1_code = 8 ou superior)
     const isAdmin = account.ctl1_code >= 8;
+    console.log(`👤 Tipo de conta: ${isAdmin ? 'ADMIN' : 'USUÁRIO'}`);
     
     // Gerar token JWT
     const token = generateToken({
@@ -55,6 +65,8 @@ const login = async (req, res) => {
       email: account.mail_addr,
       isAdmin
     });
+    
+    console.log(`✅ Login bem-sucedido: ${username}\n`);
     
     return successResponse(res, {
       token,

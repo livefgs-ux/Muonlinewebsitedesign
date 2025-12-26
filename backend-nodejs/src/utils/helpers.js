@@ -3,6 +3,7 @@
  */
 
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { jwtSecret, jwtExpiresIn, bcryptSaltRounds } = require('../config/auth');
 
@@ -18,13 +19,41 @@ const hashPassword = async (password) => {
 };
 
 /**
- * Comparar senha com hash
+ * Gerar hash MD5 (compatível com servidores MU antigos)
+ */
+const hashPasswordMD5 = (password) => {
+  return crypto.createHash('md5').update(password).digest('hex');
+};
+
+/**
+ * Comparar senha com hash (suporta MD5 e Bcrypt)
+ * DETECTA AUTOMATICAMENTE o formato do hash
  */
 const comparePassword = async (password, hash) => {
   try {
-    return await bcrypt.compare(password, hash);
+    // Remover espaços em branco
+    const cleanHash = hash.trim();
+    
+    // MD5 hash tem sempre 32 caracteres hexadecimais
+    if (cleanHash.length === 32 && /^[a-f0-9]+$/i.test(cleanHash)) {
+      console.log('🔐 Detectado hash MD5');
+      const md5Hash = hashPasswordMD5(password);
+      return md5Hash.toLowerCase() === cleanHash.toLowerCase();
+    }
+    
+    // Bcrypt hash começa com $2a$, $2b$ ou $2y$
+    if (cleanHash.startsWith('$2')) {
+      console.log('🔐 Detectado hash Bcrypt');
+      return await bcrypt.compare(password, cleanHash);
+    }
+    
+    // Senha em texto plano (alguns servidores MU muito antigos)
+    console.log('⚠️ Detectado senha em texto plano (inseguro!)');
+    return password === cleanHash;
+    
   } catch (error) {
-    throw new Error('Erro ao comparar senha');
+    console.error('❌ Erro ao comparar senha:', error);
+    return false;
   }
 };
 
