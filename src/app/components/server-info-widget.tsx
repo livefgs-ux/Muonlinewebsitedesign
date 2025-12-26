@@ -55,9 +55,9 @@ export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection 
           total_accounts: stats.totalAccounts || 0,
           total_characters: stats.totalCharacters || 0,
           total_guilds: stats.totalGuilds || 0,
-          castle_owner: 'DragonGuard', // TODO: buscar do banco
-          total_bosses: 120,
-          alive_bosses: 87, // TODO: buscar do banco
+          castle_owner: undefined, // ❌ REMOVIDO - Sem dados reais no banco
+          total_bosses: undefined, // ❌ REMOVIDO - Sem dados reais no banco
+          alive_bosses: undefined, // ❌ REMOVIDO - Sem dados reais no banco
           server_name: info.name || 'MeuMU Online',
           season: info.version || 'Season 19-2-3 - Épico',
           exp_rate: info.rates?.exp || '9999x',
@@ -123,11 +123,7 @@ export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection 
       value: isLoading ? t('common.loading') : (serverData?.players_online.toLocaleString() || "0"),
       icon: Users,
     },
-    {
-      label: t('serverStatus.aliveBosses'),
-      value: isLoading ? t('common.loading') : `${serverData?.alive_bosses || 0}/${serverData?.total_bosses || 120}`,
-      icon: Skull,
-    },
+    // ❌ REMOVIDO: Alive Bosses (sem dados reais no banco)
   ], [t, serverData, isLoading]);
 
   // Hide widget in AdminCP and Dashboard - MOVED AFTER all hooks
