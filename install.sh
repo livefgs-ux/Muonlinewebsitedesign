@@ -509,6 +509,7 @@ DB_PASSWORD=@mysql123@
 # DATABASES (Nomes)
 DB_NAME_MUONLINE=muonline
 DB_NAME_MEUWEB=meuweb
+DB_NAME_WEBMU=meuweb
 
 # DATABASE MUONLINE (Servidor MU - Read Only) - Compatibilidade
 DB_MU_HOST=127.0.0.1
@@ -1039,7 +1040,7 @@ configurar_litespeed_proxy() {
     echo ""
     echo -e "${YELLOW}⚠️  ATENÇÃO: ${NC}"
     echo -e "${YELLOW}   • Você está usando CyberPanel + OpenLiteSpeed${NC}"
-    echo -e "${YELLOW}   • NÃO use Nginx (incompatível com CyberPanel)${NC}"
+    echo -e "${YELLOW}   • NÃO use Nginx (incompat��vel com CyberPanel)${NC}"
     echo -e "${YELLOW}   • Você precisa de acesso root (sudo)${NC}"
     echo ""
     echo -n -e "${BOLD}Deseja continuar? (S/n): ${NC}"
