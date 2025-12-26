@@ -119,14 +119,32 @@ const register = async (req, res) => {
   try {
     const { username, password, email, personalId } = req.body;
     
-    console.log(`\n📝 Tentativa de registro: ${username}`);
+    console.log(`\n📝 ========================================`);
+    console.log(`📝 TENTATIVA DE REGISTRO`);
+    console.log(`📝 ========================================`);
+    console.log(`📝 Username: ${username}`);
+    console.log(`📝 Email: ${email}`);
+    console.log(`📝 Senha (tamanho): ${password ? password.length : 0} caracteres`);
+    console.log(`📝 Personal ID: ${personalId || 'N/A'}`);
+    
+    // Validações básicas
+    if (!username || !password || !email) {
+      console.log(`❌ ERRO: Campos obrigatórios vazios`);
+      console.log(`   Username: ${username ? 'OK' : 'VAZIO'}`);
+      console.log(`   Password: ${password ? 'OK' : 'VAZIO'}`);
+      console.log(`   Email: ${email ? 'OK' : 'VAZIO'}`);
+      return errorResponse(res, 'Username, password e email são obrigatórios', 400);
+    }
     
     // Sanitizar username
     const cleanUsername = sanitizeUsername(username);
+    console.log(`✅ Username sanitizado: ${cleanUsername}`);
     
     // ========================================================================
     // DETECTAR ESTRUTURA DA TABELA (Season 6 vs Season 19)
     // ========================================================================
+    
+    console.log(`🔍 Detectando estrutura da tabela '${tables.accounts}'...`);
     
     // Verificar qual estrutura de tabela temos
     const checkStructureSql = `
@@ -143,7 +161,7 @@ const register = async (req, res) => {
                        structureResult.data.length > 0 && 
                        structureResult.data[0].COLUMN_NAME === 'account';
     
-    console.log(`🔍 Estrutura detectada: ${isSeason19 ? 'Season 19' : 'Season 6'}`);
+    console.log(`📊 Estrutura detectada: ${isSeason19 ? 'Season 19 (account)' : 'Season 6 (memb___id)'}`);
     
     // ========================================================================
     // VERIFICAR SE USUÁRIO JÁ EXISTE
@@ -159,10 +177,11 @@ const register = async (req, res) => {
       checkSql = `SELECT memb___id FROM ${tables.accounts} WHERE memb___id = ?`;
     }
     
+    console.log(`🔍 Verificando se username já existe...`);
     const checkResult = await executeQuery(checkSql, [cleanUsername]);
     
     if (!checkResult.success) {
-      console.error('❌ Erro ao verificar usuário existente');
+      console.error('❌ ERRO SQL ao verificar usuário:', checkResult.error);
       return errorResponse(res, 'Erro ao verificar usuário', 500);
     }
     
@@ -171,18 +190,24 @@ const register = async (req, res) => {
       return errorResponse(res, 'Username já existe', 409);
     }
     
+    console.log(`✅ Username disponível`);
+    
     // ========================================================================
     // VERIFICAR SE EMAIL JÁ EXISTE
     // ========================================================================
     
     const emailColumn = isSeason19 ? 'email' : 'mail_addr';
     const checkEmailSql = `SELECT ${emailColumn} FROM ${tables.accounts} WHERE ${emailColumn} = ?`;
+    
+    console.log(`🔍 Verificando se email já existe...`);
     const checkEmailResult = await executeQuery(checkEmailSql, [email]);
     
     if (checkEmailResult.data.length > 0) {
       console.log(`⚠️  Email já cadastrado: ${email}`);
       return errorResponse(res, 'Email já cadastrado', 409);
     }
+    
+    console.log(`✅ Email disponível`);
     
     // ========================================================================
     // GERAR HASH DA SENHA (MD5 para MU Online)
@@ -193,6 +218,7 @@ const register = async (req, res) => {
     const hashedPassword = hashPasswordMD5(password);
     
     console.log(`🔐 Senha hashada em MD5: ${hashedPassword}`);
+    console.log(`🔐 Tamanho do hash: ${hashedPassword.length} caracteres (deve ser 32)`);
     
     // ========================================================================
     // INSERIR NOVA CONTA - COMPATÍVEL COM SEASON 19
@@ -202,6 +228,8 @@ const register = async (req, res) => {
       // ========================================================================
       // SEASON 19: Estrutura simplificada
       // ========================================================================
+      console.log(`💾 Preparando INSERT para Season 19...`);
+      
       insertSql = `
         INSERT INTO ${tables.accounts} 
         (account, password, email, created_at, blocked, vip_level, cash_credits)
@@ -214,10 +242,15 @@ const register = async (req, res) => {
         email             // email
       ];
       
+      console.log(`📝 INSERT SQL: ${insertSql}`);
+      console.log(`📝 Parâmetros: [${cleanUsername}, ${hashedPassword.substring(0, 8)}..., ${email}]`);
+      
     } else {
       // ========================================================================
       // SEASON 6: Estrutura complexa (memb___id, memb__pwd, etc.)
       // ========================================================================
+      console.log(`💾 Preparando INSERT para Season 6...`);
+      
       const currentDate = formatDateForMySQL();
       
       insertSql = `
@@ -254,25 +287,38 @@ const register = async (req, res) => {
         null,                             // AccountExpireDate
         0                                 // CashCredits
       ];
+      
+      console.log(`📝 INSERT SQL (Season 6 - 23 colunas)`);
     }
     
     // ========================================================================
     // EXECUTAR INSERT
     // ========================================================================
     
-    console.log(`💾 Inserindo conta no banco: ${cleanUsername}`);
+    console.log(`💾 Executando INSERT no banco...`);
     const insertResult = await executeQuery(insertSql, insertParams);
     
     if (!insertResult.success) {
-      console.error('❌ Erro ao inserir conta:', insertResult.error);
-      return errorResponse(res, 'Erro ao criar conta', 500);
+      console.error('❌ ========================================');
+      console.error('❌ ERRO SQL AO INSERIR CONTA');
+      console.error('❌ ========================================');
+      console.error('❌ Mensagem:', insertResult.error);
+      console.error('❌ SQL:', insertSql);
+      console.error('❌ ========================================');
+      
+      // Retornar mensagem de erro mais específica
+      const errorMsg = insertResult.error?.message || insertResult.error || 'Erro desconhecido';
+      return errorResponse(res, `Erro ao criar conta: ${errorMsg}`, 500);
     }
     
-    console.log(`✅ Conta criada com sucesso: ${cleanUsername}`);
+    console.log(`✅ Conta inserida no banco com sucesso!`);
+    console.log(`✅ Insert ID: ${insertResult.data?.insertId || 'N/A'}`);
     
     // ========================================================================
     // GERAR TOKEN JWT
     // ========================================================================
+    
+    console.log(`🔑 Gerando token JWT...`);
     
     const token = generateToken({
       accountId: cleanUsername,
@@ -280,17 +326,28 @@ const register = async (req, res) => {
       isAdmin: false
     });
     
-    console.log(`✅ Registro completo: ${cleanUsername}\n`);
+    console.log(`✅ Token gerado com sucesso`);
+    console.log(`✅ ========================================`);
+    console.log(`✅ REGISTRO COMPLETO: ${cleanUsername}`);
+    console.log(`✅ ========================================\n`);
     
     return successResponse(res, {
       token,
-      accountId: cleanUsername,
-      email: email,
-      isAdmin: false
+      user: {
+        username: cleanUsername,
+        accountId: cleanUsername,
+        email: email,
+        isAdmin: false
+      }
     }, 'Conta criada com sucesso', 201);
     
   } catch (error) {
-    console.error('❌ Erro no registro:', error);
+    console.error('❌ ========================================');
+    console.error('❌ EXCEPTION NO REGISTRO');
+    console.error('❌ ========================================');
+    console.error('❌ Erro:', error);
+    console.error('❌ Stack:', error.stack);
+    console.error('❌ ========================================\n');
     return errorResponse(res, 'Erro ao criar conta', 500);
   }
 };
