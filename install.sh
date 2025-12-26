@@ -914,7 +914,7 @@ atualizar_github() {
     echo -e "${YELLOW}Diretório: $BASE_DIR${NC}"
     echo -e "${YELLOW}Repositório: https://github.com/livefgs-ux/Muonlinewebsitedesign${NC}"
     echo ""
-    echo -n -e "${BOLD}Tem certeza que deseja continuar? (S/n): ${NC}"
+    echo -e "${BOLD}Tem certeza que deseja continuar? (S/n): ${NC}"
     read -r confirmacao
     
     if [[ ! "$confirmacao" =~ ^[Ss]$ ]]; then
@@ -1040,7 +1040,7 @@ configurar_litespeed_proxy() {
     echo ""
     echo -e "${YELLOW}⚠️  ATENÇÃO: ${NC}"
     echo -e "${YELLOW}   • Você está usando CyberPanel + OpenLiteSpeed${NC}"
-    echo -e "${YELLOW}   • NÃO use Nginx (incompat��vel com CyberPanel)${NC}"
+    echo -e "${YELLOW}   • NÃO use Nginx (incompatível com CyberPanel)${NC}"
     echo -e "${YELLOW}   • Você precisa de acesso root (sudo)${NC}"
     echo ""
     echo -n -e "${BOLD}Deseja continuar? (S/n): ${NC}"
@@ -1137,7 +1137,7 @@ configurar_litespeed_interno() {
     fi
 }
 
-# ═══════════════════════════════════════════════════════════════
+# ════════════════════════════════��══════════════════════════════
 # MENU PRINCIPAL
 # ═══════════════════════════════════════════════════════════════
 
