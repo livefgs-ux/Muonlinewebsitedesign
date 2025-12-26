@@ -2,7 +2,7 @@
  * Controller de Informações do Servidor
  */
 
-const { executeQuery, testConnection } = require('../config/database');
+const { executeQueryMU, testConnection } = require('../config/database');
 const { tables } = require('../config/auth');
 const { successResponse, errorResponse } = require('../utils/helpers');
 
@@ -30,46 +30,50 @@ const getServerInfo = async (req, res) => {
 };
 
 /**
- * Estatísticas em tempo real
+ * Estatísticas em tempo real - USANDO NOMES CORRETOS DAS COLUNAS
  */
 const getServerStats = async (req, res) => {
   try {
     // Total de contas
     const totalAccountsSql = `SELECT COUNT(*) as total FROM ${tables.accounts}`;
-    const accountsResult = await executeQuery(totalAccountsSql);
+    const accountsResult = await executeQueryMU(totalAccountsSql);
     
     // Total de personagens
     const totalCharsSql = `SELECT COUNT(*) as total FROM ${tables.characters}`;
-    const charsResult = await executeQuery(totalCharsSql);
+    const charsResult = await executeQueryMU(totalCharsSql);
     
-    // Players online
-    const onlineSql = `SELECT COUNT(*) as total FROM ${tables.characters} WHERE ctlcode = 1`;
-    const onlineResult = await executeQuery(onlineSql);
+    // Players online (coluna 'online' não 'ctlcode')
+    const onlineSql = `SELECT COUNT(*) as total FROM ${tables.characters} WHERE online = 1`;
+    const onlineResult = await executeQueryMU(onlineSql);
     
     // Total de guilds
     const totalGuildsSql = `SELECT COUNT(*) as total FROM ${tables.guild}`;
-    const guildsResult = await executeQuery(totalGuildsSql);
+    const guildsResult = await executeQueryMU(totalGuildsSql);
     
-    // Personagem com mais resets
+    // Personagem com mais resets (coluna 'reset' não 'ResetCount', 'name' não 'Name')
     const topResetSql = `
-      SELECT Name, ResetCount 
+      SELECT name, reset 
       FROM ${tables.characters} 
-      ORDER BY ResetCount DESC 
+      ORDER BY reset DESC 
       LIMIT 1
     `;
-    const topResetResult = await executeQuery(topResetSql);
+    const topResetResult = await executeQueryMU(topResetSql);
     
     return successResponse(res, {
       totalAccounts: accountsResult.data[0]?.total || 0,
       totalCharacters: charsResult.data[0]?.total || 0,
       playersOnline: onlineResult.data[0]?.total || 0,
       totalGuilds: guildsResult.data[0]?.total || 0,
-      topReset: topResetResult.data[0] || null,
+      topReset: topResetResult.data[0] ? {
+        Name: topResetResult.data[0].name,
+        ResetCount: topResetResult.data[0].reset
+      } : null,
       lastUpdate: new Date().toISOString()
     });
     
   } catch (error) {
     console.error('❌ Erro ao buscar estatísticas:', error);
+    console.error('❌ Detalhes do erro:', error.message);
     return errorResponse(res, 'Erro ao buscar estatísticas', 500);
   }
 };

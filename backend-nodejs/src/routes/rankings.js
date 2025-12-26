@@ -9,6 +9,7 @@ const {
   getTopPK,
   getTopLevel,
   getTopGuilds,
+  getTopByClass,
   getCharacterRank
 } = require('../controllers/rankingsController');
 const { validateRankingParams } = require('../utils/validators');
@@ -24,6 +25,9 @@ router.get('/level', validateRankingParams, getTopLevel);
 
 // GET /api/rankings/guilds - Top Guilds
 router.get('/guilds', validateRankingParams, getTopGuilds);
+
+// GET /api/rankings/class/:classId - Top por Classe
+router.get('/class/:classId', validateRankingParams, getTopByClass);
 
 // GET /api/rankings/character/:name - Posição de um personagem
 router.get('/character/:name', getCharacterRank);

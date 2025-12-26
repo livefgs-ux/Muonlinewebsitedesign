@@ -5,9 +5,11 @@
  * ✅ Loading states
  * ✅ Error handling
  * ✅ Auto-refresh
+ * ✅ Rankings por Level
+ * ✅ Rankings por Classe
  */
 
-import { Trophy, Medal, Award, Users, Skull, Flame, Clock, Castle as CastleIcon, Swords, Shield, Crown, Target, Zap, RefreshCw } from 'lucide-react';
+import { Trophy, Medal, Award, Users, Skull, Flame, Clock, Castle as CastleIcon, Swords, Shield, Crown, Target, Zap, RefreshCw, TrendingUp, Layers } from 'lucide-react';
 import { Card } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Button } from './ui/button';
@@ -16,6 +18,28 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../../services/api';
 import type { RankingPlayer, RankingGuild } from '../../services/api';
+
+// Classes do MU Online
+interface MuClass {
+  id: number;
+  name: string;
+  shortName: string;
+  color: string;
+  icon: any;
+}
+
+const MU_CLASSES: MuClass[] = [
+  { id: 0, name: 'Dark Wizard', shortName: 'DW', color: 'text-blue-500', icon: Zap },
+  { id: 16, name: 'Dark Knight', shortName: 'DK', color: 'text-red-500', icon: Swords },
+  { id: 32, name: 'Elf', shortName: 'ELF', color: 'text-green-500', icon: Target },
+  { id: 48, name: 'Magic Gladiator', shortName: 'MG', color: 'text-purple-500', icon: Shield },
+  { id: 64, name: 'Dark Lord', shortName: 'DL', color: 'text-yellow-500', icon: Crown },
+  { id: 80, name: 'Summoner', shortName: 'SUM', color: 'text-pink-500', icon: Flame },
+  { id: 96, name: 'Rage Fighter', shortName: 'RF', color: 'text-orange-500', icon: Flame },
+  { id: 112, name: 'Grow Lancer', shortName: 'GL', color: 'text-cyan-500', icon: Swords },
+  { id: 128, name: 'Rune Wizard', shortName: 'RW', color: 'text-indigo-500', icon: Zap },
+  { id: 144, name: 'Slayer', shortName: 'SL', color: 'text-teal-500', icon: Swords },
+];
 
 // Medal helper
 const getRankMedal = (rank: number) => {
@@ -31,17 +55,26 @@ export function RankingsSection() {
   // Estados para cada ranking
   const [topResets, setTopResets] = useState<RankingPlayer[]>([]);
   const [topPK, setTopPK] = useState<RankingPlayer[]>([]);
+  const [topLevel, setTopLevel] = useState<RankingPlayer[]>([]);
   const [topGuilds, setTopGuilds] = useState<RankingGuild[]>([]);
+  const [topByClass, setTopByClass] = useState<Record<number, RankingPlayer[]>>({});
   
   // Loading states
   const [loadingResets, setLoadingResets] = useState(true);
   const [loadingPK, setLoadingPK] = useState(true);
+  const [loadingLevel, setLoadingLevel] = useState(true);
   const [loadingGuilds, setLoadingGuilds] = useState(true);
+  const [loadingClass, setLoadingClass] = useState<Record<number, boolean>>({});
   
   // Error states
   const [errorResets, setErrorResets] = useState<string | null>(null);
   const [errorPK, setErrorPK] = useState<string | null>(null);
+  const [errorLevel, setErrorLevel] = useState<string | null>(null);
   const [errorGuilds, setErrorGuilds] = useState<string | null>(null);
+  const [errorClass, setErrorClass] = useState<Record<number, string | null>>({});
+  
+  // Classe selecionada
+  const [selectedClass, setSelectedClass] = useState<number>(0);
   
   // Carregar rankings ao montar o componente
   useEffect(() => {
@@ -58,6 +91,7 @@ export function RankingsSection() {
   const loadAllRankings = () => {
     loadTopResets();
     loadTopPK();
+    loadTopLevel();
     loadTopGuilds();
   };
   
@@ -71,7 +105,6 @@ export function RankingsSection() {
     } catch (error: any) {
       console.error('❌ Erro ao carregar Top Resets:', error);
       
-      // Mostrar mensagem amigável ao invés de erro técnico
       if (error.message?.includes('Failed to fetch') || error.message?.includes('ECONNREFUSED')) {
         setErrorResets('⚠️ Backend não disponível. Inicie o servidor Node.js para ver dados reais.');
       } else {
@@ -97,6 +130,21 @@ export function RankingsSection() {
     }
   };
   
+  // Carregar Top Level
+  const loadTopLevel = async () => {
+    try {
+      setLoadingLevel(true);
+      setErrorLevel(null);
+      const data = await api.rankings.getTopLevel(10);
+      setTopLevel(data);
+    } catch (error: any) {
+      console.error('❌ Erro ao carregar Top Level:', error);
+      setErrorLevel(error.message || 'Erro ao carregar ranking');
+    } finally {
+      setLoadingLevel(false);
+    }
+  };
+  
   // Carregar Top Guilds
   const loadTopGuilds = async () => {
     try {
@@ -111,6 +159,29 @@ export function RankingsSection() {
       setLoadingGuilds(false);
     }
   };
+  
+  // Carregar Top por Classe
+  const loadTopByClass = async (classId: number) => {
+    try {
+      setLoadingClass(prev => ({ ...prev, [classId]: true }));
+      setErrorClass(prev => ({ ...prev, [classId]: null }));
+      
+      const data = await api.rankings.getTopByClass(classId, 10);
+      setTopByClass(prev => ({ ...prev, [classId]: data }));
+    } catch (error: any) {
+      console.error(`❌ Erro ao carregar ranking da classe ${classId}:`, error);
+      setErrorClass(prev => ({ ...prev, [classId]: error.message || 'Erro ao carregar ranking' }));
+    } finally {
+      setLoadingClass(prev => ({ ...prev, [classId]: false }));
+    }
+  };
+  
+  // Carregar ranking da classe quando mudar seleção
+  useEffect(() => {
+    if (!topByClass[selectedClass] && !loadingClass[selectedClass]) {
+      loadTopByClass(selectedClass);
+    }
+  }, [selectedClass]);
   
   // Componente de Loading
   const LoadingState = () => (
@@ -190,6 +261,18 @@ export function RankingsSection() {
                 <div className="text-2xl text-gold">{topResets[0]?.resets || 0} Resets</div>
               </Card>
 
+              {/* Top #1 Level */}
+              <Card className="backdrop-blur-xl bg-black/60 border-gold/30 p-6 hover:border-gold/60 transition-all">
+                <div className="flex items-center gap-3 mb-4">
+                  <TrendingUp className="w-8 h-8 text-ethereal" />
+                  <div>
+                    <div className="text-sm text-gray-400">Level</div>
+                    <div className="text-lg text-white">{topLevel[0]?.name || '---'}</div>
+                  </div>
+                </div>
+                <div className="text-2xl text-ethereal">Lv {topLevel[0]?.level || 0}</div>
+              </Card>
+
               {/* Top #1 PK */}
               <Card className="backdrop-blur-xl bg-black/60 border-gold/30 p-6 hover:border-gold/60 transition-all">
                 <div className="flex items-center gap-3 mb-4">
@@ -223,9 +306,17 @@ export function RankingsSection() {
                 <Flame className="w-4 h-4 mr-2" />
                 Resets
               </TabsTrigger>
+              <TabsTrigger value="level" className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Level
+              </TabsTrigger>
               <TabsTrigger value="pk" className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold">
                 <Skull className="w-4 h-4 mr-2" />
                 PK
+              </TabsTrigger>
+              <TabsTrigger value="classes" className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold">
+                <Layers className="w-4 h-4 mr-2" />
+                Classes
               </TabsTrigger>
               <TabsTrigger value="guilds" className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold">
                 <Users className="w-4 h-4 mr-2" />
@@ -250,6 +341,7 @@ export function RankingsSection() {
                           <th className="px-6 py-4 text-left text-sm text-gray-400">Class</th>
                           <th className="px-6 py-4 text-center text-sm text-gray-400">Resets</th>
                           <th className="px-6 py-4 text-center text-sm text-gray-400">Level</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-400">Status</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -273,6 +365,71 @@ export function RankingsSection() {
                               <td className="px-6 py-4 text-gray-300">{player.class}</td>
                               <td className="px-6 py-4 text-center text-gold font-semibold">{player.resets}</td>
                               <td className="px-6 py-4 text-center text-white">{player.level}</td>
+                              <td className="px-6 py-4 text-center">
+                                {player.online ? (
+                                  <span className="text-green-500">●</span>
+                                ) : (
+                                  <span className="text-gray-500">●</span>
+                                )}
+                              </td>
+                            </motion.tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
+            </TabsContent>
+
+            {/* Tab Content: Level */}
+            <TabsContent value="level">
+              <Card className="backdrop-blur-xl bg-black/60 border-gold/30">
+                {loadingLevel ? (
+                  <LoadingState />
+                ) : errorLevel ? (
+                  <ErrorState message={errorLevel} onRetry={loadTopLevel} />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gold/20">
+                          <th className="px-6 py-4 text-left text-sm text-gray-400">Rank</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-400">Player</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-400">Class</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-400">Level</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-400">Resets</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-400">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topLevel.map((player) => {
+                          const medal = getRankMedal(player.position);
+                          return (
+                            <motion.tr
+                              key={player.position}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, delay: player.position * 0.05 }}
+                              className="border-b border-gold/10 hover:bg-gold/5 transition-colors"
+                            >
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                  <medal.icon className={`w-5 h-5 ${medal.color}`} />
+                                  <span className="text-white">#{player.position}</span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-gold">{player.name}</td>
+                              <td className="px-6 py-4 text-gray-300">{player.class}</td>
+                              <td className="px-6 py-4 text-center text-ethereal font-semibold">Lv {player.level}</td>
+                              <td className="px-6 py-4 text-center text-gold">{player.resets}</td>
+                              <td className="px-6 py-4 text-center">
+                                {player.online ? (
+                                  <span className="text-green-500">●</span>
+                                ) : (
+                                  <span className="text-gray-500">●</span>
+                                )}
+                              </td>
                             </motion.tr>
                           );
                         })}
@@ -299,14 +456,13 @@ export function RankingsSection() {
                           <th className="px-6 py-4 text-left text-sm text-gray-400">Player</th>
                           <th className="px-6 py-4 text-left text-sm text-gray-400">Class</th>
                           <th className="px-6 py-4 text-center text-sm text-gray-400">Kills</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Deaths</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">K/D Ratio</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-400">PK Level</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-400">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {topPK.map((player) => {
                           const medal = getRankMedal(player.position);
-                          const kdRatio = player.deaths ? (player.kills! / player.deaths).toFixed(2) : player.kills;
                           return (
                             <motion.tr
                               key={player.position}
@@ -324,8 +480,14 @@ export function RankingsSection() {
                               <td className="px-6 py-4 text-gold">{player.name}</td>
                               <td className="px-6 py-4 text-gray-300">{player.class}</td>
                               <td className="px-6 py-4 text-center text-red-500 font-semibold">{player.kills}</td>
-                              <td className="px-6 py-4 text-center text-gray-400">{player.deaths}</td>
-                              <td className="px-6 py-4 text-center text-ethereal">{kdRatio}</td>
+                              <td className="px-6 py-4 text-center text-ethereal">{player.pkLevel}</td>
+                              <td className="px-6 py-4 text-center">
+                                {player.online ? (
+                                  <span className="text-green-500">●</span>
+                                ) : (
+                                  <span className="text-gray-500">●</span>
+                                )}
+                              </td>
                             </motion.tr>
                           );
                         })}
@@ -334,6 +496,95 @@ export function RankingsSection() {
                   </div>
                 )}
               </Card>
+            </TabsContent>
+
+            {/* Tab Content: Classes */}
+            <TabsContent value="classes">
+              <div className="space-y-6">
+                {/* Seletor de Classes */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {MU_CLASSES.map((muClass) => {
+                    const Icon = muClass.icon;
+                    return (
+                      <Button
+                        key={muClass.id}
+                        onClick={() => setSelectedClass(muClass.id)}
+                        className={`${
+                          selectedClass === muClass.id
+                            ? 'bg-gold/30 border-gold text-gold'
+                            : 'bg-black/40 border-gold/30 text-gray-300 hover:bg-gold/10'
+                        } border transition-all`}
+                      >
+                        <Icon className={`w-4 h-4 mr-2 ${muClass.color}`} />
+                        {muClass.name}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                {/* Ranking da Classe Selecionada */}
+                <Card className="backdrop-blur-xl bg-black/60 border-gold/30">
+                  {loadingClass[selectedClass] ? (
+                    <LoadingState />
+                  ) : errorClass[selectedClass] ? (
+                    <ErrorState 
+                      message={errorClass[selectedClass]!} 
+                      onRetry={() => loadTopByClass(selectedClass)} 
+                    />
+                  ) : topByClass[selectedClass]?.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-gold/20">
+                            <th className="px-6 py-4 text-left text-sm text-gray-400">Rank</th>
+                            <th className="px-6 py-4 text-left text-sm text-gray-400">Player</th>
+                            <th className="px-6 py-4 text-center text-sm text-gray-400">Level</th>
+                            <th className="px-6 py-4 text-center text-sm text-gray-400">Resets</th>
+                            <th className="px-6 py-4 text-center text-sm text-gray-400">Kills</th>
+                            <th className="px-6 py-4 text-center text-sm text-gray-400">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {topByClass[selectedClass].map((player) => {
+                            const medal = getRankMedal(player.position);
+                            return (
+                              <motion.tr
+                                key={player.position}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.3, delay: player.position * 0.05 }}
+                                className="border-b border-gold/10 hover:bg-gold/5 transition-colors"
+                              >
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-2">
+                                    <medal.icon className={`w-5 h-5 ${medal.color}`} />
+                                    <span className="text-white">#{player.position}</span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-gold">{player.name}</td>
+                                <td className="px-6 py-4 text-center text-ethereal">Lv {player.level}</td>
+                                <td className="px-6 py-4 text-center text-gold">{player.resets}</td>
+                                <td className="px-6 py-4 text-center text-red-500">{player.kills}</td>
+                                <td className="px-6 py-4 text-center">
+                                  {player.online ? (
+                                    <span className="text-green-500">●</span>
+                                  ) : (
+                                    <span className="text-gray-500">●</span>
+                                  )}
+                                </td>
+                              </motion.tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center text-gray-400">
+                      Nenhum jogador encontrado para esta classe
+                    </div>
+                  )}
+                </Card>
+              </div>
             </TabsContent>
 
             {/* Tab Content: Guilds */}

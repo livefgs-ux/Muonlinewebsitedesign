@@ -1,6 +1,6 @@
 /**
  * Configuração de Conexão com MariaDB/MySQL
- * Dual Database: muonline (readonly) + webmu (read/write)
+ * Dual Database: muonline (readonly) + meuweb (read/write)
  */
 
 const mysql = require('mysql2/promise');
@@ -24,7 +24,7 @@ const poolMU = mysql.createPool({
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// POOL WEBMU (Database do Site - Read + Write)
+// POOL MEUWEB (Database do Site - Read + Write)
 // ═══════════════════════════════════════════════════════════════════
 
 const poolWEB = mysql.createPool({
@@ -32,7 +32,7 @@ const poolWEB = mysql.createPool({
   port: parseInt(process.env.DB_WEB_PORT) || 3306,
   user: process.env.DB_WEB_USER || 'root',
   password: process.env.DB_WEB_PASSWORD || '',
-  database: process.env.DB_WEB_NAME || 'webmu',
+  database: process.env.DB_WEB_NAME || 'meuweb',
   waitForConnections: true,
   connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
   queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 0,
@@ -77,7 +77,7 @@ const testConnection = async () => {
     console.log(`   Host: ${process.env.DB_WEB_HOST || '127.0.0.1'}`);
     console.log(`   Port: ${process.env.DB_WEB_PORT || 3306}`);
     console.log(`   User: ${process.env.DB_WEB_USER || 'root'}`);
-    console.log(`   Database: ${process.env.DB_WEB_NAME || 'webmu'}`);
+    console.log(`   Database: ${process.env.DB_WEB_NAME || 'meuweb'}`);
     
     const connWEB = await poolWEB.getConnection();
     console.log('✅ Conectado ao database Web com sucesso!');

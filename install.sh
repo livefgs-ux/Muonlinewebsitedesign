@@ -357,17 +357,22 @@ EOF
         return 1
     fi
     
-    # Etapa 6: Parar processos antigos
+    # Etapa 6: Configurar LiteSpeed Proxy Reverso
     echo ""
-    echo -e "${YELLOW}[6/10]${NC} Parando processos Node.js antigos..."
+    echo -e "${YELLOW}[6/10]${NC} Configurando OpenLiteSpeed Proxy Reverso..."
+    configurar_litespeed_interno
+    
+    # Etapa 7: Parar processos antigos
+    echo ""
+    echo -e "${YELLOW}[7/10]${NC} Parando processos Node.js antigos..."
     pkill -f "node.*server.js" 2>/dev/null
     pkill -f "nodemon.*server.js" 2>/dev/null
     sleep 2
     echo -e "${GREEN}✅ Processos antigos encerrados${NC}"
     
-    # Etapa 7: Iniciar servidor
+    # Etapa 8: Iniciar servidor
     echo ""
-    echo -e "${YELLOW}[7/10]${NC} Iniciando servidor..."
+    echo -e "${YELLOW}[8/10]${NC} Iniciando servidor..."
     
     mkdir -p "$BASE_DIR/backend-nodejs/logs/alerts" 2>/dev/null
     mkdir -p "$BASE_DIR/backend-nodejs/logs/audit" 2>/dev/null
@@ -393,22 +398,50 @@ EOF
     echo -e "${CYAN}⏳ Aguardando servidor inicializar (5 segundos)...${NC}"
     sleep 5
     
-    # Testar servidor
+    # Etapa 9: Testar servidor (porta 3001 direta)
+    echo ""
+    echo -e "${YELLOW}[9/10]${NC} Testando servidor (porta 3001)..."
     HEALTH=$(curl -s http://localhost:3001/health 2>/dev/null)
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Servidor respondendo!${NC}"
-        echo ""
-        echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
-        echo -e "${GREEN}✅✅✅ INSTALAÇÃO COMPLETA COM SUCESSO! ✅✅✅${NC}"
-        echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
-        echo ""
-        echo -e "${BOLD}🌐 ACESSE O SITE:${NC}"
-        echo -e "   ${BLUE}http://meumu.com:3001${NC}"
-        echo ""
+        echo -e "${GREEN}✅ Servidor backend respondendo!${NC}"
     else
         echo -e "${RED}❌ Servidor não está respondendo${NC}"
         echo -e "${YELLOW}Verifique os logs: tail -f backend-nodejs/logs/server.log${NC}"
+        pause
+        return 1
     fi
+    
+    # Etapa 10: Testar proxy HTTPS (se LiteSpeed configurado)
+    echo ""
+    echo -e "${YELLOW}[10/10]${NC} Testando proxy HTTPS..."
+    HTTPS_HEALTH=$(curl -s -k https://meumu.com/api/health 2>/dev/null)
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Proxy reverso HTTPS funcionando!${NC}"
+        HTTPS_OK=true
+    else
+        echo -e "${YELLOW}⚠️  Proxy HTTPS não configurado (use opção 11 do menu)${NC}"
+        HTTPS_OK=false
+    fi
+    
+    echo ""
+    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}✅✅✅ INSTALAÇÃO COMPLETA COM SUCESSO! ✅✅✅${NC}"
+    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "${BOLD}🌐 ACESSE O SITE:${NC}"
+    echo ""
+    if [ "$HTTPS_OK" = true ]; then
+        echo -e "   ${GREEN}🔒 HTTPS (Recomendado):${NC}"
+        echo -e "   ${BLUE}https://meumu.com${NC}"
+        echo ""
+        echo -e "   ${CYAN}🔓 HTTP (Desenvolvimento):${NC}"
+        echo -e "   ${BLUE}http://meumu.com:3001${NC}"
+    else
+        echo -e "   ${BLUE}http://meumu.com:3001${NC}"
+        echo ""
+        echo -e "   ${YELLOW}💡 Para ativar HTTPS, execute opção 11 do menu${NC}"
+    fi
+    echo ""
     
     pause
 }
@@ -994,7 +1027,7 @@ atualizar_github() {
 # FUNÇÃO 11: CONFIGURAR NGINX PROXY REVERSO
 # ═══════════════════════════════════════════════════════════════
 
-configurar_nginx_proxy() {
+configurar_litespeed_proxy() {
     clear_screen
     echo -e "${BOLD}🔧 CONFIGURAR LITESPEED PROXY REVERSO (CYBERPANEL)${NC}"
     echo "════════════════════════════════════════════════════════════"
@@ -1081,6 +1114,27 @@ configurar_nginx_proxy() {
 }
 
 # ═══════════════════════════════════════════════════════════════
+# FUNÇÃO AUXILIAR: Configurar LiteSpeed (versão silenciosa)
+# ═══════════════════════════════════════════════════════════════
+
+configurar_litespeed_interno() {
+    # Versão silenciosa para instalação completa
+    if [ -f "$BASE_DIR/setup-litespeed-proxy.sh" ]; then
+        echo -e "${CYAN}   Aplicando configuração no vHost...${NC}"
+        
+        # Tentar configurar (sem confirmação)
+        if sudo bash "$BASE_DIR/setup-litespeed-proxy.sh" > /dev/null 2>&1; then
+            echo -e "${GREEN}✅ Proxy reverso configurado${NC}"
+        else
+            echo -e "${YELLOW}⚠️  Configuração manual necessária (use opção 11)${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Script de configuração não encontrado${NC}"
+        echo -e "${CYAN}   Configure manualmente via CyberPanel${NC}"
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════
 # MENU PRINCIPAL
 # ═══════════════════════════════════════════════════════════════
 
@@ -1103,7 +1157,7 @@ menu_principal() {
         echo ""
         echo -e "${YELLOW}10)${NC} 🔄 Atualizar do GitHub (Clone Fresh)"
         echo ""
-        echo -e "${YELLOW}11)${NC} 🔧 Configurar Nginx Proxy Reverso"
+        echo -e "${YELLOW}11)${NC} 🔧 Configurar OpenLiteSpeed Proxy Reverso"
         echo ""
         echo -e "${RED} 0)${NC} ❌ Sair"
         echo ""
@@ -1123,7 +1177,7 @@ menu_principal() {
             8) health_check ;;
             9) ver_logs ;;
             10) atualizar_github ;;
-            11) configurar_nginx_proxy ;;
+            11) configurar_litespeed_proxy ;;
             0) 
                 clear_screen
                 echo -e "${GREEN}Até logo! 👋${NC}"

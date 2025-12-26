@@ -267,6 +267,13 @@ export const rankingsAPI = {
   },
 
   /**
+   * Top players por Classe específica
+   */
+  async getTopByClass(classId: number, limit: number = 100): Promise<RankingPlayer[]> {
+    return fetchAPI<RankingPlayer[]>(`/rankings/class/${classId}?limit=${limit}`);
+  },
+
+  /**
    * Buscar posição de um personagem
    */
   async getCharacterRank(name: string, type: 'resets' | 'pk' | 'level'): Promise<{ position: number }> {

@@ -1,13 +1,13 @@
 /**
- * Controller de Rankings
+ * Controller de Rankings - CORRIGIDO PARA ESTRUTURA REAL DO BANCO
  */
 
-const { executeQuery } = require('../config/database');
+const { executeQueryMU } = require('../config/database');
 const { tables } = require('../config/auth');
 const { getClassName, successResponse, errorResponse } = require('../utils/helpers');
 
 /**
- * Top Resets
+ * Top Resets - USANDO NOMES CORRETOS DAS COLUNAS
  */
 const getTopResets = async (req, res) => {
   try {
@@ -16,30 +16,31 @@ const getTopResets = async (req, res) => {
     
     const sql = `
       SELECT 
-        Name,
-        cLevel as level,
-        Class,
-        ResetCount as resets,
-        MasterResetCount as grandResets,
-        PkLevel as pkLevel,
-        ctlcode as online
+        name,
+        level,
+        race,
+        reset as resets,
+        level_master as grandResets,
+        pk_level as pkLevel,
+        online
       FROM ${tables.characters}
-      ORDER BY ResetCount DESC, MasterResetCount DESC, cLevel DESC
+      ORDER BY reset DESC, level_master DESC, level DESC
       LIMIT ? OFFSET ?
     `;
     
-    const result = await executeQuery(sql, [limit, offset]);
+    const result = await executeQueryMU(sql, [limit, offset]);
     
     if (!result.success) {
+      console.error('❌ Erro SQL:', result.error);
       return errorResponse(res, 'Erro ao buscar ranking de resets', 500);
     }
     
     const rankings = result.data.map((char, index) => ({
       position: offset + index + 1,
-      name: char.Name,
+      name: char.name,
       level: char.level,
-      class: getClassName(char.Class),
-      classNumber: char.Class,
+      class: getClassName(char.race),
+      classNumber: char.race,
       resets: char.resets,
       grandResets: char.grandResets,
       pkLevel: char.pkLevel,
@@ -55,7 +56,7 @@ const getTopResets = async (req, res) => {
 };
 
 /**
- * Top PK (Player Killers)
+ * Top PK (Player Killers) - USANDO NOMES CORRETOS DAS COLUNAS
  */
 const getTopPK = async (req, res) => {
   try {
@@ -64,30 +65,31 @@ const getTopPK = async (req, res) => {
     
     const sql = `
       SELECT 
-        Name,
-        cLevel as level,
-        Class,
-        PkLevel as pkLevel,
-        PkCount as kills,
-        ResetCount as resets,
-        ctlcode as online
+        name,
+        level,
+        race,
+        pk_level as pkLevel,
+        pk_count as kills,
+        reset as resets,
+        online
       FROM ${tables.characters}
-      ORDER BY PkLevel DESC, PkCount DESC
+      ORDER BY pk_level DESC, pk_count DESC
       LIMIT ? OFFSET ?
     `;
     
-    const result = await executeQuery(sql, [limit, offset]);
+    const result = await executeQueryMU(sql, [limit, offset]);
     
     if (!result.success) {
+      console.error('❌ Erro SQL:', result.error);
       return errorResponse(res, 'Erro ao buscar ranking de PK', 500);
     }
     
     const rankings = result.data.map((char, index) => ({
       position: offset + index + 1,
-      name: char.Name,
+      name: char.name,
       level: char.level,
-      class: getClassName(char.Class),
-      classNumber: char.Class,
+      class: getClassName(char.race),
+      classNumber: char.race,
       pkLevel: char.pkLevel,
       kills: char.kills,
       resets: char.resets,
@@ -103,7 +105,7 @@ const getTopPK = async (req, res) => {
 };
 
 /**
- * Top Level
+ * Top Level - USANDO NOMES CORRETOS DAS COLUNAS
  */
 const getTopLevel = async (req, res) => {
   try {
@@ -112,30 +114,31 @@ const getTopLevel = async (req, res) => {
     
     const sql = `
       SELECT 
-        Name,
-        cLevel as level,
-        Class,
-        ResetCount as resets,
-        MasterResetCount as grandResets,
-        Experience as exp,
-        ctlcode as online
+        name,
+        level,
+        race,
+        reset as resets,
+        level_master as grandResets,
+        experience as exp,
+        online
       FROM ${tables.characters}
-      ORDER BY cLevel DESC, Experience DESC
+      ORDER BY level DESC, experience DESC
       LIMIT ? OFFSET ?
     `;
     
-    const result = await executeQuery(sql, [limit, offset]);
+    const result = await executeQueryMU(sql, [limit, offset]);
     
     if (!result.success) {
+      console.error('❌ Erro SQL:', result.error);
       return errorResponse(res, 'Erro ao buscar ranking de level', 500);
     }
     
     const rankings = result.data.map((char, index) => ({
       position: offset + index + 1,
-      name: char.Name,
+      name: char.name,
       level: char.level,
-      class: getClassName(char.Class),
-      classNumber: char.Class,
+      class: getClassName(char.race),
+      classNumber: char.race,
       resets: char.resets,
       grandResets: char.grandResets,
       exp: char.exp,
@@ -151,7 +154,7 @@ const getTopLevel = async (req, res) => {
 };
 
 /**
- * Top Guilds
+ * Top Guilds - USANDO NOMES CORRETOS DAS COLUNAS
  */
 const getTopGuilds = async (req, res) => {
   try {
@@ -160,30 +163,30 @@ const getTopGuilds = async (req, res) => {
     
     const sql = `
       SELECT 
-        g.G_Name as name,
-        g.G_Master as master,
-        g.G_Score as score,
-        g.G_Mark as emblem,
-        COUNT(gm.Name) as members
+        g.name,
+        g.emblem,
+        g.score,
+        COUNT(gm.guid) as members
       FROM ${tables.guild} g
-      LEFT JOIN ${tables.guildMember} gm ON g.G_Name = gm.G_Name
-      GROUP BY g.G_Name, g.G_Master, g.G_Score, g.G_Mark
-      ORDER BY g.G_Score DESC
+      LEFT JOIN ${tables.guildMember} gm ON g.guid = gm.guild_id
+      GROUP BY g.guid, g.name, g.emblem, g.score
+      ORDER BY g.score DESC
       LIMIT ? OFFSET ?
     `;
     
-    const result = await executeQuery(sql, [limit, offset]);
+    const result = await executeQueryMU(sql, [limit, offset]);
     
     if (!result.success) {
+      console.error('❌ Erro SQL:', result.error);
       return errorResponse(res, 'Erro ao buscar ranking de guilds', 500);
     }
     
     const rankings = result.data.map((guild, index) => ({
       position: offset + index + 1,
       name: guild.name,
-      master: guild.master,
-      score: guild.score,
-      members: guild.members,
+      master: guild.master || 'N/A',
+      score: guild.score || 0,
+      members: guild.members || 0,
       emblem: guild.emblem
     }));
     
@@ -196,12 +199,73 @@ const getTopGuilds = async (req, res) => {
 };
 
 /**
+ * Top por Classe Específica - USANDO NOMES CORRETOS DAS COLUNAS
+ */
+const getTopByClass = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const limit = parseInt(req.query.limit) || 100;
+    const offset = parseInt(req.query.offset) || 0;
+    
+    // Validar classId (race no banco)
+    const validClasses = [0, 1, 16, 17, 32, 33, 48, 49, 64, 65, 80, 81, 96, 97, 112, 113, 128, 129, 144, 145];
+    const classIdNum = parseInt(classId);
+    
+    if (!validClasses.includes(classIdNum)) {
+      return errorResponse(res, 'Classe inválida', 400);
+    }
+    
+    const sql = `
+      SELECT 
+        name,
+        level,
+        race,
+        reset as resets,
+        level_master as grandResets,
+        pk_level as pkLevel,
+        pk_count as kills,
+        online
+      FROM ${tables.characters}
+      WHERE race = ?
+      ORDER BY reset DESC, level DESC, experience DESC
+      LIMIT ? OFFSET ?
+    `;
+    
+    const result = await executeQueryMU(sql, [classIdNum, limit, offset]);
+    
+    if (!result.success) {
+      console.error('❌ Erro SQL:', result.error);
+      return errorResponse(res, 'Erro ao buscar ranking por classe', 500);
+    }
+    
+    const rankings = result.data.map((char, index) => ({
+      position: offset + index + 1,
+      name: char.name,
+      level: char.level,
+      class: getClassName(char.race),
+      classNumber: char.race,
+      resets: char.resets,
+      grandResets: char.grandResets,
+      pkLevel: char.pkLevel,
+      kills: char.kills,
+      online: char.online === 1
+    }));
+    
+    return successResponse(res, rankings);
+    
+  } catch (error) {
+    console.error('❌ Erro no ranking por classe:', error);
+    return errorResponse(res, 'Erro ao buscar ranking', 500);
+  }
+};
+
+/**
  * Buscar posição de um personagem específico no ranking
  */
 const getCharacterRank = async (req, res) => {
   try {
     const { name } = req.params;
-    const { type } = req.query; // resets, pk, level
+    const { type } = req.query;
     
     let sql = '';
     
@@ -210,12 +274,12 @@ const getCharacterRank = async (req, res) => {
         sql = `
           SELECT COUNT(*) + 1 as position
           FROM ${tables.characters}
-          WHERE (ResetCount > (SELECT ResetCount FROM ${tables.characters} WHERE Name = ?))
-             OR (ResetCount = (SELECT ResetCount FROM ${tables.characters} WHERE Name = ?)
-                 AND MasterResetCount > (SELECT MasterResetCount FROM ${tables.characters} WHERE Name = ?))
-             OR (ResetCount = (SELECT ResetCount FROM ${tables.characters} WHERE Name = ?)
-                 AND MasterResetCount = (SELECT MasterResetCount FROM ${tables.characters} WHERE Name = ?)
-                 AND cLevel > (SELECT cLevel FROM ${tables.characters} WHERE Name = ?))
+          WHERE (reset > (SELECT reset FROM ${tables.characters} WHERE name = ?))
+             OR (reset = (SELECT reset FROM ${tables.characters} WHERE name = ?)
+                 AND level_master > (SELECT level_master FROM ${tables.characters} WHERE name = ?))
+             OR (reset = (SELECT reset FROM ${tables.characters} WHERE name = ?)
+                 AND level_master = (SELECT level_master FROM ${tables.characters} WHERE name = ?)
+                 AND level > (SELECT level FROM ${tables.characters} WHERE name = ?))
         `;
         break;
         
@@ -223,9 +287,9 @@ const getCharacterRank = async (req, res) => {
         sql = `
           SELECT COUNT(*) + 1 as position
           FROM ${tables.characters}
-          WHERE (PkLevel > (SELECT PkLevel FROM ${tables.characters} WHERE Name = ?))
-             OR (PkLevel = (SELECT PkLevel FROM ${tables.characters} WHERE Name = ?)
-                 AND PkCount > (SELECT PkCount FROM ${tables.characters} WHERE Name = ?))
+          WHERE (pk_level > (SELECT pk_level FROM ${tables.characters} WHERE name = ?))
+             OR (pk_level = (SELECT pk_level FROM ${tables.characters} WHERE name = ?)
+                 AND pk_count > (SELECT pk_count FROM ${tables.characters} WHERE name = ?))
         `;
         break;
         
@@ -234,9 +298,9 @@ const getCharacterRank = async (req, res) => {
         sql = `
           SELECT COUNT(*) + 1 as position
           FROM ${tables.characters}
-          WHERE (cLevel > (SELECT cLevel FROM ${tables.characters} WHERE Name = ?))
-             OR (cLevel = (SELECT cLevel FROM ${tables.characters} WHERE Name = ?)
-                 AND Experience > (SELECT Experience FROM ${tables.characters} WHERE Name = ?))
+          WHERE (level > (SELECT level FROM ${tables.characters} WHERE name = ?))
+             OR (level = (SELECT level FROM ${tables.characters} WHERE name = ?)
+                 AND experience > (SELECT experience FROM ${tables.characters} WHERE name = ?))
         `;
         break;
     }
@@ -245,9 +309,10 @@ const getCharacterRank = async (req, res) => {
       ? [name, name, name, name, name, name]
       : [name, name, name];
     
-    const result = await executeQuery(sql, params);
+    const result = await executeQueryMU(sql, params);
     
     if (!result.success) {
+      console.error('❌ Erro SQL:', result.error);
       return errorResponse(res, 'Erro ao buscar posição no ranking', 500);
     }
     
@@ -268,5 +333,6 @@ module.exports = {
   getTopPK,
   getTopLevel,
   getTopGuilds,
+  getTopByClass,
   getCharacterRank
 };
