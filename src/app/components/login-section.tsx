@@ -60,12 +60,9 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
       if (result.success) {
         setLoginSuccess(result.message);
         
-        // ⏰ ESPERAR 500ms para garantir que o contexto atualizou
-        // (tempo suficiente para mostrar mensagem de sucesso + atualizar contexto)
-        setTimeout(() => {
-          console.log('✅ Redirecionando para dashboard...');
-          onLoginSuccess?.();
-        }, 500);
+        // ✅ CHAMAR IMEDIATAMENTE - useEffect no App.tsx vai esperar isLoggedIn atualizar
+        console.log('✅ Login bem-sucedido! Aguardando contexto atualizar...');
+        onLoginSuccess?.();
       } else {
         setLoginError(result.message);
       }

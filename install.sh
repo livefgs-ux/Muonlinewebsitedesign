@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="488"
-VERSION_DATE="2025-12-26 20:00 CET"
+VERSION="489"
+VERSION_DATE="2025-12-26 20:15 CET"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -677,7 +677,7 @@ EOF
 reiniciar_servidor() {
     clear_screen
     echo -e "${BOLD}🔄 REINICIAR SERVIDOR NODE.JS${NC}"
-    echo "════════════════════════════════════════════════════════════"
+    echo "══════════════════════════════════��═════════════════════════"
     echo ""
     
     # Proteção 1: Matar TODOS os processos
