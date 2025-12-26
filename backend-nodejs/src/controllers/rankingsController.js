@@ -161,18 +161,51 @@ const getTopGuilds = async (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
     const offset = parseInt(req.query.offset) || 0;
     
-    // QUERY SIMPLIFICADA - sem JOIN (evita erro se guild_members não existir)
+    // DETECTAR ESTRUTURA DA TABELA GUILD AUTOMATICAMENTE
+    const checkColumnsSQL = `SHOW COLUMNS FROM ${tables.guild}`;
+    const columnsResult = await executeQueryMU(checkColumnsSQL);
+    
+    if (!columnsResult.success) {
+      console.error('❌ Erro ao verificar colunas da tabela guild:', columnsResult.error);
+      return errorResponse(res, 'Erro ao verificar estrutura da tabela de guilds', 500);
+    }
+    
+    const columns = columnsResult.data.map(col => col.Field.toLowerCase());
+    console.log('🔍 Colunas disponíveis em guild:', columns);
+    
+    // Detectar nomes das colunas
+    const scoreCol = columns.includes('score') ? 'score' : 
+                     columns.includes('guild_score') ? 'guild_score' : 
+                     '0';
+    
+    const membersCol = columns.includes('member_count') ? 'member_count' :
+                       columns.includes('members') ? 'members' :
+                       columns.includes('total_members') ? 'total_members' :
+                       '0';
+    
+    const emblemCol = columns.includes('emblem') ? 'emblem' :
+                      columns.includes('guild_emblem') ? 'guild_emblem' :
+                      'NULL';
+    
+    const masterCol = columns.includes('master') ? 'master' :
+                      columns.includes('guild_master') ? 'guild_master' :
+                      columns.includes('master_name') ? 'master_name' :
+                      'NULL';
+    
+    // QUERY DINÂMICA baseada nas colunas disponíveis
     const sql = `
       SELECT 
         name,
-        emblem,
-        score,
-        member_count as members
+        ${emblemCol} as emblem,
+        ${scoreCol} as score,
+        ${membersCol} as members,
+        ${masterCol} as master
       FROM ${tables.guild}
-      WHERE score > 0
-      ORDER BY score DESC
+      ORDER BY ${scoreCol} DESC
       LIMIT ? OFFSET ?
     `;
+    
+    console.log('📊 SQL Guilds:', sql);
     
     const result = await executeQueryMU(sql, [limit, offset]);
     
@@ -181,20 +214,26 @@ const getTopGuilds = async (req, res) => {
       return errorResponse(res, 'Erro ao buscar ranking de guilds', 500);
     }
     
+    // Se não houver dados, retornar array vazio
+    if (!result.data || result.data.length === 0) {
+      console.log('⚠️  Nenhuma guild encontrada no banco');
+      return successResponse(res, []);
+    }
+    
     const rankings = result.data.map((guild, index) => ({
       position: offset + index + 1,
-      name: guild.name,
+      name: guild.name || 'Unknown',
       master: guild.master || 'N/A',
-      score: guild.score || 0,
-      members: guild.members || 0,
-      emblem: guild.emblem
+      score: parseInt(guild.score) || 0,
+      members: parseInt(guild.members) || 0,
+      emblem: guild.emblem || null
     }));
     
     return successResponse(res, rankings);
     
   } catch (error) {
     console.error('❌ Erro no ranking de guilds:', error);
-    return errorResponse(res, 'Erro ao buscar ranking', 500);
+    return errorResponse(res, 'Erro ao buscar ranking de guilds', 500);
   }
 };
 

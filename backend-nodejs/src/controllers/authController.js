@@ -66,8 +66,17 @@ const login = async (req, res) => {
     
     if (!passwordMatch) {
       console.log(`❌ Senha incorreta para: ${username}`);
-      console.log(`🔍 DEBUG - Senha enviada: ${password.substring(0, 3)}...`);
+      console.log(`🔍 DEBUG - Senha enviada (primeiros 3 chars): ${password.substring(0, 3)}...`);
+      console.log(`🔍 DEBUG - Tamanho senha enviada: ${password.length}`);
       console.log(`🔍 DEBUG - Hash no banco: ${account.pwd}`);
+      console.log(`🔍 DEBUG - Tamanho hash: ${account.pwd.length}`);
+      
+      // TESTE: Tentar MD5 manualmente
+      const crypto = require('crypto');
+      const testMD5 = crypto.createHash('md5').update(password).digest('hex');
+      console.log(`🔍 DEBUG - MD5 da senha enviada: ${testMD5}`);
+      console.log(`🔍 DEBUG - Senhas coincidem? ${testMD5.toLowerCase() === account.pwd.toLowerCase()}`);
+      
       return errorResponse(res, 'Usuário ou senha incorretos', 401);
     }
     
