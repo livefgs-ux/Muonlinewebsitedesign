@@ -72,23 +72,9 @@ export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection 
       } catch (error) {
         console.error('❌ Erro ao buscar dados do servidor:', error);
         
-        // Fallback: usar dados padrão se o backend não estiver disponível
-        setServerData({
-          status: 'online',
-          players_online: 0,
-          total_accounts: 8,
-          total_characters: 0,
-          total_guilds: 0,
-          castle_owner: 'DragonGuard',
-          total_bosses: 120,
-          alive_bosses: 87,
-          server_name: 'MeuMU Online',
-          season: 'Season 19-2-3 - Épico',
-          exp_rate: '9999x',
-          drop_rate: '60%',
-          updated_at: new Date().toISOString()
-        });
-        setIsOnline(true);
+        // ✅ ERRO: Não usar fallback, mostrar estado de erro
+        setServerData(null);
+        setIsOnline(false);
         setIsLoading(false);
       }
     };

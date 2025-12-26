@@ -33,13 +33,13 @@ export const API_CONFIG = {
     AUTH_VERIFY: '/auth/verify',
     AUTH_LOGOUT: '/auth/logout',
     AUTH_FORGOT_PASSWORD: '/auth/forgot-password',
+    AUTH_ACCOUNT: '/auth/account',  // ✅ NOVO: Dados da conta
     
-    // Jogador
-    PLAYER_CHARACTERS: '/characters',
-    PLAYER_CHARACTER: '/characters', // + /:name
-    PLAYER_DISTRIBUTE_POINTS: '/characters', // + /:name/add-stats
-    PLAYER_RESET: '/characters', // + /:name/reset
-    PLAYER_ACCOUNT_INFO: '/auth/me',
+    // Personagens
+    CHARACTERS: '/characters',
+    CHARACTERS_ADD_STATS: '/characters/add-stats',
+    CHARACTERS_RESET: '/characters/reset',
+    CHARACTERS_MASTER_RESET: '/characters/master-reset',
     
     // Rankings
     RANKING_PLAYERS: '/rankings/players',
@@ -50,6 +50,7 @@ export const API_CONFIG = {
     // Status do Servidor
     SERVER_STATUS: '/server/status',
     SERVER_STATUS_DETAILED: '/server/status',
+    SERVER_INFO: '/server/info',
     
     // Notícias
     NEWS_LIST: '/news',

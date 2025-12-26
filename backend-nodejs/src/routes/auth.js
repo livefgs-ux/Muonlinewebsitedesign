@@ -19,7 +19,7 @@ const {
   loginRateLimiter,
   registerRateLimiter,
   validateEmailMiddleware,
-  // validatePasswordStrength,  // ⚠️ DESABILITADO PARA TESTES
+  validatePasswordStrength,  // ✅ ATIVADO!
   xssMiddleware
 } = require('../middleware/security');
 
@@ -36,11 +36,11 @@ router.post('/login',
 
 // POST /api/auth/register - Registro
 // Rate limit: 3 registros por hora
-// Validações: Email temporário + Senha forte
+// Validações: Email temporário + Senha forte (COMPLEXIDADE + ANTI-SEQUÊNCIAS)
 router.post('/register', 
   registerRateLimiter,
   validateEmailMiddleware,
-  // validatePasswordStrength,  // ⚠️ TEMPORARIAMENTE DESABILITADO PARA TESTES
+  validatePasswordStrength,  // ✅ ATIVADO! (Maiúscula, Minúscula, Número, Especial, Anti-Sequência)
   validateRegister, 
   register
 );

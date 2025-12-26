@@ -2,27 +2,57 @@
  * Controller de Informações do Servidor
  */
 
-const { executeQueryMU, testConnection } = require('../config/database');
+const { executeQueryMU, executeQueryWeb, testConnection } = require('../config/database');
 const { tables } = require('../config/auth');
 const { successResponse, errorResponse } = require('../utils/helpers');
 
 /**
  * Informações básicas do servidor
+ * ✅ AGORA busca do banco de dados meuweb (site_settings)
  */
 const getServerInfo = async (req, res) => {
   try {
-    return successResponse(res, {
-      name: process.env.SERVER_NAME || 'MeuMU Online',
-      version: process.env.SERVER_VERSION || 'Season 19-2-3 - Épico',
-      rates: {
-        exp: process.env.SERVER_RATES_EXP || '1000x',
-        drop: process.env.SERVER_RATES_DROP || '50%'
-      },
-      limits: {
-        maxReset: parseInt(process.env.SERVER_MAX_RESET) || 500,
-        maxGrandReset: parseInt(process.env.SERVER_MAX_GRAND_RESET) || 50
-      }
-    });
+    // Buscar configurações do banco
+    const sql = `SELECT 
+      server_name, 
+      server_season, 
+      exp_rate, 
+      drop_rate, 
+      max_reset, 
+      max_grand_reset 
+    FROM site_settings WHERE id = 1`;
+    
+    const result = await executeQueryWeb(sql);
+    
+    if (result.success && result.data && result.data.length > 0) {
+      const settings = result.data[0];
+      return successResponse(res, {
+        name: settings.server_name,
+        version: settings.server_season,
+        rates: {
+          exp: settings.exp_rate,
+          drop: settings.drop_rate
+        },
+        limits: {
+          maxReset: settings.max_reset,
+          maxGrandReset: settings.max_grand_reset
+        }
+      });
+    } else {
+      // Fallback para valores padrão se não existir no banco
+      return successResponse(res, {
+        name: process.env.SERVER_NAME || 'MeuMU Online',
+        version: process.env.SERVER_VERSION || 'Season 19-2-3 - Épico',
+        rates: {
+          exp: process.env.SERVER_RATES_EXP || '9999x',
+          drop: process.env.SERVER_RATES_DROP || '60%'
+        },
+        limits: {
+          maxReset: parseInt(process.env.SERVER_MAX_RESET) || 500,
+          maxGrandReset: parseInt(process.env.SERVER_MAX_GRAND_RESET) || 50
+        }
+      });
+    }
   } catch (error) {
     console.error('❌ Erro ao buscar info do servidor:', error);
     return errorResponse(res, 'Erro ao buscar informações', 500);
@@ -87,6 +117,25 @@ const getServerStats = async (req, res) => {
     `;
     const topResetResult = await executeQueryMU(topResetSql);
     
+    // ✅ Buscar RATES do banco (para exibir no frontend)
+    let rates = {
+      expRate: '9999x',
+      dropRate: '60%',
+      uptime: '99.9%'
+    };
+    
+    try {
+      const settingsSql = `SELECT exp_rate, drop_rate FROM site_settings WHERE id = 1`;
+      const settingsResult = await executeQueryWeb(settingsSql);
+      
+      if (settingsResult.success && settingsResult.data && settingsResult.data.length > 0) {
+        rates.expRate = settingsResult.data[0].exp_rate;
+        rates.dropRate = settingsResult.data[0].drop_rate;
+      }
+    } catch (err) {
+      console.log('⚠️  Não foi possível buscar rates do site_settings');
+    }
+    
     return successResponse(res, {
       totalAccounts: accountsResult.data[0]?.total || 0,
       totalCharacters: charsResult.data[0]?.total || 0,
@@ -96,6 +145,9 @@ const getServerStats = async (req, res) => {
         Name: topResetResult.data[0].name,
         ResetCount: topResetResult.data[0].reset
       } : null,
+      expRate: rates.expRate,        // ✅ NOVO: Incluir rates na resposta
+      dropRate: rates.dropRate,      // ✅ NOVO
+      uptime: rates.uptime,           // ✅ NOVO
       lastUpdate: new Date().toISOString()
     });
     

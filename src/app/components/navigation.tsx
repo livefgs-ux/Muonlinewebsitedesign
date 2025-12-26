@@ -85,7 +85,14 @@ export const Navigation = memo(function Navigation({
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => onNavigate(item.id)}
+                onClick={() => {
+                  // 🔥 PROTEÇÃO: Se clicar em Dashboard sem estar logado, vai para Login
+                  if (item.id === 'dashboard' && !isLoggedIn) {
+                    onNavigate('login');
+                  } else {
+                    onNavigate(item.id);
+                  }
+                }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   currentSection === item.id
                     ? "bg-yellow-500/20 text-yellow-500"
@@ -151,7 +158,12 @@ export const Navigation = memo(function Navigation({
               <button
                 key={item.id}
                 onClick={() => {
-                  onNavigate(item.id);
+                  // 🔥 PROTEÇÃO: Se clicar em Dashboard sem estar logado, vai para Login
+                  if (item.id === 'dashboard' && !isLoggedIn) {
+                    onNavigate('login');
+                  } else {
+                    onNavigate(item.id);
+                  }
                   setMobileMenuOpen(false);
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${

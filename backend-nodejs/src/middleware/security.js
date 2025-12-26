@@ -145,21 +145,65 @@ const validateEmailMiddleware = (req, res, next) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// 3. VALIDAÇÃO DE SENHA FORTE
+// 3. VALIDAÇÃO DE SENHA FORTE (CUSTOMIZADA)
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Requisitos de senha forte:
- * - Mínimo 8 caracteres
- * - Pelo menos 1 letra maiúscula
- * - Pelo menos 1 letra minúscula
- * - Pelo menos 1 número
- * - Pelo menos 1 caractere especial (@$!%*?&)
+ * 🔒 VALIDAÇÃO DE SENHA FORTE AVANÇADA
+ * 
+ * REGRAS:
+ * 1. Mínimo 6 caracteres
+ * 2. Pelo menos 1 letra maiúscula (A-Z)
+ * 3. Pelo menos 1 letra minúscula (a-z)
+ * 4. Pelo menos 1 número (0-9)
+ * 5. Pelo menos 1 caractere especial (!@#$%^&*)
+ * 6. NÃO pode conter sequências óbvias (abc, 123, 321, cba)
+ * 7. NÃO pode conter caracteres repetidos (aaa, 111)
  */
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=[\]{}|;:'",.<>/?\\])[A-Za-z\d@$!%*?&#^()_\-+=[\]{}|;:'",.<>/?\\]{8,}$/;
 
 /**
- * Middleware para validar força da senha
+ * Regex para complexidade básica:
+ * - (?=.*[a-z]): Pelo menos 1 minúscula
+ * - (?=.*[A-Z]): Pelo menos 1 maiúscula
+ * - (?=.*[0-9]): Pelo menos 1 número
+ * - (?=.*[!@#$%^&*]): Pelo menos 1 caractere especial
+ * - (?=.{6,}): Mínimo 6 caracteres
+ */
+const STRONG_PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,})/;
+
+/**
+ * Detectar sequências óbvias e caracteres repetidos
+ * 
+ * BLOQUEIA:
+ * - Sequências ascendentes: abc, 123, def, 456
+ * - Sequências descendentes: cba, 321, fed, 654
+ * - Caracteres repetidos: aaa, 111, @@@
+ * 
+ * @param {string} str - String a ser verificada
+ * @returns {boolean} - true se encontrou sequência/repetição
+ */
+const checkSequences = (str) => {
+  for (let i = 0; i < str.length - 2; i++) {
+    const charCode = str.charCodeAt(i);
+    
+    // Sequência ascendente (abc, 123) ou descendente (321, cba)
+    if (
+      (str.charCodeAt(i + 1) === charCode + 1 && str.charCodeAt(i + 2) === charCode + 2) ||
+      (str.charCodeAt(i + 1) === charCode - 1 && str.charCodeAt(i + 2) === charCode - 2)
+    ) {
+      return true;
+    }
+    
+    // Caracteres repetidos (aaa, 111)
+    if (str[i] === str[i + 1] && str[i] === str[i + 2]) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * Middleware para validar força da senha (CUSTOMIZADO)
  */
 const validatePasswordStrength = (req, res, next) => {
   try {
@@ -169,43 +213,37 @@ const validatePasswordStrength = (req, res, next) => {
       return next(); // Deixa outros validadores tratarem
     }
 
-    // Verificar tamanho mínimo
-    if (password.length < 8) {
-      return res.status(400).json({
-        success: false,
-        error: 'Senha muito fraca. Mínimo 8 caracteres.',
-        requirements: {
-          minLength: 8,
-          uppercase: true,
-          lowercase: true,
-          number: true,
-          special: true
-        }
-      });
-    }
-
-    // Verificar regex completo
-    if (!PASSWORD_REGEX.test(password)) {
+    // ═══════════════════════════════════════════════════════════════
+    // REGRA 1: COMPLEXIDADE (Maiúscula, Minúscula, Número, Especial)
+    // ═══════════════════════════════════════════════════════════════
+    
+    if (!STRONG_PASSWORD_REGEX.test(password)) {
       const hasUppercase = /[A-Z]/.test(password);
       const hasLowercase = /[a-z]/.test(password);
-      const hasNumber = /\d/.test(password);
-      const hasSpecial = /[@$!%*?&#^()_\-+=[\]{}|;:'",.<>/?\\]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSpecial = /[!@#$%^&*]/.test(password);
+      const hasMinLength = password.length >= 6;
 
-      let errorMsg = 'Senha muito fraca. Faltam: ';
+      let errorMsg = 'A senha deve ter no mínimo 6 caracteres, incluir maiúscula, minúscula, número e símbolo.';
       const missing = [];
 
+      if (!hasMinLength) missing.push('mínimo 6 caracteres');
       if (!hasUppercase) missing.push('1 letra maiúscula');
       if (!hasLowercase) missing.push('1 letra minúscula');
       if (!hasNumber) missing.push('1 número');
-      if (!hasSpecial) missing.push('1 caractere especial (@$!%*?&#)');
+      if (!hasSpecial) missing.push('1 símbolo (!@#$%^&*)');
 
-      errorMsg += missing.join(', ');
+      if (missing.length > 0) {
+        errorMsg = `Senha muito fraca. Faltam: ${missing.join(', ')}`;
+      }
+
+      console.log(`🚫 Senha rejeitada (complexidade): ${missing.join(', ')}`);
 
       return res.status(400).json({
         success: false,
         error: errorMsg,
         requirements: {
-          minLength: password.length >= 8,
+          minLength: hasMinLength,
           uppercase: hasUppercase,
           lowercase: hasLowercase,
           number: hasNumber,
@@ -214,7 +252,21 @@ const validatePasswordStrength = (req, res, next) => {
       });
     }
 
-    // Senha forte - prosseguir
+    // ═══════════════════════════════════════════════════════════════
+    // REGRA 2: ANTI-SEQUÊNCIAS (abc, 123, 321, aaa)
+    // ═══════════════════════════════════════════════════════════════
+    
+    if (checkSequences(password.toLowerCase())) {
+      console.log(`🚫 Senha rejeitada (sequência/repetição)`);
+      
+      return res.status(400).json({
+        success: false,
+        error: 'A senha não pode conter sequências óbvias (abc, 123) ou caracteres repetidos (aaa, 111).'
+      });
+    }
+
+    // ✅ Senha forte - prosseguir
+    console.log('✅ Senha passou nas validações de segurança');
     next();
 
   } catch (error) {

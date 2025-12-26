@@ -3,13 +3,62 @@ import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { HomeNewsSection } from './home-news-section';
+import { useEffect, useState } from 'react';
+import { API_CONFIG, getApiUrl } from '../config/api';
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
 }
 
+interface ServerStats {
+  playersOnline: number;
+  expRate: string;
+  dropRate: string;
+  uptime: string;
+}
+
 export function HeroSection({ onNavigate }: HeroSectionProps) {
   const { t } = useLanguage();
+  
+  // ✅ ESTADO PARA DADOS REAIS DO SERVIDOR
+  const [serverStats, setServerStats] = useState<ServerStats>({
+    playersOnline: 0,
+    expRate: '500x',
+    dropRate: '70%',
+    uptime: '99.9%'
+  });
+  const [loading, setLoading] = useState(true);
+
+  // ✅ CARREGAR DADOS REAIS DO BACKEND
+  useEffect(() => {
+    const loadServerStats = async () => {
+      try {
+        const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.SERVER_STATUS));
+        const data = await response.json();
+        
+        if (data.success) {
+          setServerStats({
+            playersOnline: data.data.playersOnline || 0,
+            expRate: data.data.expRate || '500x',
+            dropRate: data.data.dropRate || '70%',
+            uptime: data.data.uptime || '99.9%'
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao carregar stats do servidor:', error);
+        // Manter valores padrão em caso de erro
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServerStats();
+    
+    // Auto-refresh a cada 30 segundos
+    const interval = setInterval(loadServerStats, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -65,13 +114,25 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
               </Button>
             </div>
 
-            {/* Server Stats */}
+            {/* Server Stats - ✅ DADOS REAIS DO BANCO */}
             <div className="grid grid-cols-2 gap-4 max-w-md">
               {[
-                { label: t('hero.onlinePlayers'), value: '1,247' },
-                { label: t('hero.expRate'), value: '500x' },
-                { label: t('hero.dropRate'), value: '70%' },
-                { label: t('hero.uptime'), value: '99.9%' },
+                { 
+                  label: t('hero.onlinePlayers'), 
+                  value: loading ? '...' : serverStats.playersOnline.toLocaleString('pt-BR')
+                },
+                { 
+                  label: t('hero.expRate'), 
+                  value: serverStats.expRate 
+                },
+                { 
+                  label: t('hero.dropRate'), 
+                  value: serverStats.dropRate 
+                },
+                { 
+                  label: t('hero.uptime'), 
+                  value: serverStats.uptime 
+                },
               ].map((stat) => (
                 <motion.div
                   key={stat.label}

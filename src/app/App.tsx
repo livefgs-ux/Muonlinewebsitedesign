@@ -13,7 +13,8 @@ import { Footer } from './components/footer';
 
 // Lazy loading de componentes pesados
 const HeroSection = lazy(() => import('./components/hero-section'));
-const DashboardSection = lazy(() => import('./components/dashboard-section'));
+// ❌ REMOVIDO - arquivo deletado, estava cheio de mocks
+// const DashboardSection = lazy(() => import('./components/dashboard-section'));
 const EventsSection = lazy(() => import('./components/events-section-real')); // ✅ USANDO API REAL
 const RankingsSection = lazy(() => import('./components/rankings-section-real')); // ✅ USANDO API REAL
 const DownloadsSection = lazy(() => import('./components/downloads-section'));
@@ -55,15 +56,9 @@ function AppContent() {
     setCurrentSection('dashboard');
   };
   
-  // 🔥 MONITORAR isLoggedIn para proteger rotas
+  // 🔥 PROTEÇÃO: Se usuário fizer logout enquanto está no dashboard
   useEffect(() => {
-    // Se usuário está logado mas está em home ou login, redirecionar para dashboard
-    if (isLoggedIn && (currentSection === 'home' || currentSection === 'login')) {
-      console.log('✅ Usuário logado detectado! Redirecionando para dashboard...');
-      setCurrentSection('dashboard');
-    }
-    // Se usuário não está logado mas está no dashboard, redirecionar para home
-    else if (!isLoggedIn && currentSection === 'dashboard') {
+    if (!isLoggedIn && currentSection === 'dashboard') {
       console.log('⚠️ Usuário não logado! Redirecionando para home...');
       setCurrentSection('home');
     }

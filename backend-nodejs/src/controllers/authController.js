@@ -51,8 +51,12 @@ const login = async (req, res) => {
     
     const account = result.data[0];
     console.log(`✅ Usuário encontrado: ${account.username}`);
-    console.log(`🔑 GUID: ${account.guid}`);
-    console.log(`🔑 Hash da senha no banco: ${account.pwd ? account.pwd.substring(0, 10) + '...' : 'VAZIO!'}`);
+    
+    // ✅ SEGURANÇA: Logs sensíveis apenas em desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔑 GUID: ${account.guid}`);
+      console.log(`🔑 Hash da senha no banco: ${account.pwd ? account.pwd.substring(0, 10) + '...' : 'VAZIO!'}`);
+    }
     
     // Verificar se a conta está bloqueada
     // Season 6: bloc_code === '1', Season 19: blocked === 1
@@ -67,24 +71,28 @@ const login = async (req, res) => {
     
     if (!passwordMatch) {
       console.log(`❌ Senha incorreta para: ${username}`);
-      console.log(`🔍 DEBUG - Senha enviada (primeiros 3 chars): ${password.substring(0, 3)}...`);
-      console.log(`🔍 DEBUG - Tamanho senha enviada: ${password.length}`);
-      console.log(`🔍 DEBUG - Hash no banco: ${account.pwd}`);
-      console.log(`🔍 DEBUG - Tamanho hash: ${account.pwd.length}`);
       
-      // TESTE: Tentar MD5 manualmente
-      const crypto = require('crypto');
-      const testMD5 = crypto.createHash('md5').update(password).digest('hex');
-      console.log(`🔍 DEBUG - MD5 da senha enviada: ${testMD5}`);
-      console.log(`🔍 DEBUG - Hash no banco (lowercase): ${account.pwd.toLowerCase()}`);
-      console.log(`🔍 DEBUG - Senhas coincidem (case insensitive)? ${testMD5.toLowerCase() === account.pwd.toLowerCase()}`);
-      console.log(`🔍 DEBUG - Senhas coincidem (case sensitive)? ${testMD5 === account.pwd}`);
-      
-      // TESTE: Verificar se hash tem espaços ou caracteres estranhos
-      const hashTrimmed = account.pwd.trim();
-      console.log(`🔍 DEBUG - Hash sem espaços: ${hashTrimmed}`);
-      console.log(`🔍 DEBUG - Hash mudou após trim? ${hashTrimmed !== account.pwd}`);
-      console.log(`🔍 DEBUG - Coincidem após trim? ${testMD5.toLowerCase() === hashTrimmed.toLowerCase()}`);
+      // ✅ SEGURANÇA: Debug detalhado APENAS em desenvolvimento
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 DEBUG - Senha enviada (primeiros 3 chars): ${password.substring(0, 3)}...`);
+        console.log(`🔍 DEBUG - Tamanho senha enviada: ${password.length}`);
+        console.log(`🔍 DEBUG - Hash no banco: ${account.pwd}`);
+        console.log(`🔍 DEBUG - Tamanho hash: ${account.pwd.length}`);
+        
+        // TESTE: Tentar MD5 manualmente
+        const crypto = require('crypto');
+        const testMD5 = crypto.createHash('md5').update(password).digest('hex');
+        console.log(`🔍 DEBUG - MD5 da senha enviada: ${testMD5}`);
+        console.log(`🔍 DEBUG - Hash no banco (lowercase): ${account.pwd.toLowerCase()}`);
+        console.log(`🔍 DEBUG - Senhas coincidem (case insensitive)? ${testMD5.toLowerCase() === account.pwd.toLowerCase()}`);
+        console.log(`🔍 DEBUG - Senhas coincidem (case sensitive)? ${testMD5 === account.pwd}`);
+        
+        // TESTE: Verificar se hash tem espaços ou caracteres estranhos
+        const hashTrimmed = account.pwd.trim();
+        console.log(`🔍 DEBUG - Hash sem espaços: ${hashTrimmed}`);
+        console.log(`🔍 DEBUG - Hash mudou após trim? ${hashTrimmed !== account.pwd}`);
+        console.log(`🔍 DEBUG - Coincidem após trim? ${testMD5.toLowerCase() === hashTrimmed.toLowerCase()}`);
+      }
       
       return errorResponse(res, 'Usuário ou senha incorretos', 401);
     }
@@ -174,17 +182,17 @@ const register = async (req, res) => {
     
     console.log(`🔍 Detectando estrutura da tabela '${tables.accounts}'...`);
     
-    // Verificar qual estrutura de tabela temos
+    // ✅ CORREÇÃO SQL INJECTION: Usar prepared statement
     const checkStructureSql = `
       SELECT COLUMN_NAME 
       FROM INFORMATION_SCHEMA.COLUMNS 
       WHERE TABLE_SCHEMA = DATABASE() 
-      AND TABLE_NAME = '${tables.accounts}'
+      AND TABLE_NAME = ?
       AND COLUMN_NAME IN ('account', 'memb___id')
       LIMIT 1
     `;
     
-    const structureResult = await executeQuery(checkStructureSql);
+    const structureResult = await executeQuery(checkStructureSql, [tables.accounts]);
     const isSeason19 = structureResult.success && 
                        structureResult.data.length > 0 && 
                        structureResult.data[0].COLUMN_NAME === 'account';
@@ -210,12 +218,14 @@ const register = async (req, res) => {
     
     if (!checkResult.success) {
       console.error('❌ ERRO SQL ao verificar usuário:', checkResult.error);
-      return errorResponse(res, 'Erro ao verificar usuário', 500);
+      // ✅ MENSAGEM GENÉRICA (anti-enumeração)
+      return errorResponse(res, 'Erro ao processar registro. Tente novamente.', 500);
     }
     
     if (checkResult.data.length > 0) {
       console.log(`⚠️  Username já existe: ${cleanUsername}`);
-      return errorResponse(res, 'Username já existe', 409);
+      // ✅ MENSAGEM GENÉRICA (anti-enumeração)
+      return errorResponse(res, 'Erro ao criar conta. Verifique os dados e tente novamente.', 400);
     }
     
     console.log(`✅ Username disponível`);
@@ -232,7 +242,8 @@ const register = async (req, res) => {
     
     if (checkEmailResult.data.length > 0) {
       console.log(`⚠️  Email já cadastrado: ${email}`);
-      return errorResponse(res, 'Email já cadastrado', 409);
+      // ✅ MENSAGEM GENÉRICA (anti-enumeração)
+      return errorResponse(res, 'Erro ao criar conta. Verifique os dados e tente novamente.', 400);
     }
     
     console.log(`✅ Email disponível`);
@@ -266,16 +277,16 @@ const register = async (req, res) => {
       
       console.log(`💾 Preparando INSERT para Season 19 (APENAS ESSENCIAIS)...`);
       
-      // Verificar quais colunas existem na tabela
+      // ✅ CORREÇÃO SQL INJECTION: Usar prepared statement para verificar colunas
       const checkColumnsSql = `
         SELECT COLUMN_NAME 
         FROM INFORMATION_SCHEMA.COLUMNS 
         WHERE TABLE_SCHEMA = DATABASE() 
-        AND TABLE_NAME = '${tables.accounts}'
+        AND TABLE_NAME = ?
         AND COLUMN_NAME IN ('created_at', 'guid')
       `;
       
-      const columnsResult = await executeQuery(checkColumnsSql);
+      const columnsResult = await executeQuery(checkColumnsSql, [tables.accounts]);
       const hasCreatedAt = columnsResult.data.some(row => row.COLUMN_NAME === 'created_at');
       const hasGuid = columnsResult.data.some(row => row.COLUMN_NAME === 'guid');
       

@@ -79,43 +79,47 @@ app.use(helmet({
         "'unsafe-inline'",
         "https://fonts.googleapis.com"  // ✅ Google Fonts
       ],
-      scriptSrc: ["'self'", "'unsafe-inline'", "blob:"],
-      scriptSrcAttr: ["'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'"],
-      fontSrc: [
-        "'self'", 
+      scriptSrc: [
+        "'self'",
+        // ✅ SEGURANÇA: Removido 'unsafe-inline' para prevenir XSS
+        // Apenas scripts do próprio domínio são permitidos
+      ],
+      imgSrc: [
+        "'self'",
         "data:",
-        "https://fonts.gstatic.com"  // ✅ Google Fonts
+        "https://*",  // ✅ Permitir imagens de qualquer fonte HTTPS
+        "http://*"    // ⚠️ Temporário para desenvolvimento
       ],
-      objectSrc: ["'none'"],
-      mediaSrc: [
+      connectSrc: [
         "'self'",
-        "https://www.youtube.com",    // ✅ YouTube
-        "https://youtube.com"
+        "https://*",  // ✅ APIs externas via HTTPS
+        "http://localhost:*",  // ⚠️ Desenvolvimento
+        "ws:",
+        "wss:"
       ],
-      frameSrc: [
+      fontSrc: [
         "'self'",
-        "https://www.youtube.com",    // ✅ YouTube Embed
-        "https://youtube.com"
+        "https://fonts.gstatic.com",  // ✅ Google Fonts
+        "data:"
       ],
-      baseUri: ["'self'"],
-      formAction: ["'self'"],
-      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
-    },
+      objectSrc: ["'none'"],  // ✅ Bloquear Flash/plugins
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"]    // ✅ Bloquear iframes
+    }
   },
-  crossOriginEmbedderPolicy: false, // React precisa
-  crossOriginOpenerPolicy: false, // ← DESABILITAR avisos COOP (funciona sem HTTPS)
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  dnsPrefetchControl: { allow: false },
-  frameguard: { action: "deny" },
-  hidePoweredBy: true,
-  hsts: false, // ← DESABILITAR HSTS (só funciona com HTTPS)
-  ieNoOpen: true,
-  noSniff: true,
-  referrerPolicy: { policy: "no-referrer" },
-  xssFilter: true,
-  permittedCrossDomainPolicies: { permittedPolicies: "none" }
+  crossOriginEmbedderPolicy: false,  // ⚠️ Desabilitado para compatibilidade
+  crossOriginResourcePolicy: { policy: "cross-origin" },  // ✅ Permitir recursos externos
+  // ✅ PROTEÇÕES ADICIONAIS CONTRA XSS:
+  xssFilter: true,                    // ✅ Ativar XSS filter no navegador
+  noSniff: true,                      // ✅ Prevenir MIME sniffing
+  referrerPolicy: {                   // ✅ Controlar informações do Referer
+    policy: "strict-origin-when-cross-origin"
+  },
+  hsts: {                             // ✅ Force HTTPS (apenas em produção)
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
 }));
 
 // ✅ Uniformizar headers Origin-Agent-Cluster
@@ -238,6 +242,7 @@ app.use('/api/wcoin', wcoinRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/admin/logs', adminLogsRoutes);
 app.use('/api/sandbox', sandboxRoutes);
+app.use('/api/settings', require('./routes/settings')); // ✅ NOVO: Configurações do site
 
 // Setup Wizard (sem /api para evitar conflitos)
 app.use('/setup-api', setupRoutes);
