@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="481"
-VERSION_DATE="2025-12-26 17:45 CET"
+VERSION="483"
+VERSION_DATE="2025-12-26 18:45 CET"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -618,7 +618,7 @@ build_frontend() {
 # ═══════════════════════════════════════════════════════════════
 
 # URL da API Backend (através do proxy OpenLiteSpeed)
-# ⚠️  IMPORTANTE: Usar URL RELATIVA para funcionar com HTTPS!
+# ���️  IMPORTANTE: Usar URL RELATIVA para funcionar com HTTPS!
 # 
 # ✅ CORRETO: /api (URL relativa - usa protocolo do site)
 # ❌ ERRADO: http://meumu.com:3001/api (Mixed Content!)
@@ -860,7 +860,7 @@ verificar_portas() {
 health_check() {
     clear_screen
     echo -e "${BOLD}💚 HEALTH CHECK${NC}"
-    echo "══════════════════════════════════════════════════════════"
+    echo "════════════════════════════════════════════��═════════════"
     echo ""
     
     echo -e "${CYAN}🔍 Testando endpoint /health...${NC}"

@@ -28,7 +28,7 @@ const login = async (req, res) => {
     // ========================================================================
     
     // Primeiro tentar estrutura Season 19 (account, password, guid)
-    let sql = `SELECT account as username, password as pwd, guid as id, email, blocked 
+    let sql = `SELECT account as username, password as pwd, guid, email, blocked 
                FROM ${tables.accounts} 
                WHERE account = ?`;
     
@@ -37,7 +37,7 @@ const login = async (req, res) => {
     // Se não encontrou, tentar estrutura Season 6 (memb___id, memb__pwd)
     if (!result.success || result.data.length === 0) {
       console.log('🔄 Tentando estrutura Season 6 (memb___id)...');
-      sql = `SELECT memb___id as username, memb__pwd as pwd, memb___id as id, mail_addr as email, bloc_code as blocked 
+      sql = `SELECT memb___id as username, memb__pwd as pwd, memb___id as guid, mail_addr as email, bloc_code as blocked 
              FROM ${tables.accounts} 
              WHERE memb___id = ?`;
       
@@ -51,6 +51,7 @@ const login = async (req, res) => {
     
     const account = result.data[0];
     console.log(`✅ Usuário encontrado: ${account.username}`);
+    console.log(`🔑 GUID: ${account.guid}`);
     console.log(`🔑 Hash da senha no banco: ${account.pwd ? account.pwd.substring(0, 10) + '...' : 'VAZIO!'}`);
     
     // Verificar se a conta está bloqueada
@@ -61,8 +62,8 @@ const login = async (req, res) => {
       return errorResponse(res, 'Conta bloqueada. Entre em contato com o suporte.', 403);
     }
     
-    // Comparar senha
-    const passwordMatch = await comparePassword(password, account.pwd);
+    // Comparar senha (passando GUID para testes com salt)
+    const passwordMatch = await comparePassword(password, account.pwd, String(account.guid));
     
     if (!passwordMatch) {
       console.log(`❌ Senha incorreta para: ${username}`);
@@ -89,6 +90,41 @@ const login = async (req, res) => {
     }
     
     console.log(`✅ Senha correta para: ${username}`);
+    
+    // ========================================================================
+    // PÓS-LOGIN: MIGRAÇÃO PROGRESSIVA DE SENHA (BCRYPT)
+    // ========================================================================
+    // Estratégia: Se a senha NÃO for bcrypt, migrar agora (no momento do login)
+    // Vantagens:
+    // - Zero risco: só migra quem logou com sucesso
+    // - Progressivo: não afeta quem nunca loga
+    // - Reversível: se der erro, login continua funcionando
+    // - Aumenta segurança gradualmente
+    // ========================================================================
+    
+    // Verificar se já é bcrypt (começa com $2a$, $2b$ ou $2y$)
+    if (!account.pwd.startsWith('$2')) {
+      try {
+        console.log(`🔐 Senha legada detectada (${account.pwd.length} chars), migrando para bcrypt...`);
+        
+        // Gerar hash bcrypt da senha
+        const bcryptHash = await hashPassword(password);
+        
+        // Atualizar no banco (Season 19: account, Season 6: memb___id)
+        const updateSql = `UPDATE ${tables.accounts} SET password = ? WHERE account = ?`;
+        await executeQuery(updateSql, [bcryptHash, account.username]);
+        
+        console.log(`✅ Senha migrada para bcrypt: ${account.username}`);
+        
+      } catch (err) {
+        // IMPORTANTE: NÃO bloquear login se a migração falhar
+        // O usuário consegue logar mesmo se o UPDATE falhar
+        console.error(`⚠️ Falha ao migrar senha para bcrypt (${account.username}):`, err.message);
+        console.log(`⚠️ Login continua funcionando com hash legado`);
+      }
+    } else {
+      console.log(`✅ Senha já está em bcrypt (seguro)`);
+    }
     
     // Verificar se é admin (ctl1_code >= 8 no Season 6)
     // No Season 19, pode usar outro campo - ajustar conforme necessário
