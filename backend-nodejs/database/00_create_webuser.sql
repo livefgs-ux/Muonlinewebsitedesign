@@ -8,7 +8,7 @@
 --    - Não pode alterar dados do servidor MU
 --    - Pode apenas ler rankings, personagens, etc.
 -- 
--- ✅ Database 'webmu': SELECT, INSERT, UPDATE, DELETE (READ+WRITE)
+-- ✅ Database 'meuweb': SELECT, INSERT, UPDATE, DELETE (READ+WRITE)
 --    - Pode gerenciar dados do website
 --    - Contas, notícias, logs, etc.
 -- 
@@ -49,12 +49,12 @@ GRANT SELECT ON muonline.* TO 'webuser'@'localhost';
 GRANT SELECT ON muonline.* TO 'webuser'@'127.0.0.1';
 
 -- ═══════════════════════════════════════════════════════════════
--- PASSO 4: PERMISSÕES NO DATABASE 'webmu' (READ+WRITE)
+-- PASSO 4: PERMISSÕES NO DATABASE 'meuweb' (READ+WRITE)
 -- ═══════════════════════════════════════════════════════════════
 
 -- SELECT, INSERT, UPDATE, DELETE - gerenciar dados do website
-GRANT SELECT, INSERT, UPDATE, DELETE ON webmu.* TO 'webuser'@'localhost';
-GRANT SELECT, INSERT, UPDATE, DELETE ON webmu.* TO 'webuser'@'127.0.0.1';
+GRANT SELECT, INSERT, UPDATE, DELETE ON meuweb.* TO 'webuser'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON meuweb.* TO 'webuser'@'127.0.0.1';
 
 -- ═══════════════════════════════════════════════════════════════
 -- PASSO 5: APLICAR PERMISSÕES
@@ -80,7 +80,7 @@ SHOW GRANTS FOR 'webuser'@'localhost';
 -- 
 -- ✅ webuser@localhost:
 --    - muonline: SELECT (read-only)
---    - webmu: SELECT, INSERT, UPDATE, DELETE (read+write)
+--    - meuweb: SELECT, INSERT, UPDATE, DELETE (read+write)
 -- 
 -- ❌ SEM PERMISSÕES PERIGOSAS:
 --    - DROP (não pode deletar tabelas/databases)

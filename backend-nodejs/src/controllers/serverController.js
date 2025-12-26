@@ -30,7 +30,7 @@ const getServerInfo = async (req, res) => {
 };
 
 /**
- * Estatísticas em tempo real - USANDO NOMES CORRETOS DAS COLUNAS
+ * Estatísticas em tempo real - COMPATÍVEL COM SEASON 6 E SEASON 19
  */
 const getServerStats = async (req, res) => {
   try {
@@ -42,9 +42,37 @@ const getServerStats = async (req, res) => {
     const totalCharsSql = `SELECT COUNT(*) as total FROM ${tables.characters}`;
     const charsResult = await executeQueryMU(totalCharsSql);
     
-    // Players online (coluna 'online' não 'ctlcode')
-    const onlineSql = `SELECT COUNT(*) as total FROM ${tables.characters} WHERE online = 1`;
-    const onlineResult = await executeQueryMU(onlineSql);
+    // ========================================================================
+    // PLAYERS ONLINE - Compatível com Season 6 E Season 19
+    // ========================================================================
+    let playersOnline = 0;
+    
+    // Tentar Season 19 primeiro (accounts_status com coluna 'online')
+    try {
+      const onlineSeason19Sql = `SELECT COUNT(*) as total FROM accounts_status WHERE online = 1`;
+      const onlineSeason19Result = await executeQueryMU(onlineSeason19Sql);
+      
+      if (onlineSeason19Result.success && onlineSeason19Result.data[0]) {
+        playersOnline = onlineSeason19Result.data[0].total || 0;
+        console.log('✅ Players online detectado via accounts_status (Season 19)');
+      }
+    } catch (err) {
+      console.log('⚠️  Tabela accounts_status não existe, tentando character_info...');
+      
+      // Fallback para Season 6 (character_info com coluna 'online')
+      try {
+        const onlineSeason6Sql = `SELECT COUNT(*) as total FROM ${tables.characters} WHERE online = 1`;
+        const onlineSeason6Result = await executeQueryMU(onlineSeason6Sql);
+        
+        if (onlineSeason6Result.success && onlineSeason6Result.data[0]) {
+          playersOnline = onlineSeason6Result.data[0].total || 0;
+          console.log('✅ Players online detectado via character_info (Season 6)');
+        }
+      } catch (err2) {
+        console.error('❌ Nenhuma tabela de status online encontrada');
+        playersOnline = 0;
+      }
+    }
     
     // Total de guilds
     const totalGuildsSql = `SELECT COUNT(*) as total FROM ${tables.guild}`;
@@ -62,7 +90,7 @@ const getServerStats = async (req, res) => {
     return successResponse(res, {
       totalAccounts: accountsResult.data[0]?.total || 0,
       totalCharacters: charsResult.data[0]?.total || 0,
-      playersOnline: onlineResult.data[0]?.total || 0,
+      playersOnline: playersOnline,
       totalGuilds: guildsResult.data[0]?.total || 0,
       topReset: topResetResult.data[0] ? {
         Name: topResetResult.data[0].name,

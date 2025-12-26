@@ -16,7 +16,6 @@ interface AuthContextType {
   register: (username: string, email: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  loginFake: (userData: User) => void; // 🧪 TESTE - Login sem validação
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -130,11 +129,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await checkAuth();
   };
 
-  const loginFake = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('auth_token', 'fake_token');
-  };
-
   const value = {
     user,
     isLoggedIn: !!user,
@@ -142,8 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     register,
     logout,
-    refreshUser,
-    loginFake
+    refreshUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

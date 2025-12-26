@@ -156,19 +156,20 @@ test_mysql_connection() {
         
         # Verificar databases
         local DB_MU=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
-        local DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'webmu';" 2>/dev/null | grep webmu)
+        local DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'meuweb';" 2>/dev/null | grep meuweb)
         
         if [ -z "$DB_MU" ]; then
             echo -e "${RED}❌ Database 'muonline' não existe!${NC}"
+            echo -e "${YELLOW}   Execute: CREATE DATABASE muonline;${NC}"
             return 1
         fi
         
         if [ -z "$DB_WEB" ]; then
-            echo -e "${YELLOW}⚠️  Database 'webmu' não existe, criando...${NC}"
-            mysql -u root -p@mysql123@ -e "CREATE DATABASE webmu CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
+            echo -e "${YELLOW}⚠️  Database 'meuweb' não existe, criando...${NC}"
+            mysql -u root -p@mysql123@ -e "CREATE DATABASE meuweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
         fi
         
-        echo -e "${GREEN}✅ Databases 'muonline' e 'webmu' OK${NC}"
+        echo -e "${GREEN}✅ Databases 'muonline' e 'meuweb' OK${NC}"
         return 0
     else
         echo -e "${RED}❌ Falha ao conectar no MySQL!${NC}"
@@ -192,7 +193,7 @@ create_mysql_webuser() {
         echo -e "${GREEN}✅ Usuário 'webuser' criado com sucesso${NC}"
         echo -e "${CYAN}   Permissões:${NC}"
         echo -e "${CYAN}   - muonline: SELECT (READ-ONLY)${NC}"
-        echo -e "${CYAN}   - webmu: SELECT, INSERT, UPDATE, DELETE (READ+WRITE)${NC}"
+        echo -e "${CYAN}   - meuweb: SELECT, INSERT, UPDATE, DELETE (READ+WRITE)${NC}"
         
         # Testar login com webuser
         if mysql -u webuser -p@meusite123@ -e "SELECT 1;" > /dev/null 2>&1; then
@@ -265,17 +266,18 @@ instalacao_completa() {
         echo -e "${GREEN}✅ MySQL rodando e acessível${NC}"
         
         DB_MU=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
-        DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'webmu';" 2>/dev/null | grep webmu)
+        DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'meuweb';" 2>/dev/null | grep meuweb)
         
         if [ -z "$DB_MU" ]; then
             echo -e "${RED}❌ Database 'muonline' não existe!${NC}"
+            echo -e "${YELLOW}   Execute: CREATE DATABASE muonline;${NC}"
             pause
             return 1
         fi
         
         if [ -z "$DB_WEB" ]; then
-            echo -e "${YELLOW}⚠️  Criando database 'webmu'...${NC}"
-            mysql -u root -p@mysql123@ -e "CREATE DATABASE webmu CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
+            echo -e "${YELLOW}⚠️  Criando database 'meuweb'...${NC}"
+            mysql -u root -p@mysql123@ -e "CREATE DATABASE meuweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
         fi
         echo -e "${GREEN}   ✅ Databases OK${NC}"
     else
@@ -506,7 +508,7 @@ DB_PASSWORD=@mysql123@
 
 # DATABASES (Nomes)
 DB_NAME_MUONLINE=muonline
-DB_NAME_WEBMU=webmu
+DB_NAME_MEUWEB=meuweb
 
 # DATABASE MUONLINE (Servidor MU - Read Only) - Compatibilidade
 DB_MU_HOST=127.0.0.1
@@ -515,12 +517,12 @@ DB_MU_USER=root
 DB_MU_PASSWORD=@mysql123@
 DB_MU_NAME=muonline
 
-# DATABASE WEBMU (Website - Read + Write) - Compatibilidade
+# DATABASE MEUWEB (Website - Read + Write) - Compatibilidade
 DB_WEB_HOST=127.0.0.1
 DB_WEB_PORT=3306
 DB_WEB_USER=root
 DB_WEB_PASSWORD=@mysql123@
-DB_WEB_NAME=webmu
+DB_WEB_NAME=meuweb
 
 # SERVIDOR
 PORT=3001
@@ -749,7 +751,7 @@ verificar_mysql() {
         
         echo ""
         DB_MU=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
-        DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'webmu';" 2>/dev/null | grep webmu)
+        DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'meuweb';" 2>/dev/null | grep meuweb)
         
         if [ -n "$DB_MU" ]; then
             echo -e "${GREEN}✅ Database 'muonline' existe${NC}"
@@ -758,9 +760,9 @@ verificar_mysql() {
         fi
         
         if [ -n "$DB_WEB" ]; then
-            echo -e "${GREEN}✅ Database 'webmu' existe${NC}"
+            echo -e "${GREEN}✅ Database 'meuweb' existe${NC}"
         else
-            echo -e "${RED}❌ Database 'webmu' NÃO existe${NC}"
+            echo -e "${RED}❌ Database 'meuweb' NÃO existe${NC}"
         fi
     else
         echo -e "${RED}❌ MySQL não está acessível!${NC}"
