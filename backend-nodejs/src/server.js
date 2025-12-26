@@ -49,6 +49,13 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ==================================
+// PROXY REVERSO - TRUST PROXY
+// ==================================
+// ⚠️ OBRIGATÓRIO quando rodando atrás de Nginx/OpenLiteSpeed
+// Permite que Express confie nos headers X-Forwarded-* do proxy
+app.set('trust proxy', true);
+
+// ==================================
 // MIDDLEWARES DE SEGURANÇA
 // ==================================
 

@@ -13,7 +13,7 @@ module.exports = {
   passwordMinLength: 6,
   passwordMaxLength: 20,
   usernameMinLength: 4,
-  usernameMaxLength: 10,
+  usernameMaxLength: 15, // Ajustado para Season 19 (varchar 255)
   
   // Tabelas do banco
   tables: {

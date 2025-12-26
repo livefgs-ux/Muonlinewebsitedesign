@@ -12,8 +12,8 @@
 // MODO 2: Desenvolvimento local
 
 // Detectar automaticamente qual modo usar
-const getApiBaseUrl = () => {
-  // 1. Variável de ambiente customizada (mais alta prioridade)
+const getApiBaseUrl = (): string => {
+  // 1. Verificar VITE_API_URL primeiro (maior prioridade)
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
@@ -21,32 +21,12 @@ const getApiBaseUrl = () => {
   // 2. Produção com HTTPS (usar proxy reverso)
   if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
     // ✅ HTTPS: usar proxy reverso (sem porta!)
-    // OpenLiteSpeed vai rotear /api para localhost:3001
+    // OpenLiteSpeed vai rotear /api para localhost:3001 internamente
     return `https://${window.location.hostname}/api`;
   }
   
-  // 3. Produção com HTTP (porta 3001 direta)
-  if (import.meta.env.MODE === 'production') {
-    return 'http://meumu.com:3001/api';
-  }
-  
-  // 4. Desenvolvimento - detectar hostname
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    // Se estiver acessando via IP ou domínio, usar o mesmo hostname
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      const protocol = window.location.protocol; // http: ou https:
-      // Se for HTTPS, usar proxy reverso (sem porta)
-      if (protocol === 'https:') {
-        return `${protocol}//${hostname}/api`;
-      }
-      // HTTP: usar porta 3001 direta
-      return `http://${hostname}:3001/api`;
-    }
-  }
-  
-  // 5. Fallback para localhost
-  return 'http://localhost:3001/api';
+  // 3. Fallback: URL relativa (usa protocolo e domínio do site)
+  return '/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();

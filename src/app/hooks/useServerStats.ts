@@ -1,7 +1,7 @@
 // Hook para buscar estatísticas REAIS do servidor MU Online
 import { useState, useEffect } from 'react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 interface ServerStats {
   playersOnline: number;
