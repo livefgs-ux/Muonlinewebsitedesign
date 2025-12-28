@@ -7,7 +7,7 @@
  * - Limites de Reset
  */
 
-const { executeQueryWeb, executeQueryMU } = require('../config/database');
+const { executeQueryWEB, executeQueryMU } = require('../config/database');
 const { successResponse, errorResponse } = require('../utils/helpers');
 
 /**
@@ -17,7 +17,7 @@ const getAllSettings = async (req, res) => {
   try {
     // Buscar configurações do banco meuweb
     const sql = `SELECT * FROM site_settings WHERE id = 1`;
-    const result = await executeQueryWeb(sql);
+    const result = await executeQueryWEB(sql);
     
     if (result.success && result.data && result.data.length > 0) {
       return successResponse(res, result.data[0]);
@@ -149,11 +149,11 @@ const updateSettings = async (req, res) => {
       )
     `;
     
-    await executeQueryWeb(checkTableSql);
+    await executeQueryWEB(checkTableSql);
     
     // Verificar se registro existe
     const checkSql = `SELECT id FROM site_settings WHERE id = 1`;
-    const checkResult = await executeQueryWeb(checkSql);
+    const checkResult = await executeQueryWEB(checkSql);
     
     let sql;
     let params = [
@@ -219,7 +219,7 @@ const updateSettings = async (req, res) => {
       `;
     }
     
-    const result = await executeQueryWeb(sql, params);
+    const result = await executeQueryWEB(sql, params);
     
     if (result.success) {
       console.log('✅ Configurações atualizadas com sucesso!');
@@ -249,7 +249,7 @@ const getServerConfig = async (req, res) => {
       max_grand_reset 
     FROM site_settings WHERE id = 1`;
     
-    const result = await executeQueryWeb(sql);
+    const result = await executeQueryWEB(sql);
     
     if (result.success && result.data && result.data.length > 0) {
       return successResponse(res, result.data[0]);

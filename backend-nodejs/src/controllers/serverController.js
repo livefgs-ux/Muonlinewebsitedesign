@@ -2,7 +2,7 @@
  * Controller de Informações do Servidor
  */
 
-const { executeQueryMU, executeQueryWeb, testConnection } = require('../config/database');
+const { executeQueryMU, executeQueryWEB, testConnection } = require('../config/database');
 const { tables } = require('../config/auth');
 const { successResponse, errorResponse } = require('../utils/helpers');
 
@@ -22,7 +22,7 @@ const getServerInfo = async (req, res) => {
       max_grand_reset 
     FROM site_settings WHERE id = 1`;
     
-    const result = await executeQueryWeb(sql);
+    const result = await executeQueryWEB(sql);
     
     if (result.success && result.data && result.data.length > 0) {
       const settings = result.data[0];
@@ -126,7 +126,7 @@ const getServerStats = async (req, res) => {
     
     try {
       const settingsSql = `SELECT exp_rate, drop_rate FROM site_settings WHERE id = 1`;
-      const settingsResult = await executeQueryWeb(settingsSql);
+      const settingsResult = await executeQueryWEB(settingsSql);
       
       if (settingsResult.success && settingsResult.data && settingsResult.data.length > 0) {
         rates.expRate = settingsResult.data[0].exp_rate;
