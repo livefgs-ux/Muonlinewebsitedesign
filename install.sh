@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="492"
-VERSION_DATE="2025-12-26 21:30 CET - SEGURANÇA COMPLETA"
+VERSION="514"
+VERSION_DATE="2025-12-28 - GUIDELINES UNIFICADOS + ESTRUTURA ORGANIZADA"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -353,7 +353,7 @@ EOF
     else
         # Verificar e corrigir .env para URL relativa
         if grep -q "VITE_API_URL=http" ".env" 2>/dev/null; then
-            echo -e "${YELLOW}�����  .env do frontend tem URL absoluta! Corrigindo para URL relativa...${NC}"
+            echo -e "${YELLOW}  .env do frontend tem URL absoluta! Corrigindo para URL relativa...${NC}"
             sed -i 's|VITE_API_URL=.*|VITE_API_URL=/api|g' .env
             echo -e "${GREEN}✅ .env corrigido (URL relativa para HTTPS)${NC}"
         elif ! grep -q "VITE_API_URL" ".env" 2>/dev/null; then
@@ -493,7 +493,7 @@ instalar_dependencias() {
     echo ""
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅ Todas as dependências instaladas!${NC}"
-    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}══���═════════════════════════════════════════════════════════${NC}"
     
     pause
 }
@@ -584,7 +584,7 @@ EOF
 configurar_env() {
     clear_screen
     echo -e "${BOLD}⚙️  CONFIGURAÇÃO DO .ENV${NC}"
-    echo "══════════════════════════════════════���═════════════════════"
+    echo "═══════════════════════════════════════════════════════════"
     echo ""
     
     configurar_env_interno
@@ -672,7 +672,7 @@ EOF
 
 # ═══════════════════════════════════════════════════════════════
 # FUNÇÃO 5: REINICIAR SERVIDOR
-# ═══════════════════════════════════════════════════════════════
+# ════��══════════════════════════════════════════════════════════
 
 reiniciar_servidor() {
     clear_screen
@@ -764,7 +764,7 @@ reiniciar_servidor() {
     echo ""
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅ Servidor reiniciado!${NC}"
-    echo -e "${GREEN}��═══════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
     
     pause
 }
@@ -807,7 +807,7 @@ verificar_mysql() {
     fi
     
     echo ""
-    echo -e "${GREEN}═��══════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
     
     pause
 }
@@ -833,7 +833,7 @@ verificar_portas() {
     echo ""
     echo -e "${BOLD}Porta 3001 (Node.js):${NC}"
     if netstat -tulnp 2>/dev/null | grep :3001 > /dev/null; then
-        echo -e "${GREEN}��� Porta 3001 está em uso (Servidor rodando)${NC}"
+        echo -e "${GREEN} Porta 3001 está em uso (Servidor rodando)${NC}"
         netstat -tulnp 2>/dev/null | grep :3001
     else
         echo -e "${RED}❌ Porta 3001 não está em uso${NC}"
@@ -901,7 +901,7 @@ health_check() {
     fi
     
     echo ""
-    echo -e "${GREEN}══════════════════════��═════════════════════════════════════${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
     
     pause
 }
