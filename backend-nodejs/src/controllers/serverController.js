@@ -1,9 +1,10 @@
 /**
  * Controller de Informações do Servidor
+ * ✅ SEASON 19 DV TEAMS - ESTRUTURA CORRETA
  */
 
 const { executeQueryMU, executeQueryWEB, testConnection } = require('../config/database');
-const { tables } = require('../config/auth');
+const { tables, columns } = require('../config/auth');
 const { successResponse, errorResponse } = require('../utils/helpers');
 
 /**
@@ -69,7 +70,7 @@ const getServerStats = async (req, res) => {
     const accountsResult = await executeQueryMU(totalAccountsSql);
     
     // Total de personagens
-    const totalCharsSql = `SELECT COUNT(*) as total FROM ${tables.characters}`;
+    const totalCharsSql = `SELECT COUNT(*) as total FROM ${tables.characterInfo}`;
     const charsResult = await executeQueryMU(totalCharsSql);
     
     // ========================================================================
@@ -127,7 +128,7 @@ const getServerStats = async (req, res) => {
         
         // Fallback para Season 6 (character_info com coluna 'online')
         try {
-          const onlineSeason6Sql = `SELECT COUNT(*) as total FROM ${tables.characters} WHERE online = 1`;
+          const onlineSeason6Sql = `SELECT COUNT(*) as total FROM ${tables.characterInfo} WHERE online = 1`;
           const onlineSeason6Result = await executeQueryMU(onlineSeason6Sql);
           
           if (onlineSeason6Result.success && onlineSeason6Result.data[0]) {
@@ -147,13 +148,13 @@ const getServerStats = async (req, res) => {
     }
     
     // Total de guilds
-    const totalGuildsSql = `SELECT COUNT(*) as total FROM ${tables.guild}`;
+    const totalGuildsSql = `SELECT COUNT(*) as total FROM ${tables.guildList}`;
     const guildsResult = await executeQueryMU(totalGuildsSql);
     
     // Personagem com mais resets (coluna 'reset' não 'ResetCount', 'name' não 'Name')
     const topResetSql = `
       SELECT name, reset 
-      FROM ${tables.characters} 
+      FROM ${tables.characterInfo} 
       ORDER BY reset DESC 
       LIMIT 1
     `;

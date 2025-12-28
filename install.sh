@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="525"
-VERSION_DATE="2025-12-28 - HOTFIX SERVER STATUS VALIDATION"
+VERSION="527"
+VERSION_DATE="2025-12-28 - SEASON 19 DV TEAMS STRUCTURE FIX"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

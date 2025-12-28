@@ -1,9 +1,10 @@
 /**
  * Controller de Autenticação
+ * ✅ SEASON 19 DV TEAMS - ESTRUTURA CORRETA
  */
 
-const { executeQuery } = require('../config/database');
-const { tables } = require('../config/auth');
+const { executeQueryMU, executeQueryWEB } = require('../config/database');
+const { tables, columns } = require('../config/auth');
 const { 
   hashPassword, 
   comparePassword, 
@@ -32,7 +33,7 @@ const login = async (req, res) => {
                FROM ${tables.accounts} 
                WHERE account = ?`;
     
-    let result = await executeQuery(sql, [username]);
+    let result = await executeQueryMU(sql, [username]);
     
     // Se não encontrou, tentar estrutura Season 6 (memb___id, memb__pwd)
     if (!result.success || result.data.length === 0) {
@@ -41,7 +42,7 @@ const login = async (req, res) => {
              FROM ${tables.accounts} 
              WHERE memb___id = ?`;
       
-      result = await executeQuery(sql, [username]);
+      result = await executeQueryMU(sql, [username]);
     }
     
     if (!result.success || result.data.length === 0) {
@@ -192,7 +193,7 @@ const register = async (req, res) => {
       LIMIT 1
     `;
     
-    const structureResult = await executeQuery(checkStructureSql, [tables.accounts]);
+    const structureResult = await executeQueryMU(checkStructureSql, [tables.accounts]);
     const isSeason19 = structureResult.success && 
                        structureResult.data.length > 0 && 
                        structureResult.data[0].COLUMN_NAME === 'account';
@@ -214,7 +215,7 @@ const register = async (req, res) => {
     }
     
     console.log(`🔍 Verificando se username já existe...`);
-    const checkResult = await executeQuery(checkSql, [cleanUsername]);
+    const checkResult = await executeQueryMU(checkSql, [cleanUsername]);
     
     if (!checkResult.success) {
       console.error('❌ ERRO SQL ao verificar usuário:', checkResult.error);
@@ -238,7 +239,7 @@ const register = async (req, res) => {
     const checkEmailSql = `SELECT ${emailColumn} FROM ${tables.accounts} WHERE ${emailColumn} = ?`;
     
     console.log(`🔍 Verificando se email já existe...`);
-    const checkEmailResult = await executeQuery(checkEmailSql, [email]);
+    const checkEmailResult = await executeQueryMU(checkEmailSql, [email]);
     
     if (checkEmailResult.data.length > 0) {
       console.log(`⚠️  Email já cadastrado: ${email}`);
@@ -286,7 +287,7 @@ const register = async (req, res) => {
         AND COLUMN_NAME IN ('created_at', 'guid')
       `;
       
-      const columnsResult = await executeQuery(checkColumnsSql, [tables.accounts]);
+      const columnsResult = await executeQueryMU(checkColumnsSql, [tables.accounts]);
       const hasCreatedAt = columnsResult.data.some(row => row.COLUMN_NAME === 'created_at');
       const hasGuid = columnsResult.data.some(row => row.COLUMN_NAME === 'guid');
       
@@ -365,7 +366,7 @@ const register = async (req, res) => {
     // ========================================================================
     
     console.log(`💾 Executando INSERT no banco...`);
-    const insertResult = await executeQuery(insertSql, insertParams);
+    const insertResult = await executeQueryMU(insertSql, insertParams);
     
     if (!insertResult.success) {
       console.error('❌ ========================================');
@@ -463,7 +464,7 @@ const getAccountInfo = async (req, res) => {
       WHERE memb___id = ?
     `;
     
-    const result = await executeQuery(sql, [accountId]);
+    const result = await executeQueryMU(sql, [accountId]);
     
     if (!result.success || result.data.length === 0) {
       return errorResponse(res, 'Conta não encontrada', 404);
