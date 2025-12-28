@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="514"
-VERSION_DATE="2025-12-28 - GUIDELINES UNIFICADOS + ESTRUTURA ORGANIZADA"
+VERSION="516"
+VERSION_DATE="2025-12-28 - CORREÇÃO MIDDLEWARE AUTH + BUILD FRONTEND + PATCH MYSQL"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -404,6 +404,28 @@ EOF
     sleep 2
     echo -e "${GREEN}✅ Processos antigos encerrados${NC}"
     
+    # Etapa 7.5: Normalizar middleware (CRÍTICO V516)
+    echo ""
+    echo -e "${YELLOW}[7.5/10]${NC} 🔧 Normalizando estrutura de middleware..."
+    
+    MIDDLEWARE_DIR="$BASE_DIR/backend-nodejs/src/middleware"
+    
+    if [ -f "$MIDDLEWARE_DIR/auth.js" ]; then
+        echo -e "${GREEN}✅ auth.js já existe${NC}"
+    elif [ -f "$MIDDLEWARE_DIR/auth-middleware.js" ]; then
+        echo -e "${YELLOW}⚠️  auth.js não encontrado, criando symlink para auth-middleware.js${NC}"
+        cd "$MIDDLEWARE_DIR" || exit 1
+        ln -sf auth-middleware.js auth.js
+        echo -e "${GREEN}✅ Symlink auth.js → auth-middleware.js criado${NC}"
+        cd "$BASE_DIR" || exit 1
+    else
+        echo -e "${RED}❌ ERRO CRÍTICO: Nenhum middleware de autenticação encontrado!${NC}"
+        echo -e "${YELLOW}   Esperado: auth.js OU auth-middleware.js${NC}"
+        echo -e "${YELLOW}   Verifique: ls -la $MIDDLEWARE_DIR${NC}"
+        pause
+        return 1
+    fi
+    
     # Etapa 8: Iniciar servidor
     echo ""
     echo -e "${YELLOW}[8/10]${NC} Iniciando servidor..."
@@ -460,7 +482,7 @@ EOF
     echo ""
     echo -e "${GREEN}══════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅✅✅ INSTALAÇÃO COMPLETA COM SUCESSO! ✅✅✅${NC}"
-    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
     echo ""
     echo -e "${BOLD}🌐 ACESSE O SITE:${NC}"
     echo ""
@@ -628,7 +650,7 @@ build_frontend() {
         cat > .env << 'EOF'
 # ═══════════════════════════════════════════════════════════════
 # MEUMU ONLINE - CONFIGURAÇÃO DO FRONTEND (HTTPS)
-# ═════════════════════════════════��═════════════════════════════
+# ══════════════════════════════════════════════════════════════
 
 # URL da API Backend (através do proxy OpenLiteSpeed)
 # ⚠️  IMPORTANTE: Usar URL RELATIVA para funcionar com HTTPS!
@@ -777,7 +799,7 @@ reiniciar_servidor() {
     echo ""
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅ Servidor reiniciado!${NC}"
-    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}═════════════════════════════════════════════════════════���═${NC}"
     
     pause
 }
@@ -947,7 +969,7 @@ ver_logs() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# FUNÇÃO 10: ATUALIZAR DO GITHUB
+# FUNÇO 10: ATUALIZAR DO GITHUB
 # ═══════════════════════════════════════════════════════════════
 
 atualizar_github() {
