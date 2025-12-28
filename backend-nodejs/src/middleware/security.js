@@ -291,6 +291,7 @@ const xssMiddleware = xss();
 
 /**
  * Redirecionar HTTP -> HTTPS em produção
+ * ✅ V520 FIX: NÃO redirecionar rotas de API (causa 404!)
  */
 const forceHttps = (req, res, next) => {
   // Ignorar em desenvolvimento
@@ -298,7 +299,17 @@ const forceHttps = (req, res, next) => {
     return next();
   }
 
-  // Verificar se está em HTTPS
+  // ✅ V520: NUNCA redirecionar rotas de API/backend
+  if (
+    req.path.startsWith('/api/') ||
+    req.path.startsWith('/health') ||
+    req.path.startsWith('/install') ||
+    req.path.startsWith('/setup-api')
+  ) {
+    return next(); // ✅ APIs sempre funcionam (HTTP ou HTTPS)
+  }
+
+  // Verificar se está em HTTPS (apenas para frontend)
   const proto = req.header('x-forwarded-proto') || req.protocol;
   
   if (proto !== 'https') {

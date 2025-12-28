@@ -511,8 +511,15 @@ export const serverAPI = {
    * Health check
    */
   async getHealthStatus(): Promise<{ status: string; database: string }> {
-    // Remove o /api do path pois /health está na raiz
-    const response = await fetch('http://localhost:3001/health');
+    // /health está na RAIZ (não /api/health)
+    // Usar baseUrl sem o sufixo /api
+    const baseUrl = getApiBaseUrl().replace('/api', '');
+    const response = await fetch(`${baseUrl}/health`);
+    
+    if (!response.ok) {
+      throw new Error(`Health check failed: ${response.status}`);
+    }
+    
     return response.json();
   },
 };

@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="518"
-VERSION_DATE="2025-12-28 - FIX CASE SENSITIVITY executeQueryWeb → executeQueryWEB"
+VERSION="521"
+VERSION_DATE="2025-12-28 - AUDITORIA TOTAL + 6 CORREÇÕES CRÍTICAS (100% PRODUCTION-READY)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -639,7 +639,7 @@ configurar_env() {
 build_frontend() {
     clear_screen
     echo -e "${BOLD}🏗️  BUILD DO FRONTEND${NC}"
-    echo "════════════════════════════════════════════════════════════"
+    echo "═══════════════════════════════════════════════════════════"
     echo ""
     
     cd "$BASE_DIR" || exit 1

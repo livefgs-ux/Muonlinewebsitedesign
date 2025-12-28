@@ -53,7 +53,10 @@ const PORT = process.env.PORT || 3001;
 // ==================================
 // ⚠️ OBRIGATÓRIO quando rodando atrás de Nginx/OpenLiteSpeed
 // Permite que Express confie nos headers X-Forwarded-* do proxy
-app.set('trust proxy', true);
+// 
+// ✅ V519 FIX: Especificar exatamente quem pode confiar (não "true" genérico)
+// Express-rate-limit 7.x+ exige trust proxy específico para segurança
+app.set('trust proxy', 'loopback');  // ✅ Apenas 127.0.0.1, ::1 (localhost)
 
 // ==================================
 // MIDDLEWARES DE SEGURANÇA
@@ -140,7 +143,13 @@ app.use(cors({
     const isInstallComplete = process.env.INSTALLATION_COMPLETE === 'true';
     
     if (!isInstallComplete || !process.env.JWT_SECRET) {
-      console.log('🔓 CORS: Modo instalação - permitindo origem:', origin || '(sem origin)');
+      // ✅ V520 FIX: REJEITAR origem vazia (bypass CORS!)
+      if (!origin) {
+        console.log('🚫 CORS: origem vazia bloqueada (possível bypass)');
+        return callback(new Error('Origin header is required'));
+      }
+      
+      console.log('🔓 CORS: Modo instalação - permitindo origem:', origin);
       return callback(null, true);
     }
     
