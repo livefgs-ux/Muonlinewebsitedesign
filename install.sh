@@ -22,6 +22,19 @@ BOLD='\033[1m'
 BASE_DIR="/home/meumu.com/public_html"
 
 # ═══════════════════════════════════════════════════════════════
+# MYSQL - COMANDOS PADRONIZADOS (PATCH MÍNIMO V514)
+# ═══════════════════════════════════════════════════════════════
+# 🔧 CORREÇÃO: MariaDB moderno usa unix_socket (root SEM senha)
+# 👉 Admin tasks = sudo mysql
+# 👉 App tasks = webuser com senha
+# ═══════════════════════════════════════════════════════════════
+
+MYSQL_ADMIN_CMD="sudo mysql"
+MYSQL_WEB_USER="webuser"
+MYSQL_WEB_PASS="@meusite123@"
+WEB_GROUP="cyberpanel"
+
+# ═══════════════════════════════════════════════════════════════
 # FUNÇÕES AUXILIARES
 # ═══════════════════════════════════════════════════════════════
 
@@ -157,12 +170,12 @@ validate_env_file() {
 test_mysql_connection() {
     echo -e "${YELLOW}🔍 Testando conexão MySQL...${NC}"
     
-    if mysql -u root -p@mysql123@ -e "SELECT 1;" > /dev/null 2>&1; then
+    if $MYSQL_ADMIN_CMD -e "SELECT 1;" > /dev/null 2>&1; then
         echo -e "${GREEN}✅ MySQL conectado com sucesso${NC}"
         
         # Verificar databases
-        local DB_MU=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
-        local DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'meuweb';" 2>/dev/null | grep meuweb)
+        local DB_MU=$($MYSQL_ADMIN_CMD -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
+        local DB_WEB=$($MYSQL_ADMIN_CMD -e "SHOW DATABASES LIKE 'meuweb';" 2>/dev/null | grep meuweb)
         
         if [ -z "$DB_MU" ]; then
             echo -e "${RED}❌ Database 'muonline' não existe!${NC}"
@@ -172,7 +185,7 @@ test_mysql_connection() {
         
         if [ -z "$DB_WEB" ]; then
             echo -e "${YELLOW}⚠️  Database 'meuweb' não existe, criando...${NC}"
-            mysql -u root -p@mysql123@ -e "CREATE DATABASE meuweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
+            $MYSQL_ADMIN_CMD -e "CREATE DATABASE meuweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
         fi
         
         echo -e "${GREEN}✅ Databases 'muonline' e 'meuweb' OK${NC}"
@@ -195,14 +208,14 @@ create_mysql_webuser() {
     fi
     
     # Executar script SQL
-    if mysql -u root -p@mysql123@ < "$BASE_DIR/backend-nodejs/database/00_create_webuser.sql" 2>/dev/null; then
+    if $MYSQL_ADMIN_CMD < "$BASE_DIR/backend-nodejs/database/00_create_webuser.sql" 2>/dev/null; then
         echo -e "${GREEN}✅ Usuário 'webuser' criado com sucesso${NC}"
         echo -e "${CYAN}   Permissões:${NC}"
         echo -e "${CYAN}   - muonline: SELECT (READ-ONLY)${NC}"
         echo -e "${CYAN}   - meuweb: SELECT, INSERT, UPDATE, DELETE (READ+WRITE)${NC}"
         
         # Testar login com webuser
-        if mysql -u webuser -p@meusite123@ -e "SELECT 1;" > /dev/null 2>&1; then
+        if mysql -u $MYSQL_WEB_USER -p$MYSQL_WEB_PASS -e "SELECT 1;" > /dev/null 2>&1; then
             echo -e "${GREEN}✅ Login com webuser funcionando!${NC}"
             return 0
         else
@@ -213,7 +226,7 @@ create_mysql_webuser() {
         echo -e "${YELLOW}⚠️  Erro ao criar usuário (pode já existir)${NC}"
         
         # Tentar login para verificar se já existe
-        if mysql -u webuser -p@meusite123@ -e "SELECT 1;" > /dev/null 2>&1; then
+        if mysql -u $MYSQL_WEB_USER -p$MYSQL_WEB_PASS -e "SELECT 1;" > /dev/null 2>&1; then
             echo -e "${GREEN}✅ Usuário 'webuser' já existe e está funcional${NC}"
             return 0
         else
@@ -268,11 +281,11 @@ instalacao_completa() {
     
     # Etapa 1: Verificar MySQL
     echo -e "${YELLOW}[1/10]${NC} Verificando MySQL..."
-    if mysql -u root -p@mysql123@ -e "SHOW DATABASES;" > /dev/null 2>&1; then
+    if $MYSQL_ADMIN_CMD -e "SHOW DATABASES;" > /dev/null 2>&1; then
         echo -e "${GREEN}✅ MySQL rodando e acessível${NC}"
         
-        DB_MU=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
-        DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'meuweb';" 2>/dev/null | grep meuweb)
+        DB_MU=$($MYSQL_ADMIN_CMD -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
+        DB_WEB=$($MYSQL_ADMIN_CMD -e "SHOW DATABASES LIKE 'meuweb';" 2>/dev/null | grep meuweb)
         
         if [ -z "$DB_MU" ]; then
             echo -e "${RED}❌ Database 'muonline' não existe!${NC}"
@@ -283,7 +296,7 @@ instalacao_completa() {
         
         if [ -z "$DB_WEB" ]; then
             echo -e "${YELLOW}⚠️  Criando database 'meuweb'...${NC}"
-            mysql -u root -p@mysql123@ -e "CREATE DATABASE meuweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
+            $MYSQL_ADMIN_CMD -e "CREATE DATABASE meuweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
         fi
         echo -e "${GREEN}   ✅ Databases OK${NC}"
     else
@@ -493,7 +506,7 @@ instalar_dependencias() {
     echo ""
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅ Todas as dependências instaladas!${NC}"
-    echo -e "${GREEN}══���═════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
     
     pause
 }
@@ -533,15 +546,15 @@ DB_NAME_WEBMU=meuweb
 # DATABASE MUONLINE (Servidor MU - Read Only) - Compatibilidade
 DB_MU_HOST=127.0.0.1
 DB_MU_PORT=3306
-DB_MU_USER=root
-DB_MU_PASSWORD=@mysql123@
+DB_MU_USER=webuser
+DB_MU_PASSWORD=@meusite123@
 DB_MU_NAME=muonline
 
 # DATABASE MEUWEB (Website - Read + Write) - Compatibilidade
 DB_WEB_HOST=127.0.0.1
 DB_WEB_PORT=3306
-DB_WEB_USER=root
-DB_WEB_PASSWORD=@mysql123@
+DB_WEB_USER=webuser
+DB_WEB_PASSWORD=@meusite123@
 DB_WEB_NAME=meuweb
 
 # SERVIDOR
@@ -615,7 +628,7 @@ build_frontend() {
         cat > .env << 'EOF'
 # ═══════════════════════════════════════════════════════════════
 # MEUMU ONLINE - CONFIGURAÇÃO DO FRONTEND (HTTPS)
-# ═══════════════════════════════════════════════════════════════
+# ═════════════════════════════════��═════════════════════════════
 
 # URL da API Backend (através do proxy OpenLiteSpeed)
 # ⚠️  IMPORTANTE: Usar URL RELATIVA para funcionar com HTTPS!
@@ -672,7 +685,7 @@ EOF
 
 # ═══════════════════════════════════════════════════════════════
 # FUNÇÃO 5: REINICIAR SERVIDOR
-# ════��══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 
 reiniciar_servidor() {
     clear_screen
@@ -779,16 +792,16 @@ verificar_mysql() {
     echo "════════════════════════════════════════════════════════════"
     echo ""
     
-    if mysql -u root -p@mysql123@ -e "SHOW DATABASES;" > /dev/null 2>&1; then
+    if $MYSQL_ADMIN_CMD -e "SHOW DATABASES;" > /dev/null 2>&1; then
         echo -e "${GREEN}✅ MySQL está rodando e acessível${NC}"
         echo ""
         
         echo -e "${BOLD}Databases disponíveis:${NC}"
-        mysql -u root -p@mysql123@ -e "SHOW DATABASES;" 2>/dev/null
+        $MYSQL_ADMIN_CMD -e "SHOW DATABASES;" 2>/dev/null
         
         echo ""
-        DB_MU=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
-        DB_WEB=$(mysql -u root -p@mysql123@ -e "SHOW DATABASES LIKE 'meuweb';" 2>/dev/null | grep meuweb)
+        DB_MU=$($MYSQL_ADMIN_CMD -e "SHOW DATABASES LIKE 'muonline';" 2>/dev/null | grep muonline)
+        DB_WEB=$($MYSQL_ADMIN_CMD -e "SHOW DATABASES LIKE 'meuweb';" 2>/dev/null | grep meuweb)
         
         if [ -n "$DB_MU" ]; then
             echo -e "${GREEN}✅ Database 'muonline' existe${NC}"
@@ -994,33 +1007,34 @@ atualizar_github() {
     echo ""
     echo -e "${YELLOW}[4/7]${NC} 🔐 Ajustando permissões (CRÍTICO para MIME types)..."
     
-    # Obter usuário atual e grupo webapps
+    # Obter usuário atual
     CURRENT_USER=$(whoami)
     
-    # Ajustar dono dos arquivos (usuário:webapps)
-    echo -e "${CYAN}   Ajustando proprietário para $CURRENT_USER:webapps...${NC}"
-    chown -R "$CURRENT_USER:webapps" "$BASE_DIR" 2>/dev/null || \
-    sudo chown -R "$CURRENT_USER:webapps" "$BASE_DIR" 2>/dev/null
+    # Ajustar dono dos arquivos (usuário:cyberpanel)
+    echo -e "${CYAN}   Ajustando proprietário para $CURRENT_USER:$WEB_GROUP...${NC}"
+    chown -R "$CURRENT_USER:$WEB_GROUP" "$BASE_DIR" 2>/dev/null || \
+    sudo chown -R "$CURRENT_USER:$WEB_GROUP" "$BASE_DIR"
     
     # Diretórios: 755 (rwxr-xr-x) - Servidor web precisa entrar e ler
     echo -e "${CYAN}   Diretórios → 755 (rwxr-xr-x)...${NC}"
     find "$BASE_DIR" -type d -exec chmod 755 {} \; 2>/dev/null || \
-    sudo find "$BASE_DIR" -type d -exec chmod 755 {} \; 2>/dev/null
+    sudo find "$BASE_DIR" -type d -exec chmod 755 {} \;
     
     # Arquivos: 644 (rw-r--r--) - Servidor web precisa ler
     echo -e "${CYAN}   Arquivos → 644 (rw-r--r--)...${NC}"
     find "$BASE_DIR" -type f -exec chmod 644 {} \; 2>/dev/null || \
-    sudo find "$BASE_DIR" -type f -exec chmod 644 {} \; 2>/dev/null
+    sudo find "$BASE_DIR" -type f -exec chmod 644 {} \;
     
-    # install.sh precisa ser executável: 755
-    echo -e "${CYAN}   install.sh → 755 (executável)...${NC}"
-    chmod +x "$BASE_DIR/install.sh" 2>/dev/null || \
-    sudo chmod +x "$BASE_DIR/install.sh" 2>/dev/null
+    # Scripts .sh precisam ser executáveis: 755
+    echo -e "${CYAN}   Scripts .sh → 755 (executáveis)...${NC}"
+    find "$BASE_DIR" -type f -name "*.sh" -exec chmod 755 {} \; 2>/dev/null || \
+    sudo find "$BASE_DIR" -type f -name "*.sh" -exec chmod 755 {} \;
     
     echo -e "${GREEN}✅ Permissões ajustadas corretamente${NC}"
-    echo -e "${CYAN}   Proprietário: $CURRENT_USER:webapps${NC}"
+    echo -e "${CYAN}   Proprietário: $CURRENT_USER:$WEB_GROUP${NC}"
     echo -e "${CYAN}   Diretórios: 755 (servidor web pode ler)${NC}"
     echo -e "${CYAN}   Arquivos: 644 (servidor web pode ler)${NC}"
+    echo -e "${CYAN}   Scripts .sh: 755 (executáveis)${NC}"
     
     echo ""
     echo -e "${YELLOW}[5/7]${NC} Verificando estrutura de arquivos..."
