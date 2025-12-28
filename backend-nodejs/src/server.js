@@ -143,18 +143,26 @@ app.use(cors({
     const isInstallComplete = process.env.INSTALLATION_COMPLETE === 'true';
     
     if (!isInstallComplete || !process.env.JWT_SECRET) {
-      // ✅ V520 FIX: REJEITAR origem vazia (bypass CORS!)
+      // ✅ V522 FIX: Permitir requisições localhost SEM origin (curl, health checks)
+      // Requisições localhost → localhost não enviam Origin header (normal!)
       if (!origin) {
-        console.log('🚫 CORS: origem vazia bloqueada (possível bypass)');
-        return callback(new Error('Origin header is required'));
+        console.log('✅ CORS: Requisição localhost (sem Origin) - PERMITIDA');
+        return callback(null, true);
       }
       
       console.log('🔓 CORS: Modo instalação - permitindo origem:', origin);
       return callback(null, true);
     }
     
-    // Após instalação, verificar allowed origins
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Após instalação, permitir:
+    // 1. Requisições sem Origin (localhost, curl, health checks)
+    // 2. Origens na whitelist
+    if (!origin) {
+      console.log('✅ CORS: Requisição localhost (sem Origin) - PERMITIDA');
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.log('❌ CORS bloqueado para:', origin);
