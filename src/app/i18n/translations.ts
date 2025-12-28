@@ -26,6 +26,7 @@ export interface Translations {
     learnMore: string;
     downloadNow: string;
     viewEvents: string;
+    playerArea: string; // ✅ NOVO: Botão de Login/Dashboard
     onlinePlayers: string;
     totalAccounts: string;
     activeGuilds: string;
@@ -417,6 +418,7 @@ export const translations: Record<Language, Translations> = {
       learnMore: 'Saiba Mais',
       downloadNow: 'Baixar Agora',
       viewEvents: 'Ver Eventos',
+      playerArea: 'Área do Jogador',
       onlinePlayers: 'Jogadores Online',
       totalAccounts: 'Contas Totais',
       activeGuilds: 'Guildas Ativas',
@@ -721,6 +723,7 @@ export const translations: Record<Language, Translations> = {
       learnMore: 'Learn More',
       downloadNow: 'Download Now',
       viewEvents: 'View Events',
+      playerArea: 'Player Area',
       onlinePlayers: 'Online Players',
       totalAccounts: 'Total Accounts',
       activeGuilds: 'Active Guilds',
@@ -1025,6 +1028,7 @@ export const translations: Record<Language, Translations> = {
       learnMore: 'Saber Más',
       downloadNow: 'Descargar Ahora',
       viewEvents: 'Ver Eventos',
+      playerArea: 'Área del Jugador',
       onlinePlayers: 'Jugadores en Línea',
       totalAccounts: 'Cuentas Totales',
       activeGuilds: 'Gremios Activos',

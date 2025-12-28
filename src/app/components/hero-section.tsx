@@ -103,6 +103,15 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                 {t('hero.downloadNow')}
                 <div className="absolute inset-0 rounded-md bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
+              
+              <Button
+                onClick={() => onNavigate('dashboard')}
+                className="group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-6 text-lg shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/70 transition-all"
+              >
+                <LogIn className="w-5 h-5 mr-2" />
+                {t('hero.playerArea') || 'Área do Jogador'}
+                <div className="absolute inset-0 rounded-md bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </Button>
 
               <Button
                 onClick={() => onNavigate('events')}
