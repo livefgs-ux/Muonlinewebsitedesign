@@ -43,8 +43,18 @@ const SectionLoader = () => (
 
 function AppContent() {
   const [currentSection, setCurrentSection] = useState('home');
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, isLoading } = useAuth();
   const isAdmin = user?.isAdmin || false;
+  
+  // 🔍 DEBUG: Log toda mudança de estado
+  useEffect(() => {
+    console.log('🔍 [App.tsx] Estado atualizado:', {
+      currentSection,
+      isLoggedIn,
+      isLoading,
+      user: user?.username || null
+    });
+  }, [currentSection, isLoggedIn, isLoading, user]);
   
   // Estado separado para AdminCP
   const [adminSession, setAdminSession] = useState<any>(null);
@@ -56,13 +66,12 @@ function AppContent() {
     setCurrentSection('dashboard');
   };
   
-  // 🔥 PROTEÇÃO: Se usuário fizer logout enquanto está no dashboard
-  useEffect(() => {
-    if (!isLoggedIn && currentSection === 'dashboard') {
-      console.log('⚠️ Usuário não logado! Redirecionando para home...');
-      setCurrentSection('home');
-    }
-  }, [isLoggedIn, currentSection]);
+  // ❌ REMOVIDO - Estava causando redirecionamento prematuro
+  // useEffect(() => {
+  //   if (!isLoading && !isLoggedIn && currentSection === 'dashboard') {
+  //     setCurrentSection('home');
+  //   }
+  // }, [isLoggedIn, currentSection, isLoading]);
 
   const handleLogout = () => {
     setCurrentSection('home');
@@ -112,15 +121,19 @@ function AppContent() {
   }
 
   const renderSection = () => {
+    console.log('🔍 [renderSection] Renderizando:', currentSection);
+    
     switch (currentSection) {
       case 'home':
         return <HeroSection onNavigate={setCurrentSection} />;
       case 'dashboard':
-        return isLoggedIn ? (
-          <PlayerDashboard onLogout={handleLogout} />
-        ) : (
-          <LoginSection onLoginSuccess={handleLoginSuccess} />
-        );
+        // ✅ PROTEÇÃO: Se não estiver logado, mostrar tela de login
+        if (!isLoggedIn && !isLoading) {
+          console.log('⚠️ [renderSection] Usuário não logado - mostrando LoginSection');
+          return <LoginSection onLoginSuccess={handleLoginSuccess} />;
+        }
+        // Se estiver logado, mostrar dashboard
+        return <PlayerDashboard onLogout={handleLogout} />;
       case 'events':
         return <EventsSection />;
       case 'rankings':

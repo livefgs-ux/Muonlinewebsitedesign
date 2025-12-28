@@ -58,7 +58,7 @@ type TabType = 'account' | 'characters' | 'stats' | 'reset' | 'shop' | 'tickets'
 
 const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
   const { t, language } = useLanguage();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading: authLoading } = useAuth();
   
   const [activeTab, setActiveTab] = useState<TabType>('account');
   const [selectedChar, setSelectedChar] = useState<ExtendedCharacter | null>(null);
@@ -103,13 +103,20 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
   // 🔄 CARREGAR DADOS REAIS DO BACKEND
   // =========================================================================
 
+  // ✅ REMOVIDO: Proteção de autenticação movida para App.tsx
+  // A verificação agora é feita no App.tsx antes de renderizar o PlayerDashboard
+  // Isso evita o loop de redirecionamento
+
   useEffect(() => {
-    loadAccountData();
-    loadCharacters();
-    loadWCoinPackages();
-    loadTickets();
-    loadActivities();
-  }, []);
+    // ✅ CORREÇÃO: Só carregar dados quando AuthContext terminar de carregar
+    if (!authLoading) {
+      loadAccountData();
+      loadCharacters();
+      loadWCoinPackages();
+      loadTickets();
+      loadActivities();
+    }
+  }, [authLoading]);
 
   const loadAccountData = async () => {
     try {
@@ -117,7 +124,10 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
       const token = localStorage.getItem('auth_token');
       if (!token) {
         toast.error('Sessão expirada. Faça login novamente.');
-        if (onLogout) onLogout();
+        // ✅ CORREÇÃO: Só redirecionar se AuthContext não estiver carregando
+        if (!authLoading && onLogout) {
+          onLogout();
+        }
         return;
       }
 
@@ -523,6 +533,18 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
   // =========================================================================
   // 🎬 LOADING STATE
   // =========================================================================
+
+  // ✅ LOADING: Mostrar loading enquanto AuthContext está carregando
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+          <p className="text-white">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading || !accountInfo) {
     return (

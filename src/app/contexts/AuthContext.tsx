@@ -45,16 +45,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
-      } else {
-        // Token inválido
+      } else if (response.status === 401 || response.status === 403) {
+        // ✅ Token inválido ou expirado - remover
+        console.log('🔴 Token inválido ou expirado - fazendo logout');
         localStorage.removeItem('auth_token');
+        setUser(null);
+      } else {
+        // ⚠️ Outro erro (500, 503, etc) - manter token mas não logar
+        console.log(`⚠️ Erro ${response.status} ao verificar token - mantendo sessão local`);
+        // Não remove token - usuário pode tentar novamente
         setUser(null);
       }
     } catch (error) {
-      // Erro de rede ou servidor offline - não mostra erro ao usuário
-      // apenas remove o token inválido
-      console.log('⚠️ Não foi possível verificar autenticação - servidor pode estar offline');
-      localStorage.removeItem('auth_token');
+      // 🛡️ Erro de rede ou servidor offline - MANTER TOKEN
+      // Permite que usuário navegue no site enquanto backend está offline
+      console.log('⚠️ Backend offline - mantendo token para reconexão automática');
+      // NÃO remove token - quando backend voltar, usuário reconecta automaticamente
       setUser(null);
     } finally {
       setIsLoading(false);

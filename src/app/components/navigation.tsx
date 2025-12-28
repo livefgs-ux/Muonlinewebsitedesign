@@ -86,6 +86,7 @@ export const Navigation = memo(function Navigation({
               <button
                 key={item.id}
                 onClick={() => {
+                  console.log('🔍 [Navigation] Clicou em:', item.id);
                   onNavigate(item.id);
                 }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
