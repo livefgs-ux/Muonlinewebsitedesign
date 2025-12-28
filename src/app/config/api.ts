@@ -48,8 +48,8 @@ export const API_CONFIG = {
     RANKING_GENS: '/rankings/gens',
     
     // Status do Servidor
-    SERVER_STATUS: '/server/status',
-    SERVER_STATUS_DETAILED: '/server/status',
+    SERVER_STATUS: '/server/stats', // ✅ CORRIGIDO: endpoint correto é /stats
+    SERVER_STATUS_DETAILED: '/server/stats', // ✅ CORRIGIDO
     SERVER_INFO: '/server/info',
     
     // Notícias
