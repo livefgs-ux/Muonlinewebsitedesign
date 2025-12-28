@@ -73,35 +73,77 @@ const getServerStats = async (req, res) => {
     const charsResult = await executeQueryMU(totalCharsSql);
     
     // ========================================================================
-    // PLAYERS ONLINE - Compatível com Season 6 E Season 19
+    // PLAYERS ONLINE - VALIDAÇÃO DE SERVIDOR REAL
     // ========================================================================
     let playersOnline = 0;
+    let serverStatus = 'offline';
     
-    // Tentar Season 19 primeiro (accounts_status com coluna 'online')
-    try {
-      const onlineSeason19Sql = `SELECT COUNT(*) as total FROM accounts_status WHERE online = 1`;
-      const onlineSeason19Result = await executeQueryMU(onlineSeason19Sql);
-      
-      if (onlineSeason19Result.success && onlineSeason19Result.data[0]) {
-        playersOnline = onlineSeason19Result.data[0].total || 0;
-        console.log('✅ Players online detectado via accounts_status (Season 19)');
-      }
-    } catch (err) {
-      console.log('⚠️  Tabela accounts_status não existe, tentando character_info...');
-      
-      // Fallback para Season 6 (character_info com coluna 'online')
-      try {
-        const onlineSeason6Sql = `SELECT COUNT(*) as total FROM ${tables.characters} WHERE online = 1`;
-        const onlineSeason6Result = await executeQueryMU(onlineSeason6Sql);
+    // 🔧 VERIFICAR SE SERVIDOR MU ESTÁ REALMENTE RODANDO
+    // Verifica porta padrão do MU (55901 ConnectServer ou 55960 GameServer)
+    const net = require('net');
+    const checkServerPort = (port) => {
+      return new Promise((resolve) => {
+        const socket = new net.Socket();
+        socket.setTimeout(1000); // 1 segundo timeout
         
-        if (onlineSeason6Result.success && onlineSeason6Result.data[0]) {
-          playersOnline = onlineSeason6Result.data[0].total || 0;
-          console.log('✅ Players online detectado via character_info (Season 6)');
+        socket.on('connect', () => {
+          socket.destroy();
+          resolve(true);
+        });
+        
+        socket.on('timeout', () => {
+          socket.destroy();
+          resolve(false);
+        });
+        
+        socket.on('error', () => {
+          resolve(false);
+        });
+        
+        socket.connect(port, '127.0.0.1');
+      });
+    };
+    
+    // Verificar portas do MU (55901 ConnectServer, 55960 GameServer)
+    const isConnectServerOnline = await checkServerPort(55901);
+    const isGameServerOnline = await checkServerPort(55960);
+    
+    // ✅ SE SERVIDOR ESTÁ ONLINE, buscar players
+    if (isConnectServerOnline || isGameServerOnline) {
+      serverStatus = 'online';
+      console.log('✅ Servidor MU Online detectado (porta 55901 ou 55960)');
+      
+      // Tentar Season 19 primeiro (accounts_status com coluna 'online')
+      try {
+        const onlineSeason19Sql = `SELECT COUNT(*) as total FROM accounts_status WHERE online = 1`;
+        const onlineSeason19Result = await executeQueryMU(onlineSeason19Sql);
+        
+        if (onlineSeason19Result.success && onlineSeason19Result.data[0]) {
+          playersOnline = onlineSeason19Result.data[0].total || 0;
+          console.log(`✅ ${playersOnline} players online detectado via accounts_status (Season 19)`);
         }
-      } catch (err2) {
-        console.error('❌ Nenhuma tabela de status online encontrada');
-        playersOnline = 0;
+      } catch (err) {
+        console.log('⚠️  Tabela accounts_status não existe, tentando character_info...');
+        
+        // Fallback para Season 6 (character_info com coluna 'online')
+        try {
+          const onlineSeason6Sql = `SELECT COUNT(*) as total FROM ${tables.characters} WHERE online = 1`;
+          const onlineSeason6Result = await executeQueryMU(onlineSeason6Sql);
+          
+          if (onlineSeason6Result.success && onlineSeason6Result.data[0]) {
+            playersOnline = onlineSeason6Result.data[0].total || 0;
+            console.log(`✅ ${playersOnline} players online detectado via character_info (Season 6)`);
+          }
+        } catch (err2) {
+          console.error('❌ Nenhuma tabela de status online encontrada');
+          playersOnline = 0;
+        }
       }
+    } else {
+      // ❌ SERVIDOR OFFLINE - Forçar 0 players
+      serverStatus = 'offline';
+      playersOnline = 0;
+      console.log('❌ Servidor MU Offline (portas 55901 e 55960 não respondem)');
     }
     
     // Total de guilds
@@ -140,14 +182,15 @@ const getServerStats = async (req, res) => {
       totalAccounts: accountsResult.data[0]?.total || 0,
       totalCharacters: charsResult.data[0]?.total || 0,
       playersOnline: playersOnline,
+      serverStatus: serverStatus,        // ✅ NOVO: Status real do servidor (online/offline)
       totalGuilds: guildsResult.data[0]?.total || 0,
       topReset: topResetResult.data[0] ? {
         Name: topResetResult.data[0].name,
         ResetCount: topResetResult.data[0].reset
       } : null,
-      expRate: rates.expRate,        // ✅ NOVO: Incluir rates na resposta
-      dropRate: rates.dropRate,      // ✅ NOVO
-      uptime: rates.uptime,           // ✅ NOVO
+      expRate: rates.expRate,
+      dropRate: rates.dropRate,
+      uptime: rates.uptime,
       lastUpdate: new Date().toISOString()
     });
     

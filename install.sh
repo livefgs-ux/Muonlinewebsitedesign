@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="523"
-VERSION_DATE="2025-12-28 - HOTFIX API ENDPOINTS + DB TABLES + AUTH"
+VERSION="525"
+VERSION_DATE="2025-12-28 - HOTFIX SERVER STATUS VALIDATION"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -309,12 +309,42 @@ instalacao_completa() {
     echo ""
     echo -e "${YELLOW}[2/10]${NC} Instalando dependências do frontend..."
     cd "$BASE_DIR" || exit 1
-    if npm install --no-scripts > /dev/null 2>&1; then
+    
+    # 🔧 VERIFICAÇÃO CRÍTICA: Apagar node_modules antigo
+    if [ -d "node_modules" ]; then
+        echo -e "${YELLOW}   ⚠️  Removendo node_modules antigo...${NC}"
+        rm -rf node_modules
+    fi
+    
+    # Mostrar progresso (SEM > /dev/null para debug)
+    echo -e "${CYAN}   Instalando pacotes (pode demorar 1-2 minutos)...${NC}"
+    if npm install --no-scripts 2>&1 | grep -E "(added|removed|changed|audited)" | tail -1; then
         echo -e "${GREEN}✅ Dependências do frontend instaladas${NC}"
+        
+        # 🔧 VERIFICAR se node_modules foi criado
+        if [ ! -d "node_modules" ]; then
+            echo -e "${RED}❌ ERRO: node_modules não foi criado!${NC}"
+            pause
+            return 1
+        fi
+        
+        # 🔧 VERIFICAR se Vite está instalado
+        if [ ! -f "node_modules/.bin/vite" ]; then
+            echo -e "${RED}❌ ERRO: Vite não foi instalado!${NC}"
+            echo -e "${YELLOW}   Tentando npm install novamente (sem --no-scripts)...${NC}"
+            npm install 2>&1 | tail -5
+        fi
+        
+        echo -e "${GREEN}   ✅ node_modules OK ($(du -sh node_modules 2>/dev/null | cut -f1))${NC}"
     else
         echo -e "${RED}❌ Falha ao instalar dependências do frontend${NC}"
-        pause
-        return 1
+        echo -e "${YELLOW}   Tentando novamente SEM --no-scripts...${NC}"
+        if npm install 2>&1 | tail -10; then
+            echo -e "${GREEN}✅ Sucesso na segunda tentativa${NC}"
+        else
+            pause
+            return 1
+        fi
     fi
     
     # Etapa 3: Instalar dependências do backend
@@ -382,11 +412,66 @@ EOF
         mv dist "dist.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null
     fi
     
-    echo -e "${CYAN}   Aguarde, isso pode levar alguns minutos...${NC}"
-    if npm run build; then
-        echo -e "${GREEN}✅ Frontend buildado com sucesso${NC}"
+    echo -e "${CYAN}   🔨 Buildando frontend (1-3 minutos)...${NC}"
+    echo ""
+    
+    # 🔧 VERIFICAR ANTES DE BUILDAR
+    if [ ! -d "node_modules" ]; then
+        echo -e "${RED}❌ ERRO CRÍTICO: node_modules não existe!${NC}"
+        echo -e "${YELLOW}   Execute npm install primeiro${NC}"
+        pause
+        return 1
+    fi
+    
+    if [ ! -f "node_modules/.bin/vite" ]; then
+        echo -e "${RED}❌ ERRO CRÍTICO: Vite não está instalado!${NC}"
+        echo -e "${YELLOW}   Instalando Vite...${NC}"
+        npm install vite @vitejs/plugin-react --save-dev
+    fi
+    
+    # Remover dist antigo
+    if [ -d "dist" ]; then
+        echo -e "${YELLOW}   📦 Removendo build antigo...${NC}"
+        mv dist "dist.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null
+    fi
+    
+    # BUILDAR (mostrar progresso)
+    if npm run build 2>&1 | tee /tmp/build.log | grep -E "(built|dist|error|failed)"; then
+        echo ""
+        
+        # 🔧 VERIFICAR SE DIST FOI CRIADO
+        if [ ! -d "dist" ]; then
+            echo -e "${RED}❌ ERRO: Pasta dist/ NÃO foi criada!${NC}"
+            echo -e "${YELLOW}   Veja o log completo: cat /tmp/build.log${NC}"
+            pause
+            return 1
+        fi
+        
+        # 🔧 VERIFICAR SE TEM ARQUIVOS .JS
+        JS_COUNT=$(find dist/assets -name "*.js" 2>/dev/null | wc -l)
+        if [ "$JS_COUNT" -eq 0 ]; then
+            echo -e "${RED}❌ ERRO: Nenhum arquivo .js foi gerado!${NC}"
+            pause
+            return 1
+        fi
+        
+        # 🔧 VERIFICAR SE TEM index.html
+        if [ ! -f "dist/index.html" ]; then
+            echo -e "${RED}❌ ERRO: index.html não foi gerado!${NC}"
+            pause
+            return 1
+        fi
+        
+        echo -e "${GREEN}✅ Frontend buildado com sucesso!${NC}"
+        echo -e "${GREEN}   📁 Arquivos gerados:${NC}"
+        echo -e "${CYAN}      - index.html: $(ls -lh dist/index.html 2>/dev/null | awk '{print $5}')${NC}"
+        echo -e "${CYAN}      - JS files: $JS_COUNT arquivos${NC}"
+        echo -e "${CYAN}      - Tamanho total: $(du -sh dist 2>/dev/null | cut -f1)${NC}"
     else
-        echo -e "${RED}❌ Falha ao buildar frontend${NC}"
+        echo ""
+        echo -e "${RED}❌ Falha ao buildar frontend!${NC}"
+        echo -e "${YELLOW}   Veja o log: cat /tmp/build.log${NC}"
+        cat /tmp/build.log
         pause
         return 1
     fi
