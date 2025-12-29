@@ -463,7 +463,7 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
 
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(getApiUrl('/api/auth/update-password'), {
+      const response = await fetch(getApiUrl('/auth/update-password'), {
         method: 'PUT',
         headers: {
           ...getAuthHeaders(token || ''),
