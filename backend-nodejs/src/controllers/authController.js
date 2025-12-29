@@ -28,8 +28,8 @@ const login = async (req, res) => {
     // COMPATIBILIDADE DUAL: Season 6 (memb___id) E Season 19 (account)
     // ========================================================================
     
-    // Primeiro tentar estrutura Season 19 (account, password, guid)
-    let sql = `SELECT account as username, password as pwd, guid, email, blocked 
+    // Primeiro tentar estrutura Season 19 (account, password, guid, web_admin)
+    let sql = `SELECT account as username, password as pwd, guid, email, blocked, web_admin 
                FROM ${tables.accounts} 
                WHERE account = ?`;
     
@@ -38,7 +38,7 @@ const login = async (req, res) => {
     // Se não encontrou, tentar estrutura Season 6 (memb___id, memb__pwd)
     if (!result.success || result.data.length === 0) {
       console.log('🔄 Tentando estrutura Season 6 (memb___id)...');
-      sql = `SELECT memb___id as username, memb__pwd as pwd, memb___id as guid, mail_addr as email, bloc_code as blocked 
+      sql = `SELECT memb___id as username, memb__pwd as pwd, memb___id as guid, mail_addr as email, bloc_code as blocked, ctl1_code as web_admin 
              FROM ${tables.accounts} 
              WHERE memb___id = ?`;
       
@@ -125,10 +125,30 @@ const login = async (req, res) => {
     
     console.log(`🔐 Mantendo hash SHA-256 (compatibilidade com servidor MU)`);
     
-    // Verificar se é admin (ctl1_code >= 8 no Season 6)
-    // No Season 19, pode usar outro campo - ajustar conforme necessário
-    const isAdmin = false; // Ajustar conforme estrutura do Season 19
-    console.log(`👤 Tipo de conta: ${isAdmin ? 'ADMIN' : 'USUÁRIO'}`);
+    // ========================================================================
+    // ✅ SEASON 19 DV TEAMS: VERIFICAR SE É ADMIN
+    // ========================================================================
+    // Campo: web_admin (na tabela accounts)
+    // Valores: 0 = usuário normal | 1 = administrador do site
+    // ========================================================================
+    
+    console.log(`🔍 DEBUG - Verificando permissões de admin:`);
+    console.log(`   account.web_admin (raw): ${account.web_admin}`);
+    console.log(`   typeof: ${typeof account.web_admin}`);
+    console.log(`   === 1: ${account.web_admin === 1}`);
+    console.log(`   === '1': ${account.web_admin === '1'}`);
+    console.log(`   > 0: ${account.web_admin > 0}`);
+    
+    const isAdmin = account.web_admin === 1 || account.web_admin === '1' || account.web_admin > 0;
+    console.log(`👤 Tipo de conta: ${isAdmin ? '👑 ADMIN' : '👤 USUÁRIO'} (web_admin: ${account.web_admin})`);
+    
+    if (isAdmin) {
+      console.log(`✅ ========================================`);
+      console.log(`✅ ADMIN DETECTADO!`);
+      console.log(`✅ Username: ${account.username}`);
+      console.log(`✅ JWT terá isAdmin: true`);
+      console.log(`✅ ========================================`);
+    }
     
     // Gerar token JWT
     const token = generateToken({

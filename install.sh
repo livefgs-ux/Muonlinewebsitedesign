@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
 VERSION="553"
-VERSION_DATE="2025-12-29 19:30 CET - ADMINCP FIX + PASSWORD CHANGE FIX + CHARACTER SELECTION FIX"
+VERSION_DATE="2025-12-29 20:30 CET - ADMINCP DEBUG LOGS + ADMIN DETECTION FIX"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
