@@ -1,7 +1,7 @@
 # 🧠 MEMÓRIA DO PROJETO - MEUMU ONLINE
-**Versão:** 529  
-**Data:** 2025-12-29 01:00 UTC  
-**Última Atualização:** V.529 - Table Aliases Fix (undefined tables)
+**Versão:** 530  
+**Data:** 2025-12-29 01:15 UTC  
+**Última Atualização:** V.530 - Auth Verify GET Route (404 fix)
 
 ---
 
@@ -212,6 +212,12 @@ SHA-256(username + ':' + password)
 
 ## ❌ **PROBLEMAS PENDENTES**
 
+### 🔴 **CRÍTICO: Usuário não consegue manter sessão (V.529)**
+- **Status:** ✅ CORRIGIDO NA V.530
+- **Causa:** Endpoint `/api/auth/verify` aceitava apenas POST, mas frontend fazia GET
+- **Solução:** Adicionado suporte para GET no endpoint verify
+- **Próximo passo:** Reiniciar servidor com `pm2 restart meumu-backend`
+
 ### 🔴 **CRÍTICO: Login não funciona**
 - **Status:** ✅ CORRIGIDO NA V.528 (aguardando testes)
 - **Causa:** Hash era SHA-256(username:password), não SHA-256 puro
@@ -303,6 +309,6 @@ curl http://localhost:3001/api/health
 
 ---
 
-**Última atualização:** 2025-12-29 01:00 UTC  
-**Versão do instalador:** 529  
+**Última atualização:** 2025-12-29 01:15 UTC  
+**Versão do instalador:** 530  
 **Status:** ⏳ Aguardando teste de login (algoritmo corrigido)

@@ -48,6 +48,10 @@ router.post('/register',
 // POST /api/auth/verify - Verificar token
 router.post('/verify', verifyToken, verifyTokenRoute);
 
+// GET /api/auth/verify - Verificar token (compatibilidade frontend)
+// V.530 - Adicionado suporte para GET além de POST
+router.get('/verify', verifyToken, verifyTokenRoute);
+
 // GET /api/auth/account - Informações da conta (requer autenticação)
 router.get('/account', verifyToken, getAccountInfo);
 
