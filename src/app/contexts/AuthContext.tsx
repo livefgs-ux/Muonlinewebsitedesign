@@ -38,15 +38,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_VERIFY), {
+      // ✅ BUSCAR DE /api/auth/account (tem isAdmin!)
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_ACCOUNT), {
         headers: getAuthHeaders(token)
       });
 
       if (response.ok) {
         const data = await response.json();
-        // ✅ V.530 FIX: Backend retorna { success: true, data: { user } }
-        const user = data.data?.user || data.user; // Compatibilidade
-        setUser(user);
+        // Backend retorna { success: true, data: { username, email, isAdmin, ... } }
+        const accountData = data.data;
+        
+        if (accountData) {
+          setUser({
+            username: accountData.username,
+            email: accountData.email,
+            isAdmin: accountData.isAdmin || false, // ✅ IMPORTANTE!
+            accountId: accountData.username
+          });
+          console.log('✅ Usuário autenticado:', accountData.username, 'Admin:', accountData.isAdmin);
+        }
       } else if (response.status === 401 || response.status === 403) {
         // ✅ Token inválido ou expirado - remover
         console.log('🔴 Token inválido ou expirado - fazendo logout');
@@ -55,14 +65,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         // ⚠️ Outro erro (500, 503, etc) - manter token mas não logar
         console.log(`⚠️ Erro ${response.status} ao verificar token - mantendo sessão local`);
-        // Não remove token - usuário pode tentar novamente
         setUser(null);
       }
     } catch (error) {
       // 🛡️ Erro de rede ou servidor offline - MANTER TOKEN
-      // Permite que usuário navegue no site enquanto backend está offline
       console.log('⚠️ Backend offline - mantendo token para reconexão automática');
-      // NÃO remove token - quando backend voltar, usuário reconecta automaticamente
       setUser(null);
     } finally {
       setIsLoading(false);

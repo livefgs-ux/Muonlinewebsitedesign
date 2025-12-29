@@ -445,38 +445,19 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
   };
 
   const handleSavePassword = async () => {
+    // Validações básicas
     if (newPassword.length < 6) {
       toast.error('A senha deve ter pelo menos 6 caracteres!');
       return;
     }
 
+    if (newPassword.length > 20) {
+      toast.error('A senha deve ter no máximo 20 caracteres!');
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       toast.error('As senhas não coincidem!');
-      return;
-    }
-
-    // Validação de senha forte
-    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,})/;
-    if (!strongPasswordRegex.test(newPassword)) {
-      toast.error('Senha muito fraca! Use maiúsculas, minúsculas, números e símbolos.');
-      return;
-    }
-
-    // Verificar sequências
-    const checkSequences = (str: string) => {
-      for (let i = 0; i < str.length - 2; i++) {
-        const charCode = str.charCodeAt(i);
-        if ((str.charCodeAt(i+1) === charCode + 1 && str.charCodeAt(i+2) === charCode + 2) ||
-            (str.charCodeAt(i+1) === charCode - 1 && str.charCodeAt(i+2) === charCode - 2)) {
-          return true;
-        }
-        if (str[i] === str[i+1] && str[i] === str[i+2]) return true;
-      }
-      return false;
-    };
-
-    if (checkSequences(newPassword.toLowerCase())) {
-      toast.error('A senha não pode conter sequências óbvias (abc, 123) ou caracteres repetidos (aaa, 111).');
       return;
     }
 

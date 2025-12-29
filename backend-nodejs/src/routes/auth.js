@@ -86,48 +86,96 @@ router.post('/update-email', verifyToken, validateEmailMiddleware, async (req, r
   }
 });
 
-// POST /api/auth/update-password - Atualizar senha (requer autenticação)
-router.post('/update-password', verifyToken, validatePasswordStrength, async (req, res) => {
+// PUT /api/auth/update-password - Atualizar senha (requer autenticação)
+router.put('/update-password', verifyToken, async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
-    const accountId = req.account.memb___id;
+    const { currentPassword, newPassword } = req.body;
+    const { accountId } = req.user; // ← AccountId vem do JWT (middleware verifyToken)
+    const bcrypt = require('bcrypt');
     const { executeQueryMU } = require('../config/database');
     const { successResponse, errorResponse } = require('../utils/helpers');
+    const { tables } = require('../config/auth');
     
-    // Validar senhas
-    if (!oldPassword || !newPassword) {
-      return errorResponse(res, 'Senhas obrigatórias', 400);
+    console.log(`\n🔐 ========================================`);
+    console.log(`🔐 UPDATE PASSWORD REQUEST`);
+    console.log(`🔐 ========================================`);
+    console.log(`🔐 Account: ${accountId}`);
+    
+    // Validar campos
+    if (!currentPassword || !newPassword) {
+      console.log(`❌ ERRO: Campos obrigatórios vazios`);
+      return errorResponse(res, 'Senha atual e nova senha são obrigatórias', 400);
     }
     
-    // Buscar senha atual
-    const checkSql = `SELECT memb__pwd FROM MEMB_INFO WHERE memb___id = ?`;
+    // Validar tamanho da nova senha
+    if (newPassword.length < 6 || newPassword.length > 20) {
+      console.log(`❌ ERRO: Tamanho inválido (${newPassword.length})`);
+      return errorResponse(res, 'Nova senha deve ter entre 6 e 20 caracteres', 400);
+    }
+    
+    // ========================================================================
+    // SEASON 19: Buscar senha atual (campo 'password')
+    // ========================================================================
+    
+    const checkSql = `SELECT password FROM ${tables.accounts} WHERE account = ?`;
     const checkResult = await executeQueryMU(checkSql, [accountId]);
     
-    if (!checkResult.success || !checkResult.data[0]) {
+    if (!checkResult.success || checkResult.data.length === 0) {
+      console.error(`❌ Conta não encontrada: ${accountId}`);
       return errorResponse(res, 'Conta não encontrada', 404);
     }
     
-    // Verificar senha antiga
-    const currentPassword = checkResult.data[0].memb__pwd;
-    if (currentPassword !== oldPassword) {
+    const account = checkResult.data[0];
+    console.log(`✅ Conta encontrada`);
+    
+    // ========================================================================
+    // VERIFICAR SENHA ATUAL
+    // ========================================================================
+    
+    // A senha no banco está hasheada com bcrypt
+    const isPasswordValid = await bcrypt.compare(currentPassword, account.password);
+    
+    if (!isPasswordValid) {
+      console.log(`❌ Senha atual incorreta`);
       return errorResponse(res, 'Senha atual incorreta', 401);
     }
     
-    // Atualizar senha
-    const updateSql = `UPDATE MEMB_INFO SET memb__pwd = ? WHERE memb___id = ?`;
-    const updateResult = await executeQueryMU(updateSql, [newPassword, accountId]);
+    console.log(`✅ Senha atual verificada`);
     
-    if (updateResult.success) {
-      return successResponse(res, {
-        message: 'Senha atualizada com sucesso'
-      });
-    } else {
-      throw new Error('Falha ao atualizar senha');
+    // ========================================================================
+    // HASHEAR NOVA SENHA
+    // ========================================================================
+    
+    const saltRounds = 10;
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+    console.log(`✅ Nova senha hasheada`);
+    
+    // ========================================================================
+    // ATUALIZAR NO BANCO
+    // ========================================================================
+    
+    const updateSql = `UPDATE ${tables.accounts} SET password = ? WHERE account = ?`;
+    const updateResult = await executeQueryMU(updateSql, [hashedNewPassword, accountId]);
+    
+    if (!updateResult.success) {
+      console.error(`❌ Erro SQL ao atualizar senha:`, updateResult.error);
+      return errorResponse(res, 'Erro ao atualizar senha', 500);
     }
+    
+    console.log(`✅ Senha atualizada com sucesso!`);
+    console.log(`✅ ========================================\n`);
+    
+    return successResponse(res, { message: 'Senha atualizada com sucesso' });
+    
   } catch (error) {
-    console.error('❌ Erro ao atualizar senha:', error);
+    console.error('❌ ========================================');
+    console.error('❌ EXCEPTION AO ATUALIZAR SENHA');
+    console.error('❌ ========================================');
+    console.error('❌ Erro:', error);
+    console.error('❌ Stack:', error.stack);
+    console.error('❌ ========================================\n');
     const { errorResponse } = require('../utils/helpers');
-    return errorResponse(res, 'Erro ao atualizar senha', 500);
+    return errorResponse(res, 'Erro ao processar atualização', 500);
   }
 });
 
