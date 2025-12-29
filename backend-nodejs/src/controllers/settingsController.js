@@ -270,15 +270,6 @@ const getServerConfig = async (req, res) => {
   }
 };
 
-module.exports = {
-  getAllSettings,
-  updateSettings,
-  getServerConfig,
-  toggleMaintenance,
-  updateSmtpSettings,
-  getMaintenanceStatus
-};
-
 /**
  * ✅ V564: Toggle do modo manutenção
  */
@@ -373,4 +364,13 @@ const getMaintenanceStatus = async (req, res) => {
     console.error('❌ Erro ao buscar status de manutenção:', error);
     return errorResponse(res, 'Erro ao buscar status de manutenção', 500);
   }
+};
+
+module.exports = {
+  getAllSettings,
+  updateSettings,
+  getServerConfig,
+  toggleMaintenance,
+  updateSmtpSettings,
+  getMaintenanceStatus
 };

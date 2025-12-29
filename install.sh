@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="565"
-VERSION_DATE="2025-12-30 05:15 CET - BUILD FIX: Corrigidos imports em PlayerDashboard.tsx"
+VERSION="566"
+VERSION_DATE="2025-12-30 05:20 CET - BACKEND FIX: Corrigida ordem de exports em settingsController.js"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
