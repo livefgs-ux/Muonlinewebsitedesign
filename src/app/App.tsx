@@ -134,6 +134,47 @@ function AppContent() {
         }
         // Se estiver logado, mostrar dashboard
         return <PlayerDashboard onLogout={handleLogout} />;
+      case 'admincp':
+        // ========================================================================
+        // 🛡️ ADMINCP - PROTEÇÃO WEBENGINE STYLE
+        // ========================================================================
+        // LÓGICA (baseada em codigo_de_comparacao.md, linha 26732):
+        // 1. Se NÃO estiver logado → Redirect para login
+        // 2. Se NÃO for admin (isAdmin = false) → Redirect para home
+        // 3. Se for admin → Mostrar AdminDashboard
+        // ========================================================================
+        
+        console.log('🛡️ [AdminCP] Verificando acesso...');
+        console.log('🛡️ [AdminCP] isLoggedIn:', isLoggedIn);
+        console.log('🛡️ [AdminCP] isAdmin:', isAdmin);
+        console.log('🛡️ [AdminCP] user:', user);
+        
+        // Se não estiver logado, redirecionar para login
+        if (!isLoggedIn && !isLoading) {
+          console.log('❌ [AdminCP] Usuário não logado - redirecionando para login');
+          setCurrentSection('dashboard'); // Redireciona para login
+          return <LoginSection onLoginSuccess={handleLoginSuccess} />;
+        }
+        
+        // Se estiver logado mas NÃO for admin, redirecionar para home
+        if (isLoggedIn && !isAdmin) {
+          console.log('❌ [AdminCP] Usuário não é admin - redirecionando para home');
+          setCurrentSection('home');
+          return <HeroSection onNavigate={setCurrentSection} />;
+        }
+        
+        // Se for admin, mostrar AdminCP
+        console.log('✅ [AdminCP] Acesso liberado - mostrando AdminDashboard');
+        return (
+          <AdminDashboard 
+            adminData={user} 
+            onLogout={() => {
+              handleAdminLogout();
+              handleLogout();
+            }} 
+            onNavigate={setCurrentSection}
+          />
+        );
       case 'events':
         return <EventsSection />;
       case 'rankings':

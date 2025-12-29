@@ -257,9 +257,12 @@ app.use('/api/news', newsRoutes);
 app.use('/api/server', serverRoutes);
 app.use('/api/wcoin', wcoinRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/downloads', require('./routes/downloads')); // ✅ NOVO V558: Downloads
 app.use('/api/admin/logs', adminLogsRoutes);
+app.use('/api/admin/accounts', require('./routes/accounts')); // ✅ NOVO V558: Gerenciar contas
+app.use('/api/admin/bans', require('./routes/bans')); // ✅ NOVO V558: Sistema de bans
 app.use('/api/sandbox', sandboxRoutes);
-app.use('/api/settings', require('./routes/settings')); // ✅ NOVO: Configurações do site
+app.use('/api/settings', require('./routes/settings')); // ✅ Configurações do site
 
 // Setup Wizard (sem /api para evitar conflitos)
 app.use('/setup-api', setupRoutes);

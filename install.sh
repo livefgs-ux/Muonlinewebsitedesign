@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="555"
-VERSION_DATE="2025-12-29 21:15 CET - ADMIN DETECTION VIA CHARACTER AUTHORITY"
+VERSION="558"
+VERSION_DATE="2025-12-29 23:45 CET - FULL ADMIN BACKEND: Accounts, Bans, Downloads Controllers"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -247,7 +247,7 @@ instalacao_completa() {
     echo ""
     
     # Etapa 0: PROTEÇÕES CRÍTICAS
-    echo -e "${YELLOW}[0/10]${NC} 🛡️  EXECUTANDO PROTEÇÕES DE SEGURANÇA..."
+    echo -e "${YELLOW}[0/11]${NC} 🛡️  EXECUTANDO PROTEÇÕES DE SEGURANÇA..."
     echo ""
     
     # Proteção 1: Matar TODOS os processos Node.js
@@ -280,7 +280,7 @@ instalacao_completa() {
     echo ""
     
     # Etapa 1: Verificar MySQL
-    echo -e "${YELLOW}[1/10]${NC} Verificando MySQL..."
+    echo -e "${YELLOW}[1/11]${NC} Verificando MySQL..."
     if $MYSQL_ADMIN_CMD -e "SHOW DATABASES;" > /dev/null 2>&1; then
         echo -e "${GREEN}✅ MySQL rodando e acessível${NC}"
         
@@ -307,7 +307,7 @@ instalacao_completa() {
     
     # Etapa 2: Instalar dependências do frontend
     echo ""
-    echo -e "${YELLOW}[2/10]${NC} Instalando dependências do frontend..."
+    echo -e "${YELLOW}[2/11]${NC} Instalando dependências do frontend..."
     cd "$BASE_DIR" || exit 1
     
     # 🔧 VERIFICAÇÃO CRÍTICA: Apagar node_modules antigo
@@ -349,7 +349,7 @@ instalacao_completa() {
     
     # Etapa 3: Instalar dependências do backend
     echo ""
-    echo -e "${YELLOW}[3/10]${NC} Instalando dependências do backend..."
+    echo -e "${YELLOW}[3/11]${NC} Instalando dependências do backend..."
     cd "$BASE_DIR/backend-nodejs" || exit 1
     if npm install > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Dependências do backend instaladas${NC}"
@@ -362,12 +362,12 @@ instalacao_completa() {
     
     # Etapa 4: Configurar .env
     echo ""
-    echo -e "${YELLOW}[4/10]${NC} Configurando .env..."
+    echo -e "${YELLOW}[4/11]${NC} Configurando .env..."
     configurar_env_interno
     
     # Etapa 5: Buildar frontend
     echo ""
-    echo -e "${YELLOW}[5/10]${NC} Buildando frontend..."
+    echo -e "${YELLOW}[5/11]${NC} Buildando frontend..."
     cd "$BASE_DIR" || exit 1
     
     # Garantir que o .env existe
@@ -476,22 +476,80 @@ EOF
         return 1
     fi
     
-    # Etapa 6: Configurar LiteSpeed Proxy Reverso
+    # Etapa 6: Criar estrutura do banco meuweb
     echo ""
-    echo -e "${YELLOW}[6/10]${NC} Configurando OpenLiteSpeed Proxy Reverso..."
+    echo -e "${YELLOW}[6/11]${NC} Criando estrutura do banco 'meuweb'..."
+    
+    # Verificar se pasta de database existe
+    if [ ! -d "$BASE_DIR/backend-nodejs/database" ]; then
+        echo -e "${RED}❌ Pasta database não encontrada!${NC}"
+        pause
+        return 1
+    fi
+    
+    # Contar quantos arquivos SQL existem
+    SQL_COUNT=$(ls -1 "$BASE_DIR/backend-nodejs/database/"*.sql 2>/dev/null | wc -l)
+    echo -e "${CYAN}   📄 Encontrados $SQL_COUNT scripts SQL${NC}"
+    
+    # Executar scripts SQL numerados em ordem
+    SQL_SUCCESS=0
+    SQL_FAILED=0
+    
+    for sql_file in "$BASE_DIR/backend-nodejs/database"/*.sql; do
+        if [ -f "$sql_file" ]; then
+            filename=$(basename "$sql_file")
+            echo -e "${CYAN}   → Executando $filename...${NC}"
+            
+            # Executar SQL e capturar erros
+            if $MYSQL_ADMIN_CMD meuweb < "$sql_file" 2>/tmp/sql_error.log; then
+                echo -e "${GREEN}      ✅ $filename executado${NC}"
+                SQL_SUCCESS=$((SQL_SUCCESS + 1))
+            else
+                # Verificar se erro é de tabela já existir (não é erro crítico)
+                if grep -q "already exists" /tmp/sql_error.log 2>/dev/null; then
+                    echo -e "${YELLOW}      ⚠️  $filename: tabela já existe (OK)${NC}"
+                    SQL_SUCCESS=$((SQL_SUCCESS + 1))
+                else
+                    echo -e "${RED}      ❌ Erro em $filename${NC}"
+                    cat /tmp/sql_error.log
+                    SQL_FAILED=$((SQL_FAILED + 1))
+                fi
+            fi
+        fi
+    done
+    
+    echo ""
+    echo -e "${GREEN}✅ Estrutura do meuweb criada!${NC}"
+    echo -e "${CYAN}   Sucesso: $SQL_SUCCESS | Falhas: $SQL_FAILED${NC}"
+    
+    # Verificar tabelas criadas
+    TABLES=$($MYSQL_ADMIN_CMD -e "SHOW TABLES FROM meuweb;" 2>/dev/null | tail -n +2)
+    if [ -n "$TABLES" ]; then
+        echo -e "${GREEN}   📊 Tabelas criadas:${NC}"
+        echo "$TABLES" | while read table; do
+            ROW_COUNT=$($MYSQL_ADMIN_CMD -e "SELECT COUNT(*) FROM meuweb.$table;" 2>/dev/null | tail -1)
+            echo -e "${CYAN}      - $table: $ROW_COUNT registros${NC}"
+        done
+    else
+        echo -e "${YELLOW}   ⚠️  Nenhuma tabela encontrada (primeira instalação?)${NC}"
+    fi
+    
+    # Etapa 7: Configurar LiteSpeed Proxy Reverso
+    echo ""
+    echo -e "${YELLOW}[7/11]${NC} Configurando OpenLiteSpeed Proxy Reverso..."
     configurar_litespeed_interno
     
-    # Etapa 7: Parar processos antigos
+    # Etapa 8: Parar processos antigos
     echo ""
-    echo -e "${YELLOW}[7/10]${NC} Parando processos Node.js antigos..."
+    echo -e "${YELLOW}[8/11]${NC} Parando processos Node.js antigos..."
     pkill -f "node.*server.js" 2>/dev/null
     pkill -f "nodemon.*server.js" 2>/dev/null
     sleep 2
     echo -e "${GREEN}✅ Processos antigos encerrados${NC}"
     
-    # Etapa 7.5: Normalizar middleware (CRÍTICO V516)
+    # Etapa 8.5: Normalizar middleware (CRÍTICO V516)
     echo ""
-    echo -e "${YELLOW}[7.5/10]${NC} 🔧 Normalizando estrutura de middleware..."
+    echo -e "${YELLOW}[8.5/11]${NC} 🔧 Normalizando estrutura de middleware..."
     
     MIDDLEWARE_DIR="$BASE_DIR/backend-nodejs/src/middleware"
     
@@ -511,9 +569,9 @@ EOF
         return 1
     fi
     
-    # Etapa 8: Iniciar servidor
+    # Etapa 9: Iniciar servidor
     echo ""
-    echo -e "${YELLOW}[8/10]${NC} Iniciando servidor..."
+    echo -e "${YELLOW}[9/11]${NC} Iniciando servidor..."
     
     mkdir -p "$BASE_DIR/backend-nodejs/logs/alerts" 2>/dev/null
     mkdir -p "$BASE_DIR/backend-nodejs/logs/audit" 2>/dev/null
@@ -539,9 +597,9 @@ EOF
     echo -e "${CYAN}⏳ Aguardando servidor inicializar (5 segundos)...${NC}"
     sleep 5
     
-    # Etapa 9: Testar servidor (porta 3001 direta)
+    # Etapa 10: Testar servidor (porta 3001 direta)
     echo ""
-    echo -e "${YELLOW}[9/10]${NC} Testando servidor (porta 3001)..."
+    echo -e "${YELLOW}[10/11]${NC} Testando servidor (porta 3001)..."
     HEALTH=$(curl -s http://localhost:3001/health 2>/dev/null)
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Servidor backend respondendo!${NC}"
@@ -552,9 +610,9 @@ EOF
         return 1
     fi
     
-    # Etapa 10: Testar proxy HTTPS (se LiteSpeed configurado)
+    # Etapa 11: Testar proxy HTTPS (se LiteSpeed configurado)
     echo ""
-    echo -e "${YELLOW}[10/10]${NC} Testando proxy HTTPS..."
+    echo -e "${YELLOW}[11/11]${NC} Testando proxy HTTPS..."
     HTTPS_HEALTH=$(curl -s -k https://meumu.com/api/health 2>/dev/null)
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Proxy reverso HTTPS funcionando!${NC}"
@@ -1166,7 +1224,7 @@ atualizar_github() {
     echo ""
     echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅ Atualização do GitHub concluída!${NC}"
-    echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}══��═════════════════════════════════════════════════════════${NC}"
     echo ""
     echo -e "${BOLD}${CYAN}📋 PRÓXIMOS PASSOS OBRIGATÓRIOS:${NC}"
     echo ""
