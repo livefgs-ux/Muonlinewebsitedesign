@@ -44,7 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (response.ok) {
         const data = await response.json();
-        setUser(data.user);
+        // ✅ V.530 FIX: Backend retorna { success: true, data: { user } }
+        const user = data.data?.user || data.user; // Compatibilidade
+        setUser(user);
       } else if (response.status === 401 || response.status === 403) {
         // ✅ Token inválido ou expirado - remover
         console.log('🔴 Token inválido ou expirado - fazendo logout');
@@ -80,8 +82,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('auth_token', data.token);
-        setUser(data.user);
+        // ✅ V.530 FIX: Backend retorna { success: true, data: { token, user } }
+        // Não { token, user } diretamente!
+        const token = data.data?.token || data.token; // Compatibilidade
+        const user = data.data?.user || data.user;     // Compatibilidade
+        
+        if (!token) {
+          console.error('❌ Token não recebido do backend:', data);
+          return { success: false, message: 'Erro: token não recebido do servidor' };
+        }
+        
+        localStorage.setItem('auth_token', token);
+        setUser(user);
         return { success: true, message: 'Login realizado com sucesso!' };
       } else {
         return { success: false, message: data.message || 'Erro ao fazer login' };
