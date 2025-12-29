@@ -3,19 +3,28 @@ import { API_CONFIG, getApiUrl, getAuthHeaders } from '../config/api';
 
 interface Character {
   name: string;
-  cLevel: number;
+  level: number; // ✅ CORRETO: backend retorna "level"
+  masterLevel?: number;
+  majesticLevel?: number;
   resets: number;
   class: string;
-  strength: number;
-  agility: number;
-  vitality: number;
-  energy: number;
-  command: number;
-  levelUpPoints: number;
-  pkLevel: number;
-  pkCount: number;
-  money: number;
-  location: string;
+  classNumber: number;
+  stats: {
+    strength: number;
+    dexterity: number;
+    vitality: number;
+    energy: number;
+    command: number;
+  };
+  points: number;
+  masterPoints?: number;
+  majesticPoints?: number;
+  zen: number;
+  pk: {
+    level: number;
+    kills: number;
+  };
+  online: boolean;
 }
 
 interface PlayerStats {
@@ -32,7 +41,7 @@ interface PlayerContextType {
   isLoading: boolean;
   selectCharacter: (characterName: string) => void;
   refreshCharacters: () => Promise<void>;
-  distributePoints: (characterName: string, stats: Partial<Pick<Character, 'strength' | 'agility' | 'vitality' | 'energy' | 'command'>>) => Promise<{ success: boolean; message: string }>;
+  distributePoints: (characterName: string, stats: Partial<Pick<Character, 'strength' | 'dexterity' | 'vitality' | 'energy' | 'command'>>) => Promise<{ success: boolean; message: string }>;
   resetCharacter: (characterName: string) => Promise<{ success: boolean; message: string }>;
 }
 
@@ -95,7 +104,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const distributePoints = async (
     characterName: string, 
-    stats: Partial<Pick<Character, 'strength' | 'agility' | 'vitality' | 'energy' | 'command'>>
+    stats: Partial<Pick<Character, 'strength' | 'dexterity' | 'vitality' | 'energy' | 'command'>>
   ) => {
     const token = localStorage.getItem('auth_token');
     if (!token) {

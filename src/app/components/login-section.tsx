@@ -85,36 +85,76 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
     
     setRegisterError('');
     setRegisterSuccess('');
-
-    // Validações
-    if (registerPassword !== registerConfirmPassword) {
-      setRegisterError(t('auth.passwordMismatch') || 'As senhas não coincidem');
+    
+    // ========================================================================
+    // VALIDAÇÕES DO FRONTEND (antes de enviar para o backend)
+    // ========================================================================
+    
+    // 1. Verificar campos obrigatórios
+    if (!registerUsername || !registerEmail || !registerPassword || !registerConfirmPassword) {
+      setRegisterError('Todos os campos são obrigatórios');
       return;
     }
-
-    if (registerPassword.length < 6) {
-      setRegisterError(t('auth.passwordTooShort') || 'A senha deve ter pelo menos 6 caracteres');
-      return;
-    }
-
+    
+    // 2. Validar tamanho do username (4-15 caracteres)
     if (registerUsername.length < 4) {
-      setRegisterError(t('auth.usernameTooShort') || 'O nome de usuário deve ter pelo menos 4 caracteres');
+      setRegisterError('Username deve ter no mínimo 4 caracteres');
+      return;
+    }
+    
+    if (registerUsername.length > 15) {
+      setRegisterError('Username deve ter no máximo 15 caracteres');
+      return;
+    }
+    
+    // 3. Validar caracteres do username (apenas letras e números)
+    const usernameRegex = /^[a-zA-Z0-9]+$/;
+    if (!usernameRegex.test(registerUsername)) {
+      setRegisterError('Username deve conter apenas letras e números (sem espaços ou caracteres especiais)');
+      return;
+    }
+    
+    // 4. Validar tamanho da senha (6-20 caracteres)
+    if (registerPassword.length < 6) {
+      setRegisterError('Senha deve ter no mínimo 6 caracteres');
+      return;
+    }
+    
+    if (registerPassword.length > 20) {
+      setRegisterError('Senha deve ter no máximo 20 caracteres');
+      return;
+    }
+    
+    // 5. Verificar se senhas coincidem
+    if (registerPassword !== registerConfirmPassword) {
+      setRegisterError('As senhas não coincidem');
+      return;
+    }
+    
+    // 6. Validar formato do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(registerEmail)) {
+      setRegisterError('Email inválido');
       return;
     }
 
     setRegisterLoading(true);
 
     try {
-      const result = await register(registerUsername, registerEmail, registerPassword);
+      const result = await register(registerUsername, registerPassword, registerEmail);
       
       if (result.success) {
         setRegisterSuccess(result.message);
-        // Limpar campos
+        // Limpar formulário
         setRegisterUsername('');
         setRegisterEmail('');
         setRegisterPassword('');
         setRegisterConfirmPassword('');
+        
+        // Chamar onLoginSuccess se fornecido
+        onLoginSuccess?.();
       } else {
+        // ✅ MOSTRAR ERRO ESPECÍFICO DO BACKEND
         setRegisterError(result.message);
       }
     } catch (error) {

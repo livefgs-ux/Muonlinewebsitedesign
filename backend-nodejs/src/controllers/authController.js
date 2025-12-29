@@ -170,14 +170,59 @@ const register = async (req, res) => {
     console.log(`📝 Senha (tamanho): ${password ? password.length : 0} caracteres`);
     console.log(`📝 Personal ID: ${personalId || 'N/A'}`);
     
-    // Validações básicas
+    // ========================================================================
+    // VALIDAÇÕES DETALHADAS (retorna mensagens específicas)
+    // ========================================================================
+    
+    // 1. Campos obrigatórios
     if (!username || !password || !email) {
       console.log(`❌ ERRO: Campos obrigatórios vazios`);
-      console.log(`   Username: ${username ? 'OK' : 'VAZIO'}`);
-      console.log(`   Password: ${password ? 'OK' : 'VAZIO'}`);
-      console.log(`   Email: ${email ? 'OK' : 'VAZIO'}`);
-      return errorResponse(res, 'Username, password e email são obrigatórios', 400);
+      const missing = [];
+      if (!username) missing.push('Username');
+      if (!password) missing.push('Password');
+      if (!email) missing.push('Email');
+      return errorResponse(res, `Campos obrigatórios faltando: ${missing.join(', ')}`, 400);
     }
+    
+    // 2. Validar tamanho do username
+    const { usernameMinLength, usernameMaxLength, passwordMinLength, passwordMaxLength } = require('../config/auth');
+    
+    if (username.length < usernameMinLength) {
+      console.log(`❌ ERRO: Username muito curto (${username.length} < ${usernameMinLength})`);
+      return errorResponse(res, `Username deve ter no mínimo ${usernameMinLength} caracteres`, 400);
+    }
+    
+    if (username.length > usernameMaxLength) {
+      console.log(`❌ ERRO: Username muito longo (${username.length} > ${usernameMaxLength})`);
+      return errorResponse(res, `Username deve ter no máximo ${usernameMaxLength} caracteres`, 400);
+    }
+    
+    // 3. Validar caracteres do username (apenas alfanuméricos)
+    const usernameRegex = /^[a-zA-Z0-9]+$/;
+    if (!usernameRegex.test(username)) {
+      console.log(`❌ ERRO: Username contém caracteres inválidos`);
+      return errorResponse(res, 'Username deve conter apenas letras e números (sem espaços ou caracteres especiais)', 400);
+    }
+    
+    // 4. Validar tamanho da senha
+    if (password.length < passwordMinLength) {
+      console.log(`❌ ERRO: Senha muito curta (${password.length} < ${passwordMinLength})`);
+      return errorResponse(res, `Senha deve ter no mínimo ${passwordMinLength} caracteres`, 400);
+    }
+    
+    if (password.length > passwordMaxLength) {
+      console.log(`❌ ERRO: Senha muito longa (${password.length} > ${passwordMaxLength})`);
+      return errorResponse(res, `Senha deve ter no máximo ${passwordMaxLength} caracteres`, 400);
+    }
+    
+    // 5. Validar formato do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.log(`❌ ERRO: Email inválido`);
+      return errorResponse(res, 'Email inválido', 400);
+    }
+    
+    console.log(`✅ Todas as validações passaram!`);
     
     // Sanitizar username
     const cleanUsername = sanitizeUsername(username);

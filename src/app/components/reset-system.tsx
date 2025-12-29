@@ -45,7 +45,7 @@ export function ResetSystem() {
   // Reset requirements (ajuste conforme suas regras)
   const RESET_LEVEL_REQUIRED = 400;
   const RESET_ZEN_COST = 5000000;
-  const canReset = character && character.cLevel >= RESET_LEVEL_REQUIRED && character.money >= RESET_ZEN_COST;
+  const canReset = character && character.level >= RESET_LEVEL_REQUIRED && character.zen >= RESET_ZEN_COST;
 
   const handleResetRequest = () => {
     setMessage(null);
@@ -118,7 +118,7 @@ export function ResetSystem() {
                 {characters.map((char) => (
                   <SelectItem key={char.name} value={char.name} className="text-white">
                     <div className="flex items-center gap-2">
-                      {char.name} - Lv.{char.cLevel}
+                      {char.name} - Lv.{char.level}
                       {char.resets > 0 && (
                         <Badge className="bg-purple-500/20 text-purple-400 ml-2">
                           {char.resets}R
@@ -148,13 +148,13 @@ export function ResetSystem() {
                     <TrendingUp className="size-5 text-green-400" />
                     <p className="text-sm text-slate-300">{t.dashboard?.currentLevel || 'Nível Atual'}</p>
                   </div>
-                  <p className="text-3xl text-green-400">{character.cLevel}</p>
+                  <p className="text-3xl text-green-400">{character.level}</p>
                   <Progress 
-                    value={(character.cLevel / RESET_LEVEL_REQUIRED) * 100} 
+                    value={(character.level / RESET_LEVEL_REQUIRED) * 100} 
                     className="mt-2 h-1 bg-slate-800"
                   />
                   <p className="text-xs text-slate-400 mt-1">
-                    {character.cLevel}/{RESET_LEVEL_REQUIRED} required
+                    {character.level}/{RESET_LEVEL_REQUIRED} required
                   </p>
                 </div>
 
@@ -163,7 +163,7 @@ export function ResetSystem() {
                     <Crown className="size-5 text-amber-400" />
                     <p className="text-sm text-slate-300">{t.dashboard?.zen || 'Zen'}</p>
                   </div>
-                  <p className="text-xl text-amber-400">{character.money.toLocaleString()}</p>
+                  <p className="text-xl text-amber-400">{character.zen.toLocaleString()}</p>
                   <p className="text-xs text-slate-400 mt-1">
                     {RESET_ZEN_COST.toLocaleString()} required
                   </p>
@@ -180,7 +180,7 @@ export function ResetSystem() {
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {character.cLevel >= RESET_LEVEL_REQUIRED ? (
+                      {character.level >= RESET_LEVEL_REQUIRED ? (
                         <CheckCircle2 className="size-5 text-green-400" />
                       ) : (
                         <AlertCircle className="size-5 text-red-400" />
@@ -190,16 +190,16 @@ export function ResetSystem() {
                       </span>
                     </div>
                     <Badge 
-                      variant={character.cLevel >= RESET_LEVEL_REQUIRED ? "default" : "destructive"}
-                      className={character.cLevel >= RESET_LEVEL_REQUIRED ? "bg-green-500/20 text-green-400" : ""}
+                      variant={character.level >= RESET_LEVEL_REQUIRED ? "default" : "destructive"}
+                      className={character.level >= RESET_LEVEL_REQUIRED ? "bg-green-500/20 text-green-400" : ""}
                     >
-                      {character.cLevel >= RESET_LEVEL_REQUIRED ? t.common?.met || 'OK' : t.common?.notMet || 'Não atende'}
+                      {character.level >= RESET_LEVEL_REQUIRED ? t.common?.met || 'OK' : t.common?.notMet || 'Não atende'}
                     </Badge>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {character.money >= RESET_ZEN_COST ? (
+                      {character.zen >= RESET_ZEN_COST ? (
                         <CheckCircle2 className="size-5 text-green-400" />
                       ) : (
                         <AlertCircle className="size-5 text-red-400" />
@@ -209,10 +209,10 @@ export function ResetSystem() {
                       </span>
                     </div>
                     <Badge 
-                      variant={character.money >= RESET_ZEN_COST ? "default" : "destructive"}
-                      className={character.money >= RESET_ZEN_COST ? "bg-green-500/20 text-green-400" : ""}
+                      variant={character.zen >= RESET_ZEN_COST ? "default" : "destructive"}
+                      className={character.zen >= RESET_ZEN_COST ? "bg-green-500/20 text-green-400" : ""}
                     >
-                      {character.money >= RESET_ZEN_COST ? t.common?.met || 'OK' : t.common?.notMet || 'Não atende'}
+                      {character.zen >= RESET_ZEN_COST ? t.common?.met || 'OK' : t.common?.notMet || 'Não atende'}
                     </Badge>
                   </div>
                 </CardContent>
