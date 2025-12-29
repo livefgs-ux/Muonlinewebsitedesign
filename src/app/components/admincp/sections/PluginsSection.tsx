@@ -1,71 +1,191 @@
-import { Boxes, Download, Power, Settings, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Boxes, Plus, Trash2, Power } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { Switch } from '../../ui/switch';
+import { toast } from 'sonner';
 
-const MOCK_PLUGINS = [
-  { id: 1, name: 'Event Ranking', author: 'IGCNetwork', version: '1.2.0', active: true, description: 'Sistema de ranking de eventos automatizado' },
-  { id: 2, name: 'Auto Backup', author: 'MuCore', version: '2.0.1', active: true, description: 'Backup automático do banco de dados' },
-  { id: 3, name: 'Discord Bot', author: 'MuTools', version: '1.5.3', active: false, description: 'Integração com Discord' },
-  { id: 4, name: 'Analytics', author: 'MuStats', version: '3.1.0', active: true, description: 'Estatísticas avançadas do servidor' },
-];
+interface Plugin {
+  id: number;
+  name: string;
+  author: string;
+  version: string;
+  enabled: boolean;
+  description: string;
+}
 
 export function PluginsSection() {
+  const [plugins, setPlugins] = useState<Plugin[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadPlugins();
+  }, []);
+
+  const loadPlugins = async () => {
+    try {
+      setLoading(true);
+      const token = sessionStorage.getItem('auth_token');
+      const response = await fetch('/api/admin/plugins', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        setPlugins(data.data);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar plugins:', error);
+      toast.error('Erro ao carregar plugins');
+      setPlugins([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const togglePlugin = async (id: number, currentState: boolean) => {
+    try {
+      const token = sessionStorage.getItem('auth_token');
+      const response = await fetch(`/api/admin/plugins/${id}/toggle`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(`✅ Plugin ${!currentState ? 'ativado' : 'desativado'}!`);
+        loadPlugins(); // Recarregar lista
+      }
+    } catch (error) {
+      console.error('❌ Erro ao alternar plugin:', error);
+      toast.error('Erro ao alternar estado do plugin');
+    }
+  };
+
+  const deletePlugin = async (id: number) => {
+    if (!confirm('Tem certeza que deseja deletar este plugin?')) return;
+
+    try {
+      const token = sessionStorage.getItem('auth_token');
+      const response = await fetch(`/api/admin/plugins/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('✅ Plugin deletado!');
+        loadPlugins(); // Recarregar lista
+      }
+    } catch (error) {
+      console.error('❌ Erro ao deletar plugin:', error);
+      toast.error('Erro ao deletar plugin');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-black text-white mb-1">Plugins</h2>
-          <p className="text-sm text-slate-400">Gerencie plugins e extensões do site</p>
+          <h2 className="text-2xl font-black text-white mb-1">Gerenciar Plugins</h2>
+          <p className="text-sm text-slate-400">Estenda as funcionalidades do servidor</p>
         </div>
         <Button className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold">
-          <Download className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4 mr-2" />
           Instalar Plugin
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {MOCK_PLUGINS.map((plugin) => (
-          <Card key={plugin.id} className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 hover:border-amber-500/40 transition-all shadow-xl">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${plugin.active ? 'bg-green-500/20' : 'bg-slate-500/20'}`}>
-                    <Boxes className={`w-5 h-5 ${plugin.active ? 'text-green-400' : 'text-slate-400'}`} />
+      <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 shadow-xl">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-amber-400">
+            <Boxes className="w-5 h-5" />
+            Plugins Instalados ({loading ? '...' : plugins.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8 text-slate-400">
+              Carregando plugins...
+            </div>
+          ) : plugins.length === 0 ? (
+            <div className="text-center py-8 text-slate-400">
+              Nenhum plugin instalado
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {plugins.map((plugin) => (
+                <div
+                  key={plugin.id}
+                  className="flex items-center justify-between p-4 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 transition-colors border border-transparent hover:border-amber-500/20"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-bold text-white">{plugin.name}</h3>
+                      <Badge className="bg-slate-700/30 text-slate-300 border-slate-600/30 text-xs">
+                        v{plugin.version}
+                      </Badge>
+                      <Badge
+                        className={
+                          plugin.enabled
+                            ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                            : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                        }
+                      >
+                        {plugin.enabled ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-400 mb-1">{plugin.description}</p>
+                    <p className="text-xs text-slate-500">Por {plugin.author}</p>
                   </div>
-                  <div>
-                    <CardTitle className="text-white text-lg">{plugin.name}</CardTitle>
-                    <p className="text-xs text-slate-400">Por {plugin.author}</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50">
+                      <Power className={`w-4 h-4 ${plugin.enabled ? 'text-green-400' : 'text-slate-400'}`} />
+                      <Switch
+                        checked={plugin.enabled}
+                        onCheckedChange={() => togglePlugin(plugin.id, plugin.enabled)}
+                      />
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      onClick={() => deletePlugin(plugin.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
-                <Badge className={plugin.active ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-slate-500/20 text-slate-400 border-slate-500/30'}>
-                  v{plugin.version}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-slate-400">{plugin.description}</p>
-              <div className="flex items-center justify-between pt-2 border-t border-slate-800/50">
-                <div className="flex items-center gap-2">
-                  <Switch defaultChecked={plugin.active} />
-                  <span className="text-sm text-slate-300">
-                    {plugin.active ? 'Ativado' : 'Desativado'}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="ghost" className="text-blue-400 hover:bg-blue-500/10">
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-500/10">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

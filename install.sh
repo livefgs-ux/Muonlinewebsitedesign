@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="569"
-VERSION_DATE="2025-12-30 06:00 CET - FRONTEND FIX: PlayerDashboard endpoints + AdminCP navigation"
+VERSION="570"
+VERSION_DATE="2025-12-30 06:30 CET - ADMINCP MOCK REMOVAL: 5 seções conectadas à API (Bans/News/Logs/Plugins/Accounts)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

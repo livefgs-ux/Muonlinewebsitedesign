@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { FileText, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
@@ -6,21 +6,128 @@ import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Textarea } from '../../ui/textarea';
 import { Badge } from '../../ui/badge';
+import { toast } from 'sonner';
 
 /**
  * 📰 News Management Section
- * Sistema de gerenciamento de notícias
+ * Sistema de gerenciamento de notícias - CONECTADO À API REAL
  */
 
-const MOCK_NEWS = [
-  { id: 1, title: 'Novo Evento: Castle Siege', date: '2024-12-19', author: 'AdminTest', status: 'published' },
-  { id: 2, title: 'Atualização 19.2.3 Disponível', date: '2024-12-18', author: 'AdminTest', status: 'published' },
-  { id: 3, title: 'Manutenção Programada', date: '2024-12-17', author: 'AdminTest', status: 'draft' },
-];
+interface NewsItem {
+  id: number;
+  title: string;
+  content: string;
+  author: string;
+  created_at: string;
+  status: 'published' | 'draft';
+}
 
 export function NewsManagement() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [publishing, setPublishing] = useState(false);
+
+  useEffect(() => {
+    loadNews();
+  }, []);
+
+  const loadNews = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/news');
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        setNews(data.data);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar notícias:', error);
+      toast.error('Erro ao carregar notícias');
+      setNews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!title.trim() || !content.trim()) {
+      toast.error('Preencha título e conteúdo!');
+      return;
+    }
+
+    try {
+      setPublishing(true);
+      const token = sessionStorage.getItem('auth_token');
+      
+      const response = await fetch('/api/news', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          status: 'published'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('✅ Notícia publicada com sucesso!');
+        setTitle('');
+        setContent('');
+        loadNews(); // Recarregar lista
+      }
+    } catch (error) {
+      console.error('❌ Erro ao publicar notícia:', error);
+      toast.error('Erro ao publicar notícia');
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Tem certeza que deseja deletar esta notícia?')) return;
+
+    try {
+      const token = sessionStorage.getItem('auth_token');
+      
+      const response = await fetch(`/api/news/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('✅ Notícia deletada!');
+        loadNews(); // Recarregar lista
+      }
+    } catch (error) {
+      console.error('❌ Erro ao deletar notícia:', error);
+      toast.error('Erro ao deletar notícia');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -59,9 +166,13 @@ export function NewsManagement() {
             />
           </div>
           <div className="flex gap-2">
-            <Button className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold">
+            <Button 
+              className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold"
+              onClick={handlePublish}
+              disabled={publishing}
+            >
               <FileText className="w-4 h-4 mr-2" />
-              Publicar
+              {publishing ? 'Publicando...' : 'Publicar'}
             </Button>
             <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
               Salvar como Rascunho
@@ -75,44 +186,67 @@ export function NewsManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-400">
             <FileText className="w-5 h-5" />
-            Notícias Publicadas ({MOCK_NEWS.length})
+            Notícias Publicadas ({loading ? '...' : news.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {MOCK_NEWS.map((news, index) => (
-              <motion.div
-                key={news.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-4 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 transition-colors border border-transparent hover:border-amber-500/20"
-              >
-                <div className="flex-1">
-                  <h3 className="font-bold text-white mb-1">{news.title}</h3>
-                  <div className="flex items-center gap-3 text-xs text-slate-400">
-                    <span>Por {news.author}</span>
-                    <span>•</span>
-                    <span>{news.date}</span>
-                    <Badge className={news.status === 'published' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-slate-500/20 text-slate-400 border-slate-500/30'}>
-                      {news.status === 'published' ? 'Publicado' : 'Rascunho'}
-                    </Badge>
+          {loading ? (
+            <div className="text-center py-8 text-slate-400">
+              Carregando notícias...
+            </div>
+          ) : news.length === 0 ? (
+            <div className="text-center py-8 text-slate-400">
+              Nenhuma notícia publicada ainda
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {news.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="flex items-center justify-between p-4 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 transition-colors border border-transparent hover:border-amber-500/20"
+                >
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white mb-1">{item.title}</h3>
+                    <div className="flex items-center gap-3 text-xs text-slate-400">
+                      <span>Por {item.author}</span>
+                      <span>•</span>
+                      <span>{new Date(item.created_at).toLocaleDateString('pt-BR')}</span>
+                      <Badge className={item.status === 'published' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-slate-500/20 text-slate-400 border-slate-500/30'}>
+                        {item.status === 'published' ? 'Publicado' : 'Rascunho'}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="ghost" className="text-blue-400 hover:bg-blue-500/10">
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost" className="text-amber-400 hover:bg-amber-500/10">
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-500/10">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
