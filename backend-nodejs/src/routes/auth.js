@@ -9,7 +9,8 @@ const {
   login, 
   register, 
   verifyTokenRoute,
-  getAccountInfo
+  getAccountInfo,
+  logout  // ✅ ADICIONADO
 } = require('../controllers/authController');
 const { validateLogin, validateRegister } = require('../utils/validators');
 const { verifyToken } = require('../middleware/auth-middleware');
@@ -178,5 +179,8 @@ router.put('/update-password', verifyToken, async (req, res) => {
     return errorResponse(res, 'Erro ao processar atualização', 500);
   }
 });
+
+// POST /api/auth/logout - Logout
+router.post('/logout', verifyToken, logout);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   DollarSign, 
@@ -9,6 +9,7 @@ import {
   Users,
   Wallet
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Donation {
   id: number;
@@ -24,68 +25,58 @@ const DonationsPanel = () => {
   const [accountTarget, setAccountTarget] = useState('');
   const [coinAmount, setCoinAmount] = useState('');
   const [coinType, setCoinType] = useState('WCoin');
-  const [sendStatus, setSendStatus] = useState('');
   const [conversionRate, setConversionRate] = useState(100);
   const [vipBonus, setVipBonus] = useState(20);
   const [paypalId, setPaypalId] = useState('');
   const [trillexKey, setTrillexKey] = useState('');
+  
+  // 🔴 REMOVIDO MOCK - Sistema de doações não implementado ainda
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data - doações recentes
-  const [donations] = useState<Donation[]>([
-    {
-      id: 1,
-      date: '2025-12-15',
-      account: 'SoulMageX',
-      amountUSD: 20,
-      credits: 2000,
-      method: 'PayPal',
-      status: 'confirmed'
-    },
-    {
-      id: 2,
-      date: '2025-12-13',
-      account: 'Dr4g0nSl4yer',
-      amountUSD: 10,
-      credits: 1000,
-      method: 'Trillex Card',
-      status: 'pending'
-    },
-    {
-      id: 3,
-      date: '2025-12-12',
-      account: 'DarkWarrior99',
-      amountUSD: 50,
-      credits: 5000,
-      method: 'PayPal',
-      status: 'confirmed'
-    },
-    {
-      id: 4,
-      date: '2025-12-10',
-      account: 'ElfQueen',
-      amountUSD: 15,
-      credits: 1500,
-      method: 'Pix',
-      status: 'confirmed'
-    }
-  ]);
+  // Carregar histórico de doações (quando backend estiver pronto)
+  useEffect(() => {
+    // TODO: Implementar endpoint /api/admin/donations
+    // loadDonations();
+  }, []);
 
-  const handleSendCoins = () => {
+  const handleSendCoins = async () => {
     if (!accountTarget || !coinAmount) {
-      setSendStatus('❌ Preencha todos os campos!');
-      setTimeout(() => setSendStatus(''), 3000);
+      toast.error('❌ Preencha todos os campos!');
       return;
     }
 
-    // Mock de envio
-    setSendStatus(`✅ Enviado ${coinAmount} ${coinType} para ${accountTarget}.`);
-    
-    // Limpar campos após 2 segundos
-    setTimeout(() => {
+    try {
+      setLoading(true);
+      const token = sessionStorage.getItem('auth_token');
+      
+      // TODO: Implementar endpoint /api/admin/send-coins
+      const response = await fetch('/api/admin/send-coins', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          account: accountTarget,
+          amount: parseInt(coinAmount),
+          type: coinType
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Endpoint não implementado');
+      }
+
+      toast.success(`✅ ${coinAmount} ${coinType} enviados para ${accountTarget}!`);
       setAccountTarget('');
       setCoinAmount('');
-      setSendStatus('');
-    }, 2000);
+    } catch (error) {
+      console.error('❌ Erro:', error);
+      toast.error('⚠️ Função de envio de moedas não implementada ainda');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveConfig = () => {
@@ -216,13 +207,13 @@ const DonationsPanel = () => {
           Enviar
         </button>
         
-        {sendStatus && (
+        {loading && (
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`mt-3 font-semibold ${sendStatus.includes('✅') ? 'text-green-400' : 'text-red-400'}`}
+            className="mt-3 font-semibold text-gray-400"
           >
-            {sendStatus}
+            Enviando...
           </motion.p>
         )}
       </motion.div>

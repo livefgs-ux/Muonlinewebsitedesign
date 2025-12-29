@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="570"
-VERSION_DATE="2025-12-30 06:30 CET - ADMINCP MOCK REMOVAL: 5 seções conectadas à API (Bans/News/Logs/Plugins/Accounts)"
+VERSION="571"
+VERSION_DATE="2025-12-30 08:30 CET - CRITICAL: Logout endpoint + Personagens debug logs + WCoin fix SQL"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

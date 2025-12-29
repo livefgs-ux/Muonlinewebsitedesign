@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   Shield, 
@@ -14,6 +14,7 @@ import {
   Clock,
   Globe
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface SecurityLog {
   id: number;
@@ -25,124 +26,101 @@ interface SecurityLog {
 }
 
 const SecurityPanel = () => {
-  const [secStatus, setSecStatus] = useState('');
-  const [firewallStatus, setFirewallStatus] = useState('Ativo');
-  const [isScanning, setIsScanning] = useState(false);
+  const [securityLogs, setSecurityLogs] = useState<SecurityLog[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data - logs de segurança
-  const [securityLogs] = useState<SecurityLog[]>([
-    {
-      id: 1,
-      timestamp: '2025-12-19 02:45',
-      user: 'admin_test',
-      action: 'Alterou configuração de PayPal',
-      ip: '127.0.0.1',
-      status: 'success'
-    },
-    {
-      id: 2,
-      timestamp: '2025-12-19 02:41',
-      user: 'root',
-      action: 'Tentativa de login incorreta',
-      ip: '201.8.14.92',
-      status: 'blocked'
-    },
-    {
-      id: 3,
-      timestamp: '2025-12-19 02:38',
-      user: 'SoulMageX',
-      action: 'Solicitou reset de personagem',
-      ip: '192.168.1.100',
-      status: 'success'
-    },
-    {
-      id: 4,
-      timestamp: '2025-12-19 02:30',
-      user: 'unknown',
-      action: 'Tentativa de SQL Injection detectada',
-      ip: '45.123.67.89',
-      status: 'blocked'
-    },
-    {
-      id: 5,
-      timestamp: '2025-12-19 02:15',
-      user: 'admin_test',
-      action: 'Criou nova notícia',
-      ip: '127.0.0.1',
-      status: 'success'
-    }
-  ]);
+  // Carregar logs de segurança reais
+  useEffect(() => {
+    loadSecurityLogs();
+  }, []);
 
-  const handleScan = () => {
-    setIsScanning(true);
-    setSecStatus('🔍 Escaneando arquivos e conexões...');
-    
-    setTimeout(() => {
-      setSecStatus('✅ Escaneamento completo: Nenhuma ameaça encontrada.');
-      setIsScanning(false);
-    }, 3000);
-  };
+  const loadSecurityLogs = async () => {
+    try {
+      setLoading(true);
+      const token = sessionStorage.getItem('auth_token');
+      const response = await fetch('/api/admin/logs/logs?type=security', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-  const handleBanIP = () => {
-    const ip = prompt('Digite o IP para banir:');
-    if (ip) {
-      setSecStatus(`🚫 IP ${ip} bloqueado com sucesso.`);
-      setTimeout(() => setSecStatus(''), 3000);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        setSecurityLogs(data.data);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar logs:', error);
+      toast.error('Erro ao carregar logs de segurança');
+      setSecurityLogs([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleResetFirewall = () => {
-    setFirewallStatus('Reiniciando...');
-    setSecStatus('🔄 Reiniciando firewall...');
-    
-    setTimeout(() => {
-      setFirewallStatus('Ativo');
-      setSecStatus('✅ Firewall reiniciado com sucesso.');
-      setTimeout(() => setSecStatus(''), 2000);
-    }, 2000);
-  };
+  const handleExportLogs = async () => {
+    try {
+      const token = sessionStorage.getItem('auth_token');
+      const response = await fetch('/api/admin/logs/export', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-  const handleExportLogs = () => {
-    setSecStatus('📂 Logs exportados para /webmu/logs/security_2025-12-19.txt');
-    setTimeout(() => setSecStatus(''), 3000);
-  };
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success':
-        return 'text-green-400';
-      case 'blocked':
-        return 'text-red-400';
-      case 'warning':
-        return 'text-yellow-400';
-      default:
-        return 'text-gray-400';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'success':
-        return 'Sucesso';
-      case 'blocked':
-        return 'Bloqueado';
-      case 'warning':
-        return 'Aviso';
-      default:
-        return status;
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `security_logs_${new Date().toISOString()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('✅ Logs exportados!');
+    } catch (error) {
+      console.error('❌ Erro ao exportar:', error);
+      toast.error('Erro ao exportar logs');
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="w-4 h-4" />;
+        return <CheckCircle className="w-4 h-4 text-green-400" />;
       case 'blocked':
-        return <XCircle className="w-4 h-4" />;
+        return <XCircle className="w-4 h-4 text-red-400" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4" />;
+        return <AlertTriangle className="w-4 h-4 text-yellow-400" />;
       default:
-        return null;
+        return <Activity className="w-4 h-4 text-gray-400" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'success': return 'text-green-400';
+      case 'blocked': return 'text-red-400';
+      case 'warning': return 'text-yellow-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'success': return 'Sucesso';
+      case 'blocked': return 'Bloqueado';
+      case 'warning': return 'Alerta';
+      default: return status;
     }
   };
 

@@ -636,9 +636,34 @@ const getAccountInfo = async (req, res) => {
   }
 };
 
+/**
+ * Logout
+ * JWT é stateless, então não precisamos invalidar no servidor
+ * Frontend remove o token do localStorage
+ */
+const logout = async (req, res) => {
+  try {
+    const { accountId } = req.user;
+    
+    console.log(`👋 Logout: ${accountId}`);
+    
+    // Em JWT stateless, o logout é feito no client-side removendo o token
+    // Aqui podemos registrar o logout para auditoria (opcional)
+    
+    return successResponse(res, { 
+      message: 'Logout realizado com sucesso' 
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro no logout:', error);
+    return errorResponse(res, 'Erro ao realizar logout', 500);
+  }
+};
+
 module.exports = {
   login,
   register,
   verifyTokenRoute,
-  getAccountInfo
+  getAccountInfo,
+  logout
 };

@@ -15,36 +15,20 @@ const getAccountCharacters = async (req, res) => {
   try {
     const { accountId } = req.user;
     
-    console.log(`📊 Buscando personagens da conta: ${accountId}`);
+    console.log(`\n📊 ========================================`);
+    console.log(`📊 BUSCANDO PERSONAGENS`);
+    console.log(`📊 ========================================`);
+    console.log(`📊 Account ID (do JWT): ${accountId}`);
+    console.log(`📊 Account ID Type: ${typeof accountId}`);
+    console.log(`📊 Tabela: ${tables.characterInfo}`);
     
     // ========================================================================
     // SEASON 19 DV TEAMS - ESTRUTURA REAL DO MUONLINE.SQL
     // ========================================================================
     // Tabela character_info:
-    //   - guid (PK)
-    //   - account_id (FK → accounts.guid, mas busca por account name!)
-    //   - name
-    //   - race (class)
-    //   - level, level_master, level_majestic
-    //   - money (zen)
-    //   - reset (⚠️ SÓ TEM "reset", NÃO TEM "greset"!)
-    //   - points, points_master, points_majestic
-    //   - strength, agility (NÃO dexterity!), vitality, energy, leadership
-    //   - pk_count, pk_level
-    //   - online (0/1)
+    //   - account_id NÃO é GUID! É uma STRING com o nome da conta
+    //   - Buscar diretamente por account_id = accountName
     // ========================================================================
-    
-    // Primeiro, buscar o GUID da conta pelo username
-    const getGuidSql = `SELECT guid FROM accounts WHERE account = ?`;
-    const guidResult = await executeQueryMU(getGuidSql, [accountId]);
-    
-    if (!guidResult.success || guidResult.data.length === 0) {
-      console.log(`❌ Conta não encontrada: ${accountId}`);
-      return successResponse(res, []); // Retorna array vazio ao invés de erro
-    }
-    
-    const accountGuid = guidResult.data[0].guid;
-    console.log(`✅ Account GUID: ${accountGuid}`);
     
     const sql = `
       SELECT 
@@ -72,14 +56,47 @@ const getAccountCharacters = async (req, res) => {
       ORDER BY name ASC
     `;
     
-    const result = await executeQueryMU(sql, [accountGuid]);
+    console.log(`📊 SQL Query:`);
+    console.log(sql);
+    console.log(`📊 Parâmetros: [${accountId}]`);
+    
+    const result = await executeQueryMU(sql, [accountId]);
+    
+    console.log(`📊 Query executada!`);
+    console.log(`📊 Success: ${result.success}`);
+    console.log(`📊 Data length: ${result.data ? result.data.length : 0}`);
+    
+    if (result.data && result.data.length > 0) {
+      console.log(`📊 Personagens encontrados:`);
+      result.data.forEach((char, idx) => {
+        console.log(`   ${idx + 1}. ${char.name} (account_id: ${char.account_id}, level: ${char.level})`);
+      });
+    } else {
+      console.log(`⚠️  Nenhum personagem encontrado!`);
+      console.log(`⚠️  Verificando se problema é SQL ou dados...`);
+      
+      // DEBUG: Buscar QUALQUER personagem para ver se a tabela tem dados
+      const debugSql = `SELECT name, account_id FROM ${tables.characterInfo} LIMIT 5`;
+      const debugResult = await executeQueryMU(debugSql, []);
+      
+      if (debugResult.success && debugResult.data.length > 0) {
+        console.log(`⚠️  DEBUG: Tabela TEM personagens:`);
+        debugResult.data.forEach((char, idx) => {
+          console.log(`   ${idx + 1}. ${char.name} → account_id: "${char.account_id}" (type: ${typeof char.account_id})`);
+        });
+      } else {
+        console.log(`⚠️  DEBUG: Tabela está VAZIA ou erro SQL`);
+      }
+    }
     
     if (!result.success) {
       console.error(`❌ Erro SQL ao buscar personagens:`, result.error);
+      console.log(`❌ ========================================\n`);
       return errorResponse(res, 'Erro ao buscar personagens', 500);
     }
     
-    console.log(`✅ Encontrados ${result.data.length} personagens`);
+    console.log(`✅ Retornando ${result.data.length} personagens`);
+    console.log(`✅ ========================================\n`);
     
     const characters = result.data.map(char => ({
       name: char.name,
