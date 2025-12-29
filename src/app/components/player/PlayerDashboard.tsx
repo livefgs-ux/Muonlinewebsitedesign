@@ -29,9 +29,9 @@ import { ShopTab } from './tabs/ShopTab';
 import { SettingsTab } from './tabs/SettingsTab';
 
 // Componentes existentes (já separados)
-import CharacterManagement from '../character-management';
-import PointDistribution from '../point-distribution';
-import ResetSystem from '../reset-system';
+import { CharacterManagement } from '../character-management';
+import { PointDistribution } from '../point-distribution';
+import { ResetSystem } from '../reset-system';
 
 interface UserInfo {
   username: string;
