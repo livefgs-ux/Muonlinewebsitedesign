@@ -58,7 +58,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshCharacters = async () => {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionStorage.getItem('auth_token');
     if (!token) return;
     
     // 🧪 Se for token fake (teste), não faz requisição
@@ -106,7 +106,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     characterName: string, 
     stats: Partial<Pick<Character, 'strength' | 'dexterity' | 'vitality' | 'energy' | 'command'>>
   ) => {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionStorage.getItem('auth_token');
     if (!token) {
       return { success: false, message: 'Não autenticado' };
     }
@@ -136,7 +136,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetCharacter = async (characterName: string) => {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionStorage.getItem('auth_token');
     if (!token) {
       return { success: false, message: 'Não autenticado' };
     }

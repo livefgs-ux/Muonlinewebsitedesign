@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="566"
-VERSION_DATE="2025-12-30 05:20 CET - BACKEND FIX: Corrigida ordem de exports em settingsController.js"
+VERSION="568"
+VERSION_DATE="2025-12-30 05:40 CET - SESSION FIX: localStorage → sessionStorage (logout ao fechar navegador)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

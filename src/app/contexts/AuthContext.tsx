@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem('auth_token');
+    const token = sessionStorage.getItem('auth_token');
     if (!token) {
       setIsLoading(false);
       return;
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (response.status === 401 || response.status === 403) {
         // ✅ Token inválido ou expirado - remover
         console.log('🔴 Token inválido ou expirado - fazendo logout');
-        localStorage.removeItem('auth_token');
+        sessionStorage.removeItem('auth_token');
         setUser(null);
       } else {
         // ⚠️ Outro erro (500, 503, etc) - manter token mas não logar
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return { success: false, message: 'Erro: token não recebido do servidor' };
         }
         
-        localStorage.setItem('auth_token', token);
+        sessionStorage.setItem('auth_token', token);
         setUser(user);
         return { success: true, message: 'Login realizado com sucesso!' };
       } else {
@@ -159,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = sessionStorage.getItem('auth_token');
       if (token) {
         await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_LOGOUT), {
           method: 'POST',
@@ -169,7 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Erro no logout:', error);
     } finally {
-      localStorage.removeItem('auth_token');
+      sessionStorage.removeItem('auth_token');
       setUser(null);
     }
   };
@@ -217,5 +217,5 @@ export function useAuth() {
 
 // Hook para obter o token
 export function useAuthToken() {
-  return localStorage.getItem('auth_token');
+  return sessionStorage.getItem('auth_token');
 }

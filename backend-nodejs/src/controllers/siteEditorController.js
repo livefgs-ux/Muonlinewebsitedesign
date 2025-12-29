@@ -4,7 +4,8 @@
  * V563 - Implementação completa
  */
 
-const pool = require('../config/database');
+const { executeQueryWEB } = require('../config/database');
+const { successResponse, errorResponse } = require('../utils/helpers');
 
 /**
  * GET /api/admin/site-editor/config
@@ -12,15 +13,19 @@ const pool = require('../config/database');
  */
 exports.getConfig = async (req, res) => {
   try {
-    const [rows] = await pool.query(
+    const result = await executeQueryWEB(
       `SELECT config_key, config_value, config_group 
        FROM site_config 
        ORDER BY config_group, config_key`
     );
 
+    if (!result.success) {
+      throw new Error('Falha ao buscar configurações');
+    }
+
     // Agrupar por categoria
     const grouped = {};
-    rows.forEach(row => {
+    result.data.forEach(row => {
       const group = row.config_group || 'general';
       if (!grouped[group]) {
         grouped[group] = {};
@@ -31,7 +36,7 @@ exports.getConfig = async (req, res) => {
     res.json({
       success: true,
       data: {
-        raw: rows,
+        raw: result.data,
         grouped: grouped
       }
     });
@@ -62,7 +67,7 @@ exports.updateHomeBanner = async (req, res) => {
     ];
 
     for (const update of updates) {
-      await pool.query(
+      await executeQueryWEB(
         `INSERT INTO site_config (config_key, config_value, config_group) 
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE config_value = VALUES(config_value)`,
@@ -70,17 +75,11 @@ exports.updateHomeBanner = async (req, res) => {
       );
     }
 
-    res.json({
-      success: true,
-      message: 'Banner da home atualizado com sucesso!'
-    });
+    return successResponse(res, { message: 'Banner da home atualizado com sucesso!' });
 
   } catch (error) {
     console.error('❌ Erro ao atualizar banner da home:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao atualizar banner da home'
-    });
+    return errorResponse(res, 'Erro ao atualizar banner da home', 500);
   }
 };
 
@@ -101,25 +100,17 @@ exports.updateSocialLinks = async (req, res) => {
     ];
 
     for (const update of updates) {
-      await pool.query(
-        `INSERT INTO site_config (config_key, config_value, config_group) 
-         VALUES (?, ?, ?)
-         ON DUPLICATE KEY UPDATE config_value = VALUES(config_value)`,
+      await executeQueryWEB(
+        `INSERT INTO site_config (config_key, config_value, config_group) \n         VALUES (?, ?, ?)\n         ON DUPLICATE KEY UPDATE config_value = VALUES(config_value)`,
         [update.key, update.value, update.group]
       );
     }
 
-    res.json({
-      success: true,
-      message: 'Links sociais atualizados com sucesso!'
-    });
+    return successResponse(res, { message: 'Links sociais atualizados com sucesso!' });
 
   } catch (error) {
     console.error('❌ Erro ao atualizar links sociais:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao atualizar links sociais'
-    });
+    return errorResponse(res, 'Erro ao atualizar links sociais', 500);
   }
 };
 
@@ -132,14 +123,11 @@ exports.bulkUpdateConfig = async (req, res) => {
     const { configs } = req.body;
 
     if (!Array.isArray(configs)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Formato inválido. Esperado array de configs.'
-      });
+      return errorResponse(res, 'Formato inválido. Esperado array de configs.', 400);
     }
 
     for (const config of configs) {
-      await pool.query(
+      await executeQueryWEB(
         `INSERT INTO site_config (config_key, config_value, config_group) 
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE config_value = VALUES(config_value)`,
@@ -147,17 +135,11 @@ exports.bulkUpdateConfig = async (req, res) => {
       );
     }
 
-    res.json({
-      success: true,
-      message: `${configs.length} configurações atualizadas com sucesso!`
-    });
+    return successResponse(res, { message: `${configs.length} configurações atualizadas com sucesso!` });
 
   } catch (error) {
     console.error('❌ Erro ao atualizar configurações em massa:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao atualizar configurações'
-    });
+    return errorResponse(res, 'Erro ao atualizar configurações', 500);
   }
 };
 
@@ -170,30 +152,21 @@ exports.updateBackground = async (req, res) => {
     const { backgroundUrl } = req.body;
 
     if (!backgroundUrl) {
-      return res.status(400).json({
-        success: false,
-        message: 'URL do background é obrigatória'
-      });
+      return errorResponse(res, 'URL do background é obrigatória', 400);
     }
 
-    await pool.query(
+    await executeQueryWEB(
       `INSERT INTO site_config (config_key, config_value, config_group) 
        VALUES ('backgroundImage', ?, 'visual')
        ON DUPLICATE KEY UPDATE config_value = VALUES(config_value)`,
       [backgroundUrl]
     );
 
-    res.json({
-      success: true,
-      message: 'Background atualizado com sucesso!'
-    });
+    return successResponse(res, { message: 'Background atualizado com sucesso!' });
 
   } catch (error) {
     console.error('❌ Erro ao atualizar background:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao atualizar background'
-    });
+    return errorResponse(res, 'Erro ao atualizar background', 500);
   }
 };
 
@@ -203,23 +176,21 @@ exports.updateBackground = async (req, res) => {
  */
 exports.getBackground = async (req, res) => {
   try {
-    const [rows] = await pool.query(
+    const result = await executeQueryWEB(
       `SELECT config_value 
        FROM site_config 
        WHERE config_key = 'backgroundImage'
        LIMIT 1`
     );
 
-    res.json({
-      success: true,
-      backgroundUrl: rows.length > 0 ? rows[0].config_value : null
+    return successResponse(res, {
+      backgroundUrl: (result.success && result.data && result.data.length > 0) 
+        ? result.data[0].config_value 
+        : null
     });
 
   } catch (error) {
     console.error('❌ Erro ao buscar background:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao buscar background'
-    });
+    return errorResponse(res, 'Erro ao buscar background', 500);
   }
 };
