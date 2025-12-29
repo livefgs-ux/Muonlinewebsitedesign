@@ -38,62 +38,12 @@ interface Plugin {
 }
 
 interface PluginManagerProps {
-  fakeMode?: boolean;
+  // Removido fakeMode - MODO PRODUÇÃO APENAS
 }
 
-// Mock data for fake mode
-const MOCK_PLUGINS: Plugin[] = [
-  {
-    id: 1,
-    name: 'Event Ranking System',
-    slug: 'event-ranking',
-    version: '1.2.0',
-    author: 'IGCNetwork',
-    description: 'Sistema avançado de rankings para eventos especiais como Castle Siege, Blood Castle e Devil Square',
-    status: 'enabled',
-    compatibleVersions: ['1.2.0', '1.2.1', '1.2.2'],
-    installedAt: '2025-01-15T10:00:00',
-    updatedAt: '2025-01-15T10:00:00'
-  },
-  {
-    id: 2,
-    name: 'Advanced Item Generator',
-    slug: 'item-generator',
-    version: '2.0.5',
-    author: 'MuDevTeam',
-    description: 'Gerador de itens com interface visual para criar itens customizados com opções, adicional e luck',
-    status: 'disabled',
-    compatibleVersions: ['1.2.0', '1.2.1'],
-    installedAt: '2025-01-18T14:30:00',
-    updatedAt: '2025-01-18T14:30:00'
-  },
-  {
-    id: 3,
-    name: 'Player Activity Monitor',
-    slug: 'activity-monitor',
-    version: '1.5.3',
-    author: 'Security Team',
-    description: 'Monitora atividades suspeitas dos jogadores e gera alertas para possíveis trapaças',
-    status: 'enabled',
-    compatibleVersions: ['1.2.0', '1.2.1', '1.2.2'],
-    installedAt: '2025-01-20T09:15:00',
-    updatedAt: '2025-01-20T09:15:00'
-  },
-  {
-    id: 4,
-    name: 'Donation Gateway',
-    slug: 'donation-gateway',
-    version: '3.1.0',
-    author: 'PaymentPro',
-    description: 'Integração com gateways de pagamento (PayPal, MercadoPago, PagSeguro) para doações automáticas',
-    status: 'disabled',
-    compatibleVersions: ['1.2.0'],
-    installedAt: '2025-01-22T11:45:00',
-    updatedAt: '2025-01-22T11:45:00'
-  }
-];
+// MOCK REMOVIDO - Modo produção usa apenas dados reais da API
 
-export function PluginManager({ fakeMode = false }: PluginManagerProps) {
+export function PluginManager({}: PluginManagerProps) {
   const [plugins, setPlugins] = useState<Plugin[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -104,26 +54,21 @@ export function PluginManager({ fakeMode = false }: PluginManagerProps) {
 
   useEffect(() => {
     loadPlugins();
-  }, [fakeMode]);
+  }, []);
 
   const loadPlugins = async () => {
     setLoading(true);
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setPlugins(MOCK_PLUGINS);
-      } else {
-        const response = await fetch('/api/admin/plugins', {
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          }
-        });
+      const response = await fetch('/api/admin/plugins', {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+        }
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setPlugins(data.data);
-          }
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setPlugins(data.data);
         }
       }
     } catch (error) {
@@ -136,35 +81,24 @@ export function PluginManager({ fakeMode = false }: PluginManagerProps) {
 
   const togglePlugin = async (plugin: Plugin) => {
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 600));
+      const response = await fetch(`/api/admin/plugins/${plugin.id}/toggle`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+        }
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
         setPlugins(plugins.map(p => 
           p.id === plugin.id 
-            ? { ...p, status: p.status === 'enabled' ? 'disabled' : 'enabled' }
+            ? { ...p, status: data.data.status }
             : p
         ));
-        const newStatus = plugin.status === 'enabled' ? 'desativado' : 'ativado';
-        toast.success(`Plugin ${plugin.name} ${newStatus}!`);
+        toast.success(data.message);
       } else {
-        const response = await fetch(`/api/admin/plugins/${plugin.id}/toggle`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          }
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          setPlugins(plugins.map(p => 
-            p.id === plugin.id 
-              ? { ...p, status: data.data.status }
-              : p
-          ));
-          toast.success(data.message);
-        } else {
-          toast.error(data.message || 'Erro ao alternar plugin');
-        }
+        toast.error(data.message || 'Erro ao alternar plugin');
       }
     } catch (error) {
       console.error('Error toggling plugin:', error);
@@ -174,26 +108,20 @@ export function PluginManager({ fakeMode = false }: PluginManagerProps) {
 
   const deletePlugin = async (plugin: Plugin) => {
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setPlugins(plugins.filter(p => p.id !== plugin.id));
-        toast.success(`Plugin ${plugin.name} desinstalado com sucesso!`);
-      } else {
-        const response = await fetch(`/api/admin/plugins/${plugin.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          }
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          setPlugins(plugins.filter(p => p.id !== plugin.id));
-          toast.success(data.message);
-        } else {
-          toast.error(data.message || 'Erro ao desinstalar plugin');
+      const response = await fetch(`/api/admin/plugins/${plugin.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
         }
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setPlugins(plugins.filter(p => p.id !== plugin.id));
+        toast.success(data.message);
+      } else {
+        toast.error(data.message || 'Erro ao desinstalar plugin');
       }
     } catch (error) {
       console.error('Error deleting plugin:', error);
@@ -214,42 +142,24 @@ export function PluginManager({ fakeMode = false }: PluginManagerProps) {
 
     setUploading(true);
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        const newPlugin: Plugin = {
-          id: plugins.length + 1,
-          name: 'New Plugin',
-          slug: 'new-plugin',
-          version: '1.0.0',
-          author: 'Unknown',
-          description: 'Plugin instalado recentemente',
-          status: 'disabled',
-          compatibleVersions: ['1.2.0'],
-          installedAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        setPlugins([...plugins, newPlugin]);
-        toast.success('Plugin instalado com sucesso!');
+      const formData = new FormData();
+      formData.append('plugin', file);
+
+      const response = await fetch('/api/admin/plugins/install', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        await loadPlugins();
+        toast.success(data.message);
       } else {
-        const formData = new FormData();
-        formData.append('plugin', file);
-
-        const response = await fetch('/api/admin/plugins/install', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          },
-          body: formData
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          await loadPlugins();
-          toast.success(data.message);
-        } else {
-          toast.error(data.message || 'Erro ao instalar plugin');
-        }
+        toast.error(data.message || 'Erro ao instalar plugin');
       }
     } catch (error) {
       console.error('Error uploading plugin:', error);

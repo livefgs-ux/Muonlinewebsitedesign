@@ -20,10 +20,10 @@ interface SiteConfig {
 }
 
 interface SiteEditorProps {
-  fakeMode?: boolean;
+  // Removido fakeMode - MODO PRODUÇÃO APENAS
 }
 
-export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
+export function SiteEditor({}: SiteEditorProps) {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -64,10 +64,8 @@ export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
   const [backgroundPreview, setBackgroundPreview] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!fakeMode) {
-      loadSiteConfig();
-    }
-  }, [fakeMode]);
+    loadSiteConfig();
+  }, []);
 
   const loadSiteConfig = async () => {
     setLoading(true);
@@ -98,26 +96,21 @@ export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
   const saveHomeBanner = async () => {
     setSaving(true);
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await fetch('/api/admin/site-editor/home-banner', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+        },
+        body: JSON.stringify(homeBanner)
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
         toast.success('Banner da home atualizado com sucesso!');
       } else {
-        const response = await fetch('/api/admin/site-editor/home-banner', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          },
-          body: JSON.stringify(homeBanner)
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          toast.success('Banner da home atualizado com sucesso!');
-        } else {
-          toast.error(data.message || 'Erro ao atualizar banner');
-        }
+        toast.error(data.message || 'Erro ao atualizar banner');
       }
     } catch (error) {
       console.error('Error saving home banner:', error);
@@ -130,26 +123,21 @@ export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
   const saveSocialLinks = async () => {
     setSaving(true);
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await fetch('/api/admin/site-editor/social-links', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+        },
+        body: JSON.stringify(socialLinks)
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
         toast.success('Links de redes sociais atualizados!');
       } else {
-        const response = await fetch('/api/admin/site-editor/social-links', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          },
-          body: JSON.stringify(socialLinks)
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          toast.success('Links de redes sociais atualizados!');
-        } else {
-          toast.error(data.message || 'Erro ao atualizar links');
-        }
+        toast.error(data.message || 'Erro ao atualizar links');
       }
     } catch (error) {
       console.error('Error saving social links:', error);
@@ -162,32 +150,27 @@ export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
   const saveSiteSettings = async () => {
     setSaving(true);
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 800));
+      const configs = Object.entries(siteSettings).map(([key, value]) => ({
+        section: 'site',
+        key,
+        value: value.toString()
+      }));
+
+      const response = await fetch('/api/admin/site-editor/config/bulk-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+        },
+        body: JSON.stringify({ configs })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
         toast.success('Configurações do site atualizadas!');
       } else {
-        const configs = Object.entries(siteSettings).map(([key, value]) => ({
-          section: 'site',
-          key,
-          value: value.toString()
-        }));
-
-        const response = await fetch('/api/admin/site-editor/config/bulk-update', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          },
-          body: JSON.stringify({ configs })
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          toast.success('Configurações do site atualizadas!');
-        } else {
-          toast.error(data.message || 'Erro ao atualizar configurações');
-        }
+        toast.error(data.message || 'Erro ao atualizar configurações');
       }
     } catch (error) {
       console.error('Error saving site settings:', error);
@@ -796,7 +779,7 @@ export function SiteEditor({ fakeMode = false }: SiteEditorProps) {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (fakeMode || confirm('Recarregar configurações? Alterações não salvas serão perdidas.')) {
+              if (confirm('Recarregar configurações? Alterações não salvas serão perdidas.')) {
                 loadSiteConfig();
               }
             }}

@@ -36,92 +36,33 @@ interface CronJob {
 }
 
 interface CronManagerProps {
-  fakeMode?: boolean;
+  // Removido fakeMode - MODO PRODUÇÃO APENAS
 }
 
-// Mock data
-const MOCK_CRONS: CronJob[] = [
-  {
-    id: 1,
-    name: 'Atualizar Rankings',
-    slug: 'rank_update',
-    description: 'Atualiza o ranking de jogadores a cada 10 minutos',
-    intervalMinutes: 10,
-    status: 'active',
-    lastRun: new Date(Date.now() - 5 * 60000).toISOString(),
-    nextRun: new Date(Date.now() + 5 * 60000).toISOString(),
-    averageDuration: 1250,
-    totalExecutions: 8432,
-    failedExecutions: 23
-  },
-  {
-    id: 2,
-    name: 'Status de Eventos',
-    slug: 'event_status',
-    description: 'Sincroniza status de Castle Siege e eventos',
-    intervalMinutes: 5,
-    status: 'active',
-    lastRun: new Date(Date.now() - 2 * 60000).toISOString(),
-    nextRun: new Date(Date.now() + 3 * 60000).toISOString(),
-    averageDuration: 580,
-    totalExecutions: 15821,
-    failedExecutions: 5
-  },
-  {
-    id: 3,
-    name: 'Limpar Logs Antigos',
-    slug: 'log_cleanup',
-    description: 'Remove logs com mais de 30 dias',
-    intervalMinutes: 1440,
-    status: 'active',
-    lastRun: new Date(Date.now() - 12 * 3600000).toISOString(),
-    nextRun: new Date(Date.now() + 12 * 3600000).toISOString(),
-    averageDuration: 3240,
-    totalExecutions: 120,
-    failedExecutions: 0
-  },
-  {
-    id: 4,
-    name: 'Backup WebMU',
-    slug: 'backup_sync',
-    description: 'Realiza backup do banco webmu',
-    intervalMinutes: 720,
-    status: 'paused',
-    lastRun: new Date(Date.now() - 24 * 3600000).toISOString(),
-    nextRun: null,
-    averageDuration: 8500,
-    totalExecutions: 240,
-    failedExecutions: 12
-  }
-];
+// MOCK REMOVIDO - Modo produção usa apenas dados reais da API
 
-export function CronManager({ fakeMode = false }: CronManagerProps) {
+export function CronManager({}: CronManagerProps) {
   const [crons, setCrons] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState<number | null>(null);
 
   useEffect(() => {
     loadCrons();
-  }, [fakeMode]);
+  }, []);
 
   const loadCrons = async () => {
     setLoading(true);
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 600));
-        setCrons(MOCK_CRONS);
-      } else {
-        const response = await fetch('/api/admin/crons', {
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          }
-        });
+      const response = await fetch('/api/admin/crons', {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+        }
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setCrons(data.data);
-          }
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setCrons(data.data);
         }
       }
     } catch (error) {
@@ -135,34 +76,20 @@ export function CronManager({ fakeMode = false }: CronManagerProps) {
   const executeCron = async (cron: CronJob) => {
     setExecuting(cron.id);
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setCrons(crons.map(c => 
-          c.id === cron.id 
-            ? { 
-                ...c, 
-                lastRun: new Date().toISOString(),
-                totalExecutions: c.totalExecutions + 1 
-              }
-            : c
-        ));
-        toast.success(`Cron "${cron.name}" executado com sucesso!`);
-      } else {
-        const response = await fetch(`/api/admin/crons/${cron.id}/execute`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          }
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          await loadCrons();
-          toast.success(data.message);
-        } else {
-          toast.error(data.message || 'Erro ao executar cron');
+      const response = await fetch(`/api/admin/crons/${cron.id}/execute`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
         }
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        await loadCrons();
+        toast.success(data.message);
+      } else {
+        toast.error(data.message || 'Erro ao executar cron');
       }
     } catch (error) {
       console.error('Error executing cron:', error);
@@ -174,35 +101,24 @@ export function CronManager({ fakeMode = false }: CronManagerProps) {
 
   const toggleCron = async (cron: CronJob) => {
     try {
-      if (fakeMode) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await fetch(`/api/admin/crons/${cron.id}/toggle`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+        }
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
         setCrons(crons.map(c => 
           c.id === cron.id 
-            ? { ...c, status: c.status === 'active' ? 'paused' : 'active' }
+            ? { ...c, status: data.data.status }
             : c
         ));
-        const newStatus = cron.status === 'active' ? 'pausado' : 'ativado';
-        toast.success(`Cron "${cron.name}" ${newStatus}!`);
+        toast.success(data.message);
       } else {
-        const response = await fetch(`/api/admin/crons/${cron.id}/toggle`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-          }
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          setCrons(crons.map(c => 
-            c.id === cron.id 
-              ? { ...c, status: data.data.status }
-              : c
-          ));
-          toast.success(data.message);
-        } else {
-          toast.error(data.message || 'Erro ao alternar cron');
-        }
+        toast.error(data.message || 'Erro ao alternar cron');
       }
     } catch (error) {
       console.error('Error toggling cron:', error);

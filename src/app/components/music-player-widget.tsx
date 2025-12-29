@@ -102,7 +102,7 @@ export const MusicPlayerWidget = memo(function MusicPlayerWidget({ currentSectio
 
       {/* Player expandido */}
       {isExpanded && (
-        <div className="bg-gradient-to-br from-obsidian/95 to-obsidian-light/95 backdrop-blur-md border border-gold/30 rounded-2xl p-6 shadow-2xl w-80">
+        <div className="pointer-events-auto bg-gradient-to-br from-obsidian/95 to-obsidian-light/95 backdrop-blur-md border border-gold/30 rounded-2xl p-6 shadow-2xl w-80">{/* Adicionado pointer-events-auto */}
           {/* Header com botão de minimizar */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">

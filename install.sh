@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="559"
-VERSION_DATE="2025-12-30 00:15 CET - BUGFIX: Setup removed + AdminCP env.VITE fix"
+VERSION="561"
+VERSION_DATE="2025-12-30 02:00 CET - REFATORAÇÃO COMPLETA + REMOÇÃO MOCKS: -850 linhas, Player corrigido"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

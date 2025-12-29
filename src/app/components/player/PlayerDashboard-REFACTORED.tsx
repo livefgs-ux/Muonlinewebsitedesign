@@ -1,14 +1,7 @@
 /**
  * 🎮 PLAYER DASHBOARD - REFATORADO V561
- * Reduzido de 1.100 linhas para ~250 linhas (78% de redução!)
+ * Reduzido de 1.100 linhas para ~350 linhas
  * 100% modular e reutilizável
- * 
- * CHANGELOG V561:
- * - ✅ Removido código duplicado (850 linhas eliminadas)
- * - ✅ Tabs separadas em componentes individuais
- * - ✅ Usa GlassCard, LoadingSpinner, WCoinShop reutilizáveis
- * - ✅ Importa CharacterManagement, PointDistribution, ResetSystem
- * - ✅ Código mais limpo e manutenível
  */
 
 import React, { useState, useEffect } from 'react';

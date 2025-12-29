@@ -165,9 +165,34 @@ function AppContent() {
         
         // Se for admin, mostrar AdminCP
         console.log('✅ [AdminCP] Acesso liberado - mostrando AdminDashboard');
+        
+        // Criar objeto adminData com todas as permissões necessárias
+        const adminData = {
+          user: {
+            username: user?.username || 'admin',
+            accountId: user?.accountId || 'admin',
+            email: user?.email || 'admin@meumu.com',
+            isAdmin: true,
+            avatar: user?.avatar || `https://ui-avatars.com/api/?name=${user?.username || 'Admin'}&background=FFB800&color=000000&bold=true`,
+            role: 'Administrator',
+            permissions: {
+              viewAccounts: true,
+              editAccounts: true,
+              banUsers: true,
+              editCharacters: true,
+              manageCredits: true,
+              publishNews: true,
+              manageEvents: true,
+              viewLogs: true,
+              manageSettings: true,
+              managePlugins: true
+            }
+          }
+        };
+        
         return (
           <AdminDashboard 
-            adminData={user} 
+            adminData={adminData} 
             onLogout={() => {
               handleAdminLogout();
               handleLogout();
