@@ -458,21 +458,42 @@ const getAccountInfo = async (req, res) => {
   try {
     const { accountId } = req.user;
     
-    const sql = `
+    // ========================================================================
+    // COMPATIBILIDADE DUAL: Season 6 (memb___id) E Season 19 (account)
+    // ========================================================================
+    
+    // Primeiro tentar estrutura Season 19 (account, email, guid)
+    let sql = `
       SELECT 
-        memb___id,
-        memb_name,
-        mail_addr,
-        appl_days,
-        AccountLevel,
-        CashCredits,
-        bloc_code,
-        ctl1_code
+        account as username,
+        email,
+        guid,
+        blocked,
+        vip_expire_date,
+        wcoin_p as wcoin
       FROM ${tables.accounts}
-      WHERE memb___id = ?
+      WHERE account = ?
     `;
     
-    const result = await executeQueryMU(sql, [accountId]);
+    let result = await executeQueryMU(sql, [accountId]);
+    
+    // Se não encontrou, tentar estrutura Season 6 (memb___id, mail_addr)
+    if (!result.success || result.data.length === 0) {
+      console.log('🔄 Tentando estrutura Season 6 (memb___id)...');
+      sql = `
+        SELECT 
+          memb___id as username,
+          mail_addr as email,
+          memb_guid as guid,
+          bloc_code as blocked,
+          appl_days as vip_expire_date,
+          CashCredits as wcoin
+        FROM ${tables.accounts}
+        WHERE memb___id = ?
+      `;
+      
+      result = await executeQueryMU(sql, [accountId]);
+    }
     
     if (!result.success || result.data.length === 0) {
       return errorResponse(res, 'Conta não encontrada', 404);
@@ -480,15 +501,16 @@ const getAccountInfo = async (req, res) => {
     
     const account = result.data[0];
     
+    // Verificar se está bloqueada (Season 6: '1', Season 19: 1)
+    const isBlocked = account.blocked === '1' || account.blocked === 1;
+    
     return successResponse(res, {
-      accountId: account.memb___id,
-      name: account.memb_name,
-      email: account.mail_addr,
-      createdAt: account.appl_days,
-      vipLevel: account.AccountLevel,
-      cashCredits: account.CashCredits,
-      isBlocked: account.bloc_code === '1',
-      isAdmin: account.ctl1_code >= 8
+      username: account.username,
+      email: account.email || '',
+      guid: account.guid || '',
+      isBlocked,
+      vipExpireDate: account.vip_expire_date || null,
+      wcoin: account.wcoin || 0
     });
     
   } catch (error) {

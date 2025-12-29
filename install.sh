@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="530"
-VERSION_DATE="2025-12-29 01:15 - AUTH VERIFY GET ROUTE (404 fix)"
+VERSION="531"
+VERSION_DATE="2025-12-29 01:45 - AUTH ACCOUNT SEASON 19 FIX"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
