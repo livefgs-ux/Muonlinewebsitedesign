@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="558"
-VERSION_DATE="2025-12-29 23:45 CET - FULL ADMIN BACKEND: Accounts, Bans, Downloads Controllers"
+VERSION="559"
+VERSION_DATE="2025-12-30 00:15 CET - BUGFIX: Setup removed + AdminCP env.VITE fix"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

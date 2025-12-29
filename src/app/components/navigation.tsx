@@ -114,20 +114,6 @@ export const Navigation = memo(function Navigation({
                   <Shield className="w-4 h-4" />
                   <span>AdminCP</span>
                 </button>
-                
-                {/* Setup Wizard Button */}
-                <button
-                  onClick={() => onNavigate("setup")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                    currentSection === "setup"
-                      ? "bg-blue-500/20 text-blue-500 border border-blue-500/50"
-                      : "text-blue-400 hover:text-blue-500 hover:bg-blue-500/10 border border-blue-500/30"
-                  }`}
-                  title="Setup Wizard - Instalador Automático"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Setup</span>
-                </button>
               </>
             )}
           </div>
@@ -184,23 +170,6 @@ export const Navigation = memo(function Navigation({
                 >
                   <Shield className="w-5 h-5" />
                   <span>AdminCP</span>
-                </button>
-                
-                {/* Setup Wizard Button Mobile */}
-                <button
-                  onClick={() => {
-                    onNavigate("setup");
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all border ${
-                    currentSection === "setup"
-                      ? "bg-blue-500/20 text-blue-500 border-blue-500/50"
-                      : "text-blue-400 hover:bg-blue-500/10 border-blue-500/30"
-                  }`}
-                  title="Setup Wizard - Instalador Automático"
-                >
-                  <Settings className="w-5 h-5" />
-                  <span>Setup</span>
                 </button>
               </>
             )}

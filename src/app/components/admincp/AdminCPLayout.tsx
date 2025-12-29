@@ -225,7 +225,7 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
       case 'donation-links':
         return <DonationLinksSection />;
       case 'wcoin-packages':
-        return <WCoinPackagesSection apiBaseUrl={process.env.VITE_API_URL || 'http://localhost:3001/api'} />;
+        return <WCoinPackagesSection apiBaseUrl={import.meta.env.VITE_API_URL || 'http://localhost:3001/api'} />;
       default:
         return <DashboardSection />;
     }
