@@ -67,8 +67,14 @@ const login = async (req, res) => {
       return errorResponse(res, 'Conta bloqueada. Entre em contato com o suporte.', 403);
     }
     
-    // Comparar senha (passando GUID para testes com salt)
-    const passwordMatch = await comparePassword(password, account.pwd, String(account.guid));
+    // Comparar senha (passando GUID e USERNAME para testes com salt)
+    // ✅ CRITICAL: DV Teams usa SHA-256(username:password)
+    const passwordMatch = await comparePassword(
+      password, 
+      account.pwd, 
+      String(account.guid),
+      account.username  // ← NOVO! Passa username para testar algoritmo DV Teams
+    );
     
     if (!passwordMatch) {
       console.log(`❌ Senha incorreta para: ${username}`);
@@ -250,14 +256,16 @@ const register = async (req, res) => {
     console.log(`✅ Email disponível`);
     
     // ========================================================================
-    // GERAR HASH DA SENHA (SHA-256 para MU Online Season 19)
+    // GERAR HASH DA SENHA - DV TEAMS / WEBENGINE CMS
     // ========================================================================
     
-    // MU Online Season 19 usa SHA-256
+    // ✅ ALGORITMO CORRETO: SHA-256(username:password)
+    // Fonte: WebEngine CMS (codigo_de_comparacao.md, linha 13269)
+    // Código PHP original: hash('sha256', $username.':'.$password)
     const crypto = require('crypto');
-    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+    const hashedPassword = crypto.createHash('sha256').update(cleanUsername + ':' + password).digest('hex');
     
-    console.log(`🔐 Senha hashada em SHA-256: ${hashedPassword}`);
+    console.log(`🔐 Algoritmo: SHA-256(${cleanUsername}:${password})`);
     console.log(`🔐 Tamanho do hash: ${hashedPassword.length} caracteres (deve ser 64)`);
     
     // ========================================================================

@@ -30,6 +30,7 @@ const hashPasswordMD5 = (password) => {
  * DETECTA AUTOMATICAMENTE e TESTA TODOS os formatos conhecidos
  * 
  * Suporta:
+ * - SHA-256(username:password) - DV Teams / WebEngine CMS ✅ CRITICAL!
  * - SHA-256 puro
  * - SHA-256(guid + password) - MU Online Season 19
  * - SHA-256(password + guid) - MU Online Season 19
@@ -38,7 +39,7 @@ const hashPasswordMD5 = (password) => {
  * - Bcrypt - Sistemas modernos
  * - Texto plano - MU muito antigo (inseguro)
  */
-const comparePassword = async (password, hash, guid = null) => {
+const comparePassword = async (password, hash, guid = null, username = null) => {
   try {
     // ========================================================================
     // CRÍTICO: Normalizar hash vindo do MariaDB (remove lixo binário)
@@ -60,70 +61,102 @@ const comparePassword = async (password, hash, guid = null) => {
       console.log('🔐 Detectado hash SHA-256 (64 chars)');
       console.log('🧪 Testando múltiplos algoritmos...');
       
-      // Teste 1: SHA-256 puro
+      // =====================================================================
+      // ✅ Teste 1: SHA-256(username:password) - DV TEAMS / WEBENGINE CMS
+      // =====================================================================
+      // ALGORITMO DESCOBERTO: WebEngine CMS usa SHA-256(username + ':' + password)
+      // Fonte: codigo_de_comparacao.md, linha 13269
+      // Código PHP: hash('sha256', $username.':'.$password)
+      if (username) {
+        const sha256UsernamePass = crypto.createHash('sha256').update(username + ':' + password).digest('hex');
+        console.log(`  [1/8] SHA256(username:password): ${sha256UsernamePass.substring(0, 16)}...`);
+        console.log(`        Input: "${username}:${password}"`);
+        if (sha256UsernamePass.toLowerCase() === cleanHash.toLowerCase()) {
+          console.log('✅ MATCH: SHA-256(username:password) - DV Teams / WebEngine CMS');
+          return true;
+        }
+      } else {
+        console.log(`  [1/8] SHA256(username:password): PULADO (username não fornecido)`);
+      }
+      
+      // Teste 2: SHA-256 puro
       const sha256Pure = crypto.createHash('sha256').update(password).digest('hex');
-      console.log(`  [1/6] SHA256(password): ${sha256Pure.substring(0, 16)}...`);
+      console.log(`  [2/8] SHA256(password): ${sha256Pure.substring(0, 16)}...`);
       if (sha256Pure.toLowerCase() === cleanHash.toLowerCase()) {
         console.log('✅ MATCH: SHA-256 puro');
         return true;
       }
       
-      // Teste 2: SHA-256(guid + password) - Se GUID disponível
+      // Teste 3: SHA-256(guid + password) - Se GUID disponível
       if (guid) {
         const sha256GuidPass = crypto.createHash('sha256').update(guid + password).digest('hex');
-        console.log(`  [2/6] SHA256(guid + password): ${sha256GuidPass.substring(0, 16)}...`);
+        console.log(`  [3/8] SHA256(guid + password): ${sha256GuidPass.substring(0, 16)}...`);
         if (sha256GuidPass.toLowerCase() === cleanHash.toLowerCase()) {
           console.log(`✅ MATCH: SHA-256(guid + password) - GUID: ${guid}`);
           return true;
         }
         
-        // Teste 3: SHA-256(password + guid)
+        // Teste 4: SHA-256(password + guid)
         const sha256PassGuid = crypto.createHash('sha256').update(password + guid).digest('hex');
-        console.log(`  [3/6] SHA256(password + guid): ${sha256PassGuid.substring(0, 16)}...`);
+        console.log(`  [4/8] SHA256(password + guid): ${sha256PassGuid.substring(0, 16)}...`);
         if (sha256PassGuid.toLowerCase() === cleanHash.toLowerCase()) {
           console.log(`✅ MATCH: SHA-256(password + guid) - GUID: ${guid}`);
           return true;
         }
       } else {
-        console.log(`  [2/6] SHA256(guid + password): PULADO (GUID não fornecido)`);
-        console.log(`  [3/6] SHA256(password + guid): PULADO (GUID não fornecido)`);
+        console.log(`  [3/8] SHA256(guid + password): PULADO (GUID não fornecido)`);
+        console.log(`  [4/8] SHA256(password + guid): PULADO (GUID não fornecido)`);
       }
       
-      // Teste 4: SHA-256(MD5(password)) - Hash duplo (ALGORITMO MAIS COMUM EM MU!)
+      // Teste 5: SHA-256(MD5(password)) - Hash duplo (ALGORITMO MAIS COMUM EM MU!)
       const md5Hash = crypto.createHash('md5').update(password).digest('hex');
       const sha256MD5 = crypto.createHash('sha256').update(md5Hash).digest('hex');
-      console.log(`  [4/6] SHA256(MD5(password)): ${sha256MD5.substring(0, 16)}...`);
+      console.log(`  [5/8] SHA256(MD5(password)): ${sha256MD5.substring(0, 16)}...`);
       if (sha256MD5.toLowerCase() === cleanHash.toLowerCase()) {
         console.log('✅ MATCH: SHA-256(MD5(password)) - Hash duplo (MU Online padrão)');
         return true;
       }
       
-      // Teste 5: SHA-256(MD5(password) + guid)
+      // Teste 6: SHA-256(MD5(password) + guid)
       if (guid) {
         const sha256MD5Guid = crypto.createHash('sha256').update(md5Hash + guid).digest('hex');
-        console.log(`  [5/6] SHA256(MD5 + guid): ${sha256MD5Guid.substring(0, 16)}...`);
+        console.log(`  [6/8] SHA256(MD5 + guid): ${sha256MD5Guid.substring(0, 16)}...`);
         if (sha256MD5Guid.toLowerCase() === cleanHash.toLowerCase()) {
           console.log(`✅ MATCH: SHA-256(MD5 + guid) - GUID: ${guid}`);
           return true;
         }
       } else {
-        console.log(`  [5/6] SHA256(MD5 + guid): PULADO (GUID não fornecido)`);
+        console.log(`  [6/8] SHA256(MD5 + guid): PULADO (GUID não fornecido)`);
       }
       
-      // Teste 6: SHA-256(guid + MD5(password))
+      // Teste 7: SHA-256(guid + MD5(password))
       if (guid) {
         const sha256GuidMD5 = crypto.createHash('sha256').update(guid + md5Hash).digest('hex');
-        console.log(`  [6/6] SHA256(guid + MD5): ${sha256GuidMD5.substring(0, 16)}...`);
+        console.log(`  [7/8] SHA256(guid + MD5): ${sha256GuidMD5.substring(0, 16)}...`);
         if (sha256GuidMD5.toLowerCase() === cleanHash.toLowerCase()) {
           console.log(`✅ MATCH: SHA-256(guid + MD5) - GUID: ${guid}`);
           return true;
         }
       } else {
-        console.log(`  [6/6] SHA256(guid + MD5): PULADO (GUID não fornecido)`);
+        console.log(`  [7/8] SHA256(guid + MD5): PULADO (GUID não fornecido)`);
+      }
+      
+      // Teste 8: SHA-256(MD5(username:password)) - Combinação
+      if (username) {
+        const md5UserPass = crypto.createHash('md5').update(username + ':' + password).digest('hex');
+        const sha256MD5UserPass = crypto.createHash('sha256').update(md5UserPass).digest('hex');
+        console.log(`  [8/8] SHA256(MD5(username:password)): ${sha256MD5UserPass.substring(0, 16)}...`);
+        if (sha256MD5UserPass.toLowerCase() === cleanHash.toLowerCase()) {
+          console.log('✅ MATCH: SHA-256(MD5(username:password))');
+          return true;
+        }
+      } else {
+        console.log(`  [8/8] SHA256(MD5(username:password)): PULADO (username não fornecido)`);
       }
       
       console.log('❌ NENHUM ALGORITMO SHA-256 BATEU!');
       console.log(`📊 Hash esperado: ${cleanHash}`);
+      console.log(`📊 Username fornecido: ${username || 'NÃO FORNECIDO'}`);
       console.log(`📊 GUID fornecido: ${guid || 'NÃO FORNECIDO'}`);
       return false;
     }
