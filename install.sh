@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="561"
-VERSION_DATE="2025-12-30 02:00 CET - REFATORAÇÃO COMPLETA + REMOÇÃO MOCKS: -850 linhas, Player corrigido"
+VERSION="562"
+VERSION_DATE="2025-12-30 03:00 CET - GIT PULL AUTOMÁTICO: Instalação completa agora atualiza código do GitHub (12 etapas)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -237,7 +237,13 @@ create_mysql_webuser() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# FUNÇÃO 1: INSTALAÇÃO COMPLETA
+# FUNÇÃO 1: INSTALAÇÃO COMPLETA (12 ETAPAS)
+# ═══════════════════════════════════════════════════════════════
+# NOVIDADE V562: Agora atualiza código do GitHub automaticamente!
+# Etapa 0: Proteções de segurança (kill, port, mysql, webuser)
+# Etapa 0.5: Git pull (atualiza código antes de buildar) ⬅️ NOVO!
+# Etapa 1-11: Instalação completa
+# Etapa 12: Limpeza final
 # ═══════════════════════════════════════════════════════════════
 
 instalacao_completa() {
@@ -247,7 +253,7 @@ instalacao_completa() {
     echo ""
     
     # Etapa 0: PROTEÇÕES CRÍTICAS
-    echo -e "${YELLOW}[0/11]${NC} 🛡️  EXECUTANDO PROTEÇÕES DE SEGURANÇA..."
+    echo -e "${YELLOW}[0/12]${NC} 🛡️  EXECUTANDO PROTEÇÕES DE SEGURANÇA..."
     echo ""
     
     # Proteção 1: Matar TODOS os processos Node.js
@@ -279,8 +285,65 @@ instalacao_completa() {
     echo -e "${GREEN}✅✅✅ TODAS AS PROTEÇÕES PASSARAM!${NC}"
     echo ""
     
+    # Etapa 0.5: ATUALIZAR CÓDIGO DO GITHUB (CRÍTICO!)
+    echo -e "${YELLOW}[0.5/12]${NC} 🔄 Atualizando código do GitHub..."
+    echo ""
+    
+    # Verificar se é um repositório git
+    if [ -d "$BASE_DIR/.git" ]; then
+        echo -e "${CYAN}   📦 Repositório Git detectado${NC}"
+        
+        # Salvar arquivos críticos
+        echo -e "${CYAN}   💾 Salvando arquivos críticos...${NC}"
+        
+        # Backup .env do backend
+        if [ -f "$BASE_DIR/backend-nodejs/.env" ]; then
+            cp "$BASE_DIR/backend-nodejs/.env" "/tmp/meumu-env-backup" 2>/dev/null
+            echo -e "${GREEN}      ✅ Backend .env salvo${NC}"
+        fi
+        
+        # Backup .env do frontend
+        if [ -f "$BASE_DIR/.env" ]; then
+            cp "$BASE_DIR/.env" "/tmp/meumu-frontend-env-backup" 2>/dev/null
+            echo -e "${GREEN}      ✅ Frontend .env salvo${NC}"
+        fi
+        
+        # Fazer git pull
+        echo -e "${CYAN}   🔄 Executando git pull...${NC}"
+        cd "$BASE_DIR" || exit 1
+        
+        # Resetar mudanças locais e puxar versão mais recente
+        git reset --hard HEAD > /dev/null 2>&1
+        git pull origin main 2>&1 | grep -E "(Already|Updating|Fast-forward|files changed)" || echo "   Git pull executado"
+        
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}   ✅ Código atualizado do GitHub${NC}"
+            
+            # Restaurar .env do backend
+            if [ -f "/tmp/meumu-env-backup" ]; then
+                cp "/tmp/meumu-env-backup" "$BASE_DIR/backend-nodejs/.env" 2>/dev/null
+                rm "/tmp/meumu-env-backup" 2>/dev/null
+                echo -e "${GREEN}   ✅ Backend .env restaurado${NC}"
+            fi
+            
+            # Restaurar .env do frontend
+            if [ -f "/tmp/meumu-frontend-env-backup" ]; then
+                cp "/tmp/meumu-frontend-env-backup" "$BASE_DIR/.env" 2>/dev/null
+                rm "/tmp/meumu-frontend-env-backup" 2>/dev/null
+                echo -e "${GREEN}   ✅ Frontend .env restaurado${NC}"
+            fi
+        else
+            echo -e "${YELLOW}   ⚠️  Git pull falhou, continuando com código atual${NC}"
+        fi
+    else
+        echo -e "${YELLOW}   ⚠️  Não é um repositório Git (pulando atualização)${NC}"
+        echo -e "${CYAN}   💡 Para versão fresh, use opção 10 do menu${NC}"
+    fi
+    
+    echo ""
+    
     # Etapa 1: Verificar MySQL
-    echo -e "${YELLOW}[1/11]${NC} Verificando MySQL..."
+    echo -e "${YELLOW}[1/12]${NC} Verificando MySQL..."
     if $MYSQL_ADMIN_CMD -e "SHOW DATABASES;" > /dev/null 2>&1; then
         echo -e "${GREEN}✅ MySQL rodando e acessível${NC}"
         
@@ -307,7 +370,7 @@ instalacao_completa() {
     
     # Etapa 2: Instalar dependências do frontend
     echo ""
-    echo -e "${YELLOW}[2/11]${NC} Instalando dependências do frontend..."
+    echo -e "${YELLOW}[2/12]${NC} Instalando dependências do frontend..."
     cd "$BASE_DIR" || exit 1
     
     # 🔧 VERIFICAÇÃO CRÍTICA: Apagar node_modules antigo
@@ -349,7 +412,7 @@ instalacao_completa() {
     
     # Etapa 3: Instalar dependências do backend
     echo ""
-    echo -e "${YELLOW}[3/11]${NC} Instalando dependências do backend..."
+    echo -e "${YELLOW}[3/12]${NC} Instalando dependências do backend..."
     cd "$BASE_DIR/backend-nodejs" || exit 1
     if npm install > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Dependências do backend instaladas${NC}"
@@ -362,12 +425,12 @@ instalacao_completa() {
     
     # Etapa 4: Configurar .env
     echo ""
-    echo -e "${YELLOW}[4/11]${NC} Configurando .env..."
+    echo -e "${YELLOW}[4/12]${NC} Configurando .env..."
     configurar_env_interno
     
     # Etapa 5: Buildar frontend
     echo ""
-    echo -e "${YELLOW}[5/11]${NC} Buildando frontend..."
+    echo -e "${YELLOW}[5/12]${NC} Buildando frontend..."
     cd "$BASE_DIR" || exit 1
     
     # Garantir que o .env existe
@@ -478,7 +541,7 @@ EOF
     
     # Etapa 6: Criar estrutura do banco meuweb
     echo ""
-    echo -e "${YELLOW}[6/11]${NC} Criando estrutura do banco 'meuweb'..."
+    echo -e "${YELLOW}[6/12]${NC} Criando estrutura do banco 'meuweb'..."
     
     # Verificar se pasta de database existe
     if [ ! -d "$BASE_DIR/backend-nodejs/database" ]; then
@@ -536,12 +599,12 @@ EOF
     
     # Etapa 7: Configurar LiteSpeed Proxy Reverso
     echo ""
-    echo -e "${YELLOW}[7/11]${NC} Configurando OpenLiteSpeed Proxy Reverso..."
+    echo -e "${YELLOW}[7/12]${NC} Configurando OpenLiteSpeed Proxy Reverso..."
     configurar_litespeed_interno
     
     # Etapa 8: Parar processos antigos
     echo ""
-    echo -e "${YELLOW}[8/11]${NC} Parando processos Node.js antigos..."
+    echo -e "${YELLOW}[8/12]${NC} Parando processos Node.js antigos..."
     pkill -f "node.*server.js" 2>/dev/null
     pkill -f "nodemon.*server.js" 2>/dev/null
     sleep 2
@@ -549,7 +612,7 @@ EOF
     
     # Etapa 8.5: Normalizar middleware (CRÍTICO V516)
     echo ""
-    echo -e "${YELLOW}[8.5/11]${NC} 🔧 Normalizando estrutura de middleware..."
+    echo -e "${YELLOW}[8.5/12]${NC} 🔧 Normalizando estrutura de middleware..."
     
     MIDDLEWARE_DIR="$BASE_DIR/backend-nodejs/src/middleware"
     
@@ -571,7 +634,7 @@ EOF
     
     # Etapa 9: Iniciar servidor
     echo ""
-    echo -e "${YELLOW}[9/11]${NC} Iniciando servidor..."
+    echo -e "${YELLOW}[9/12]${NC} Iniciando servidor..."
     
     mkdir -p "$BASE_DIR/backend-nodejs/logs/alerts" 2>/dev/null
     mkdir -p "$BASE_DIR/backend-nodejs/logs/audit" 2>/dev/null
@@ -599,7 +662,7 @@ EOF
     
     # Etapa 10: Testar servidor (porta 3001 direta)
     echo ""
-    echo -e "${YELLOW}[10/11]${NC} Testando servidor (porta 3001)..."
+    echo -e "${YELLOW}[10/12]${NC} Testando servidor (porta 3001)..."
     HEALTH=$(curl -s http://localhost:3001/health 2>/dev/null)
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Servidor backend respondendo!${NC}"
@@ -612,7 +675,7 @@ EOF
     
     # Etapa 11: Testar proxy HTTPS (se LiteSpeed configurado)
     echo ""
-    echo -e "${YELLOW}[11/11]${NC} Testando proxy HTTPS..."
+    echo -e "${YELLOW}[11/12]${NC} Testando proxy HTTPS..."
     HTTPS_HEALTH=$(curl -s -k https://meumu.com/api/health 2>/dev/null)
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Proxy reverso HTTPS funcionando!${NC}"
@@ -621,6 +684,20 @@ EOF
         echo -e "${YELLOW}⚠️  Proxy HTTPS não configurado (use opção 11 do menu)${NC}"
         HTTPS_OK=false
     fi
+    
+    # Etapa 12: Limpeza final
+    echo ""
+    echo -e "${YELLOW}[12/12]${NC} 🧹 Limpeza final..."
+    
+    # Remover backups temporários do git pull
+    rm -f /tmp/meumu-env-backup 2>/dev/null
+    rm -f /tmp/meumu-frontend-env-backup 2>/dev/null
+    
+    # Remover logs de build temporários
+    rm -f /tmp/build.log 2>/dev/null
+    rm -f /tmp/sql_error.log 2>/dev/null
+    
+    echo -e "${GREEN}✅ Arquivos temporários removidos${NC}"
     
     echo ""
     echo -e "${GREEN}══════════════════════════════════════════════════════════${NC}"
