@@ -1,18 +1,50 @@
 import { motion } from 'motion/react';
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 /**
  * 🎨 SharedBackground - Epic Mu Online Background
  * 
- * ✅ Background Image do Mu Online
+ * ✅ Background Image do Mu Online (DINÂMICO via AdminCP)
  * ✅ Efeitos de partículas e névoa
  * ✅ Presente em TODAS as páginas
  * ⚡ OTIMIZADO para performance
+ * 🎨 V563: Background customizável via Site Editor
  * 
  * ⚠️ NUNCA REMOVER ESTE COMPONENTE! ⚠️
  */
 
+// Background padrão (fallback se não houver customização)
+const DEFAULT_BACKGROUND = 'https://i.postimg.cc/1XHKxhv1/8393fd9b_a4f8_4ab5_a5c2_dafceeb7e666.png';
+
 export const SharedBackground = memo(function SharedBackground() {
+  const [backgroundUrl, setBackgroundUrl] = useState<string>(DEFAULT_BACKGROUND);
+
+  useEffect(() => {
+    // 1. Verificar localStorage primeiro (prioridade imediata)
+    const localBg = localStorage.getItem('admin_customBackground');
+    if (localBg) {
+      setBackgroundUrl(localBg);
+      return;
+    }
+
+    // 2. Buscar configuração do banco de dados
+    const fetchBackground = async () => {
+      try {
+        const response = await fetch('/api/admin/site-editor/background');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.backgroundUrl) {
+            setBackgroundUrl(data.backgroundUrl);
+          }
+        }
+      } catch (error) {
+        console.log('ℹ️ Usando background padrão');
+      }
+    };
+
+    fetchBackground();
+  }, []);
+
   return (
     <>
       {/* ========================================
@@ -24,7 +56,7 @@ export const SharedBackground = memo(function SharedBackground() {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'url(https://i.postimg.cc/1XHKxhv1/8393fd9b_a4f8_4ab5_a5c2_dafceeb7e666.png)',
+            backgroundImage: `url(${backgroundUrl})`,
             willChange: 'transform',
           }}
         />

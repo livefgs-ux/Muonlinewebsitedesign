@@ -17,7 +17,7 @@ import { NewsManagement } from './sections/NewsManagement';
 import { SettingsSection } from './sections/SettingsSection';
 import { PluginsSection } from './sections/PluginsSection';
 import { LogsSection } from './sections/LogsSection';
-import { SiteEditorSection } from './sections/SiteEditorSection';
+import { SiteEditor } from './site-editor'; // ✅ V563: Componente funcional (não mock)
 import { CronsSection } from './sections/CronsSection';
 import { BansSection } from './sections/BansSection';
 import { InstallationGuideSection } from './sections/InstallationGuideSection';
@@ -213,7 +213,7 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
       case 'logs':
         return <LogsSection />;
       case 'site-editor':
-        return <SiteEditorSection />;
+        return <SiteEditor />;
       case 'crons':
         return <CronJobsPanel />;
       case 'bans':

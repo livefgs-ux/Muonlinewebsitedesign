@@ -261,6 +261,8 @@ app.use('/api/downloads', require('./routes/downloads')); // ✅ NOVO V558: Down
 app.use('/api/admin/logs', adminLogsRoutes);
 app.use('/api/admin/accounts', require('./routes/accounts')); // ✅ NOVO V558: Gerenciar contas
 app.use('/api/admin/bans', require('./routes/bans')); // ✅ NOVO V558: Sistema de bans
+app.use('/api/admin/site-editor', require('./routes/siteEditor')); // ✅ NOVO V563: Site Editor
+app.use('/api/admin/plugins', require('./routes/plugins')); // ✅ NOVO V564: Sistema de plugins
 app.use('/api/sandbox', sandboxRoutes);
 app.use('/api/settings', require('./routes/settings')); // ✅ Configurações do site
 

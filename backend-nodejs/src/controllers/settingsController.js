@@ -273,5 +273,104 @@ const getServerConfig = async (req, res) => {
 module.exports = {
   getAllSettings,
   updateSettings,
-  getServerConfig
+  getServerConfig,
+  toggleMaintenance,
+  updateSmtpSettings,
+  getMaintenanceStatus
+};
+
+/**
+ * ✅ V564: Toggle do modo manutenção
+ */
+const toggleMaintenance = async (req, res) => {
+  try {
+    const { enabled } = req.body;
+
+    const sql = `
+      INSERT INTO site_config (config_key, config_value, config_group) 
+      VALUES ('maintenanceMode', ?, 'site')
+      ON DUPLICATE KEY UPDATE config_value = VALUES(config_value)
+    `;
+
+    const result = await executeQueryWEB(sql, [enabled ? 'true' : 'false']);
+
+    if (result.success) {
+      console.log(`✅ Modo manutenção ${enabled ? 'ATIVADO' : 'DESATIVADO'}`);
+      return successResponse(res, { 
+        message: `Modo manutenção ${enabled ? 'ativado' : 'desativado'} com sucesso!`,
+        maintenanceMode: enabled
+      });
+    } else {
+      throw new Error('Falha ao alternar modo manutenção');
+    }
+
+  } catch (error) {
+    console.error('❌ Erro ao alternar modo manutenção:', error);
+    return errorResponse(res, 'Erro ao alternar modo manutenção', 500);
+  }
+};
+
+/**
+ * ✅ V564: Atualizar configurações de SMTP
+ */
+const updateSmtpSettings = async (req, res) => {
+  try {
+    const { host, port, user, password, from_email, from_name, enabled } = req.body;
+
+    const updates = [
+      { key: 'smtp_host', value: host, group: 'smtp' },
+      { key: 'smtp_port', value: port, group: 'smtp' },
+      { key: 'smtp_user', value: user, group: 'smtp' },
+      { key: 'smtp_password', value: password, group: 'smtp' },
+      { key: 'smtp_from_email', value: from_email, group: 'smtp' },
+      { key: 'smtp_from_name', value: from_name, group: 'smtp' },
+      { key: 'smtp_enabled', value: enabled ? 'true' : 'false', group: 'smtp' }
+    ];
+
+    for (const update of updates) {
+      const sql = `
+        INSERT INTO site_config (config_key, config_value, config_group) 
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE config_value = VALUES(config_value)
+      `;
+      await executeQueryWEB(sql, [update.key, update.value, update.group]);
+    }
+
+    console.log('✅ Configurações SMTP atualizadas!');
+    return successResponse(res, { message: 'Configurações SMTP atualizadas com sucesso!' });
+
+  } catch (error) {
+    console.error('❌ Erro ao atualizar configurações SMTP:', error);
+    return errorResponse(res, 'Erro ao atualizar configurações SMTP', 500);
+  }
+};
+
+/**
+ * ✅ V564: Buscar status de manutenção (público)
+ */
+const getMaintenanceStatus = async (req, res) => {
+  try {
+    const sql = `
+      SELECT config_value 
+      FROM site_config 
+      WHERE config_key = 'maintenanceMode'
+      LIMIT 1
+    `;
+
+    const result = await executeQueryWEB(sql);
+
+    const isInMaintenance = result.success && 
+                             result.data && 
+                             result.data.length > 0 && 
+                             result.data[0].config_value === 'true';
+
+    return successResponse(res, { 
+      maintenanceMode: isInMaintenance,
+      message: isInMaintenance ? 'Site em manutenção' : 'Site operacional'
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar status de manutenção:', error);
+    return errorResponse(res, 'Erro ao buscar status de manutenção', 500);
+  }
 };

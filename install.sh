@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="562"
-VERSION_DATE="2025-12-30 03:00 CET - GIT PULL AUTOMÁTICO: Instalação completa agora atualiza código do GitHub (12 etapas)"
+VERSION="564"
+VERSION_DATE="2025-12-30 05:00 CET - ADMINCP 100% FUNCIONAL: Plugins + Settings avançados + Build fix"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -427,6 +427,47 @@ instalacao_completa() {
     echo ""
     echo -e "${YELLOW}[4/12]${NC} Configurando .env..."
     configurar_env_interno
+    
+    # Etapa 4.5: Executar migrations do banco de dados
+    echo ""
+    echo -e "${YELLOW}[4.5/12]${NC} Executando migrations do banco..."
+    cd "$BASE_DIR/backend-nodejs/migrations" || exit 1
+    
+    # Executar migration 003 (site_config)
+    if [ -f "003-create-site-config.sql" ]; then
+        echo -e "${CYAN}   📋 Executando migration: 003-create-site-config.sql${NC}"
+        if $MYSQL_ADMIN_CMD meuweb < 003-create-site-config.sql > /dev/null 2>&1; then
+            echo -e "${GREEN}✅ Migration executada: Tabela site_config criada${NC}"
+        else
+            # Pode já existir, verificar
+            if $MYSQL_ADMIN_CMD -e "SHOW TABLES FROM meuweb LIKE 'site_config';" | grep -q "site_config"; then
+                echo -e "${YELLOW}⚠️  Tabela site_config já existe (OK)${NC}"
+            else
+                echo -e "${RED}❌ Erro ao executar migration 003${NC}"
+            fi
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Migration 003 não encontrada (pode já estar aplicada)${NC}"
+    fi
+    
+    # Executar migration 004 (plugins)
+    if [ -f "004-create-plugins.sql" ]; then
+        echo -e "${CYAN}   📋 Executando migration: 004-create-plugins.sql${NC}"
+        if $MYSQL_ADMIN_CMD meuweb < 004-create-plugins.sql > /dev/null 2>&1; then
+            echo -e "${GREEN}✅ Migration executada: Tabela plugins criada${NC}"
+        else
+            # Pode já existir, verificar
+            if $MYSQL_ADMIN_CMD -e "SHOW TABLES FROM meuweb LIKE 'plugins';" | grep -q "plugins"; then
+                echo -e "${YELLOW}⚠️  Tabela plugins já existe (OK)${NC}"
+            else
+                echo -e "${RED}❌ Erro ao executar migration 004${NC}"
+            fi
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Migration 004 não encontrada (pode já estar aplicada)${NC}"
+    fi
+    
+    cd "$BASE_DIR" || exit 1
     
     # Etapa 5: Buildar frontend
     echo ""
