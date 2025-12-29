@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
 VERSION="571"
-VERSION_DATE="2025-12-30 08:30 CET - CRITICAL: Logout endpoint + Personagens debug logs + WCoin fix SQL"
+VERSION_DATE="2025-12-30 09:00 CET - COMPLETE: Logout + Admin detection + Personagens fix + Debug system"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

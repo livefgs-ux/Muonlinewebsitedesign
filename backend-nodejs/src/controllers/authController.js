@@ -143,12 +143,14 @@ const login = async (req, res) => {
     let isAdmin = false;
     
     try {
-      // Buscar o maior nível de authority dos personagens da conta
+      // ========================================================================
+      // SEASON 19 DV TEAMS: account_id é STRING (nome da conta), NÃO GUID!
+      // ========================================================================
       const adminCheckResult = await executeQueryMU(
         `SELECT MAX(authority) as max_authority 
          FROM character_info 
          WHERE account_id = ?`,
-        [account.guid]
+        [account.username]  // ✅ CORRETO! account_id é STRING
       );
       
       if (!adminCheckResult.success) {

@@ -43,7 +43,7 @@ const SectionLoader = () => (
 
 function AppContent() {
   const [currentSection, setCurrentSection] = useState('home');
-  const { isLoggedIn, user, isLoading } = useAuth();
+  const { isLoggedIn, user, isLoading, logout: authLogout } = useAuth();  // ✅ PEGAR logout do context
   const isAdmin = user?.isAdmin || false;
   
   // 🔍 DEBUG: Log toda mudança de estado
@@ -74,6 +74,8 @@ function AppContent() {
   // }, [isLoggedIn, currentSection, isLoading]);
 
   const handleLogout = () => {
+    console.log('👋 [handleLogout] Fazendo logout...');
+    authLogout();  // ✅ CHAMAR logout do AuthContext
     setCurrentSection('home');
   };
   

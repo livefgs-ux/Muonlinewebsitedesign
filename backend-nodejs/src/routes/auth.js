@@ -56,6 +56,9 @@ router.get('/verify', verifyToken, verifyTokenRoute);
 // GET /api/auth/account - Informações da conta (requer autenticação)
 router.get('/account', verifyToken, getAccountInfo);
 
+// POST /api/auth/logout - Logout (requer autenticação)
+router.post('/logout', verifyToken, logout);
+
 // POST /api/auth/update-email - Atualizar email (requer autenticação)
 router.post('/update-email', verifyToken, validateEmailMiddleware, async (req, res) => {
   try {
@@ -179,8 +182,5 @@ router.put('/update-password', verifyToken, async (req, res) => {
     return errorResponse(res, 'Erro ao processar atualização', 500);
   }
 });
-
-// POST /api/auth/logout - Logout
-router.post('/logout', verifyToken, logout);
 
 module.exports = router;
