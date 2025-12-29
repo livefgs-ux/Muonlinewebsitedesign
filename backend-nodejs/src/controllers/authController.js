@@ -126,28 +126,56 @@ const login = async (req, res) => {
     console.log(`🔐 Mantendo hash SHA-256 (compatibilidade com servidor MU)`);
     
     // ========================================================================
-    // ✅ SEASON 19 DV TEAMS: VERIFICAR SE É ADMIN
+    // ✅ SEASON 19 DV TEAMS: VERIFICAR SE É ADMIN (DETECTA AUTOMATICAMENTE)
     // ========================================================================
-    // Campo: web_admin (na tabela accounts)
-    // Valores: 0 = usuário normal | 1 = administrador do site
+    // LÓGICA CORRETA:
+    // 1. Buscar se a conta tem ALGUM personagem com authority > 0 (GM in-game)
+    // 2. Se SIM → isAdmin = true (mostra botão AdminCP)
+    // 3. Se NÃO → isAdmin = false (usuário normal)
+    // 
+    // Campo verificado: character_info.authority
+    // - authority = 0 → Player normal
+    // - authority > 0 → Game Master (Admin)
     // ========================================================================
     
-    console.log(`🔍 DEBUG - Verificando permissões de admin:`);
-    console.log(`   account.web_admin (raw): ${account.web_admin}`);
-    console.log(`   typeof: ${typeof account.web_admin}`);
-    console.log(`   === 1: ${account.web_admin === 1}`);
-    console.log(`   === '1': ${account.web_admin === '1'}`);
-    console.log(`   > 0: ${account.web_admin > 0}`);
+    console.log(`🔍 Verificando se a conta tem personagens com status de administrador...`);
     
-    const isAdmin = account.web_admin === 1 || account.web_admin === '1' || account.web_admin > 0;
-    console.log(`👤 Tipo de conta: ${isAdmin ? '👑 ADMIN' : '👤 USUÁRIO'} (web_admin: ${account.web_admin})`);
+    let isAdmin = false;
     
-    if (isAdmin) {
-      console.log(`✅ ========================================`);
-      console.log(`✅ ADMIN DETECTADO!`);
-      console.log(`✅ Username: ${account.username}`);
-      console.log(`✅ JWT terá isAdmin: true`);
-      console.log(`✅ ========================================`);
+    try {
+      // Buscar o maior nível de authority dos personagens da conta
+      const adminCheckResult = await executeQueryMU(
+        `SELECT MAX(authority) as max_authority 
+         FROM character_info 
+         WHERE account_id = ?`,
+        [account.guid]
+      );
+      
+      if (!adminCheckResult.success) {
+        console.error('❌ Erro ao verificar authority:', adminCheckResult.error);
+        isAdmin = false;
+      } else {
+        const maxAuthority = adminCheckResult.data[0]?.max_authority || 0;
+        
+        console.log(`🎮 Authority máxima dos personagens: ${maxAuthority}`);
+        
+        // Se algum personagem tem authority > 0, a conta é admin
+        if (maxAuthority > 0) {
+          isAdmin = true;
+          console.log(`✅ ========================================`);
+          console.log(`✅ ADMIN DETECTADO!`);
+          console.log(`✅ Username: ${account.username}`);
+          console.log(`✅ Authority: ${maxAuthority}`);
+          console.log(`✅ JWT terá isAdmin: true`);
+          console.log(`✅ ========================================`);
+        } else {
+          console.log(`👤 Conta normal (sem personagens GM)`);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Erro ao verificar status de admin:', error);
+      // Em caso de erro, assume que não é admin
+      isAdmin = false;
     }
     
     // Gerar token JWT
