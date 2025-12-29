@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="568"
-VERSION_DATE="2025-12-30 05:40 CET - SESSION FIX: localStorage → sessionStorage (logout ao fechar navegador)"
+VERSION="569"
+VERSION_DATE="2025-12-30 06:00 CET - FRONTEND FIX: PlayerDashboard endpoints + AdminCP navigation"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -895,7 +895,7 @@ configurar_env() {
 
 # ═══════════════════════════════════════════════════════════════
 # FUNÇÃO 4: BUILD FRONTEND
-# ═══════════════════════════════════════════════════════════════
+# ══════════════════════��════════════════════════════════════════
 
 build_frontend() {
     clear_screen
@@ -1108,7 +1108,7 @@ verificar_mysql() {
     pause
 }
 
-# ══════════════════════════════════════════════════════════════
+# ════════════════════════════════��═════════════════════════════
 # FUNÇÃO 7: VERIFICAR PORTAS
 # ═══════════════════════════════════════════════════════════════
 

@@ -295,7 +295,8 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
                   key={module.id}
                   onClick={() => {
                     setActiveModule(module.id);
-                    if (onNavigate) onNavigate(module.id);
+                    // ❌ REMOVIDO: onNavigate fecha o AdminCP (não queremos isso)
+                    // if (onNavigate) onNavigate(module.id);
                   }}
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}

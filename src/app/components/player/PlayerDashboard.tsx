@@ -76,7 +76,7 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
   const loadAccountData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.USER_INFO), {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_ACCOUNT), {
         headers: getAuthHeaders()
       });
       const data = await response.json();
@@ -94,7 +94,7 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
 
   const loadCharacters = async () => {
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.USER_CHARACTERS), {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CHARACTERS), {
         headers: getAuthHeaders()
       });
       const data = await response.json();
@@ -109,14 +109,18 @@ const PlayerDashboard = ({ onLogout }: PlayerDashboardProps) => {
 
   const loadActivities = async () => {
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.USER_ACTIVITIES), {
-        headers: getAuthHeaders()
-      });
-      const data = await response.json();
+      // Por enquanto, vamos comentar activities pois não temos endpoint ainda
+      // const response = await fetch(getApiUrl('/player/activities'), {
+      //   headers: getAuthHeaders()
+      // });
+      // const data = await response.json();
+      // 
+      // if (data.success && data.data) {
+      //   setActivities(data.data);
+      // }
       
-      if (data.success && data.data) {
-        setActivities(data.data);
-      }
+      // Mock vazio por enquanto
+      setActivities([]);
     } catch (error) {
       console.error('Erro ao carregar atividades:', error);
     }
