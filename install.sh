@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="549"
-VERSION_DATE="2025-12-29 16:10 CET - FIX ACCOUNT DATA LOADING"
+VERSION="551"
+VERSION_DATE="2025-12-29 18:00 CET - MUONLINE.SQL STRUCTURE CONFIRMED (100% REAL)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

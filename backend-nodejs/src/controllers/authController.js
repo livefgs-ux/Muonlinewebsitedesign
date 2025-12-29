@@ -453,68 +453,92 @@ const verifyTokenRoute = async (req, res) => {
 
 /**
  * Obter informações da conta
+ * ✅ SEASON 19 DV TEAMS - ESTRUTURA REAL DO MUONLINE.SQL
+ * Fonte: muonline.sql dump completo (2025-12-29)
  */
 const getAccountInfo = async (req, res) => {
   try {
     const { accountId } = req.user;
     
+    console.log(`📊 Buscando info da conta: ${accountId}`);
+    
     // ========================================================================
-    // COMPATIBILIDADE DUAL: Season 6 (memb___id) E Season 19 (account)
+    // SEASON 19 DV TEAMS - ESTRUTURA CONFIRMADA
+    // ========================================================================
+    // Tabela accounts:
+    //   - guid (PK)
+    //   - account (username)
+    //   - email
+    //   - blocked
+    //   - web_admin (admin level, NÃO ctl1_code!)
+    //
+    // Tabela account_data:
+    //   - account_id (FK → accounts.guid)
+    //   - credits (WCoin)
+    //   - web_credits
+    //   - goblin_points
+    //   - vip_status
+    //   - vip_duration
     // ========================================================================
     
-    // Primeiro tentar estrutura Season 19 (account, email, guid)
-    let sql = `
+    const sql = `
       SELECT 
-        account as username,
-        email,
-        guid,
-        blocked,
-        vip_expire_date,
-        wcoin_p as wcoin
-      FROM ${tables.accounts}
-      WHERE account = ?
+        a.account as username,
+        a.email,
+        a.guid,
+        a.blocked,
+        a.web_admin as admin_level,
+        ad.credits,
+        ad.web_credits,
+        ad.goblin_points,
+        ad.vip_status,
+        ad.vip_duration
+      FROM accounts a
+      LEFT JOIN account_data ad ON a.guid = ad.account_id
+      WHERE a.account = ?
     `;
     
-    let result = await executeQueryMU(sql, [accountId]);
+    const result = await executeQueryMU(sql, [accountId]);
     
-    // Se não encontrou, tentar estrutura Season 6 (memb___id, mail_addr)
-    if (!result.success || result.data.length === 0) {
-      console.log('🔄 Tentando estrutura Season 6 (memb___id)...');
-      sql = `
-        SELECT 
-          memb___id as username,
-          mail_addr as email,
-          memb_guid as guid,
-          bloc_code as blocked,
-          appl_days as vip_expire_date,
-          CashCredits as wcoin
-        FROM ${tables.accounts}
-        WHERE memb___id = ?
-      `;
-      
-      result = await executeQueryMU(sql, [accountId]);
+    if (!result.success) {
+      console.error(`❌ Erro SQL ao buscar conta:`, result.error);
+      return errorResponse(res, 'Erro ao buscar informações', 500);
     }
     
-    if (!result.success || result.data.length === 0) {
+    if (result.data.length === 0) {
+      console.log(`❌ Conta não encontrada: ${accountId}`);
       return errorResponse(res, 'Conta não encontrada', 404);
     }
     
     const account = result.data[0];
+    console.log(`✅ Conta encontrada: ${account.username} (GUID: ${account.guid})`);
     
-    // Verificar se está bloqueada (Season 6: '1', Season 19: 1)
-    const isBlocked = account.blocked === '1' || account.blocked === 1;
+    // Verificar se está bloqueada
+    const isBlocked = account.blocked === 1 || account.blocked === '1';
+    const isAdmin = account.admin_level > 0;
+    
+    // Verificar se VIP está ativo
+    const now = Date.now();
+    const isVip = account.vip_status > 0 && account.vip_duration && account.vip_duration > now;
     
     return successResponse(res, {
       username: account.username,
       email: account.email || '',
-      guid: account.guid || '',
+      guid: account.guid || 0,
       isBlocked,
-      vipExpireDate: account.vip_expire_date || null,
-      wcoin: account.wcoin || 0
+      isAdmin,
+      credits: account.credits || 0,
+      webCredits: account.web_credits || 0,
+      goblinPoints: account.goblin_points || 0,
+      vip: {
+        active: isVip,
+        status: account.vip_status || 0,
+        expiresAt: account.vip_duration || null
+      }
     });
     
   } catch (error) {
-    console.error('❌ Erro ao buscar informações da conta:', error);
+    console.error('❌ Exception ao buscar informações da conta:', error);
     return errorResponse(res, 'Erro ao buscar informações', 500);
   }
 };

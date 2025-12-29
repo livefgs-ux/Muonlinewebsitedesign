@@ -1,5 +1,7 @@
 /**
  * Controller de Personagens
+ * ✅ SEASON 19 DV TEAMS - ESTRUTURA REAL DO MUONLINE.SQL
+ * Fonte: muonline.sql dump completo (2025-12-29)
  */
 
 const { executeQueryMU, executeQueryWEB } = require('../config/database');
@@ -13,44 +15,79 @@ const getAccountCharacters = async (req, res) => {
   try {
     const { accountId } = req.user;
     
+    console.log(`📊 Buscando personagens da conta: ${accountId}`);
+    
+    // ========================================================================
+    // SEASON 19 DV TEAMS - ESTRUTURA REAL DO MUONLINE.SQL
+    // ========================================================================
+    // Tabela character_info:
+    //   - guid (PK)
+    //   - account_id (FK → accounts.guid, mas busca por account name!)
+    //   - name
+    //   - race (class)
+    //   - level, level_master, level_majestic
+    //   - money (zen)
+    //   - reset (⚠️ SÓ TEM "reset", NÃO TEM "greset"!)
+    //   - points, points_master, points_majestic
+    //   - strength, agility (NÃO dexterity!), vitality, energy, leadership
+    //   - pk_count, pk_level
+    //   - online (0/1)
+    // ========================================================================
+    
+    // Primeiro, buscar o GUID da conta pelo username
+    const getGuidSql = `SELECT guid FROM accounts WHERE account = ?`;
+    const guidResult = await executeQueryMU(getGuidSql, [accountId]);
+    
+    if (!guidResult.success || guidResult.data.length === 0) {
+      console.log(`❌ Conta não encontrada: ${accountId}`);
+      return successResponse(res, []); // Retorna array vazio ao invés de erro
+    }
+    
+    const accountGuid = guidResult.data[0].guid;
+    console.log(`✅ Account GUID: ${accountGuid}`);
+    
     const sql = `
       SELECT 
-        Name,
-        cLevel as level,
-        Class,
-        Experience as exp,
-        Strength as str,
-        Dexterity as dex,
-        Vitality as vit,
-        Energy as ene,
-        Leadership as cmd,
-        LevelUpPoint as points,
-        Money as zen,
-        ResetCount as resets,
-        MasterResetCount as grandResets,
-        PkLevel as pkLevel,
-        PkCount as pkCount,
-        ctlcode as online,
-        MapNumber as mapNumber,
-        MapPosX as mapX,
-        MapPosY as mapY
-      FROM ${tables.characters}
-      WHERE AccountID = ?
-      ORDER BY Name ASC
+        name,
+        account_id,
+        race as class,
+        level,
+        level_master as masterLevel,
+        level_majestic as majesticLevel,
+        money as zen,
+        reset as resets,
+        points,
+        points_master as masterPoints,
+        points_majestic as majesticPoints,
+        strength as str,
+        agility as dex,
+        vitality as vit,
+        energy as ene,
+        leadership as cmd,
+        pk_count as pkCount,
+        pk_level as pkLevel,
+        online
+      FROM ${tables.characterInfo}
+      WHERE account_id = ?
+      ORDER BY name ASC
     `;
     
-    const result = await executeQueryMU(sql, [accountId]);
+    const result = await executeQueryMU(sql, [accountGuid]);
     
     if (!result.success) {
+      console.error(`❌ Erro SQL ao buscar personagens:`, result.error);
       return errorResponse(res, 'Erro ao buscar personagens', 500);
     }
     
+    console.log(`✅ Encontrados ${result.data.length} personagens`);
+    
     const characters = result.data.map(char => ({
-      name: char.Name,
+      name: char.name,
       level: char.level,
-      class: getClassName(char.Class),
-      classNumber: char.Class,
-      exp: char.exp,
+      masterLevel: char.masterLevel || 0,
+      majesticLevel: char.majesticLevel || 0,
+      class: getClassName(char.class),
+      classNumber: char.class,
       stats: {
         strength: char.str,
         dexterity: char.dex,
@@ -59,25 +96,21 @@ const getAccountCharacters = async (req, res) => {
         command: char.cmd
       },
       points: char.points,
+      masterPoints: char.masterPoints || 0,
+      majesticPoints: char.majesticPoints || 0,
       zen: char.zen,
       resets: char.resets,
-      grandResets: char.grandResets,
       pk: {
         level: char.pkLevel,
         kills: char.pkCount
       },
-      online: char.online === 1,
-      location: {
-        map: char.mapNumber,
-        x: char.mapX,
-        y: char.mapY
-      }
+      online: char.online === 1
     }));
     
     return successResponse(res, characters);
     
   } catch (error) {
-    console.error('❌ Erro ao buscar personagens:', error);
+    console.error('❌ Exception ao buscar personagens:', error);
     return errorResponse(res, 'Erro ao buscar personagens', 500);
   }
 };
@@ -90,32 +123,37 @@ const getCharacterDetails = async (req, res) => {
     const { name } = req.params;
     const { accountId } = req.user;
     
+    console.log(`📊 Buscando detalhes do personagem: ${name} (conta: ${accountId})`);
+    
     const sql = `
       SELECT 
-        Name,
-        AccountID,
-        cLevel as level,
-        Class,
-        Experience as exp,
-        Strength as str,
-        Dexterity as dex,
-        Vitality as vit,
-        Energy as ene,
-        Leadership as cmd,
-        LevelUpPoint as points,
-        Money as zen,
-        ResetCount as resets,
-        MasterResetCount as grandResets,
-        PkLevel as pkLevel,
-        PkCount as pkCount,
-        ctlcode as online
-      FROM ${tables.characters}
-      WHERE Name = ? AND AccountID = ?
+        name,
+        account_id,
+        race as class,
+        level,
+        level_master as masterLevel,
+        level_majestic as majesticLevel,
+        money as zen,
+        reset as resets,
+        points,
+        points_master as masterPoints,
+        points_majestic as majesticPoints,
+        strength as str,
+        agility as dex,
+        vitality as vit,
+        energy as ene,
+        leadership as cmd,
+        pk_count as pkCount,
+        pk_level as pkLevel,
+        online
+      FROM ${tables.characterInfo}
+      WHERE name = ? AND account_id = ?
     `;
     
     const result = await executeQueryMU(sql, [name, accountId]);
     
     if (!result.success) {
+      console.error(`❌ Erro SQL ao buscar personagem:`, result.error);
       return errorResponse(res, 'Erro ao buscar personagem', 500);
     }
     
@@ -126,11 +164,12 @@ const getCharacterDetails = async (req, res) => {
     const char = result.data[0];
     
     return successResponse(res, {
-      name: char.Name,
+      name: char.name,
       level: char.level,
-      class: getClassName(char.Class),
-      classNumber: char.Class,
-      exp: char.exp,
+      masterLevel: char.masterLevel || 0,
+      majesticLevel: char.majesticLevel || 0,
+      class: getClassName(char.class),
+      classNumber: char.class,
       stats: {
         strength: char.str,
         dexterity: char.dex,
@@ -139,9 +178,10 @@ const getCharacterDetails = async (req, res) => {
         command: char.cmd
       },
       points: char.points,
+      masterPoints: char.masterPoints || 0,
+      majesticPoints: char.majesticPoints || 0,
       zen: char.zen,
       resets: char.resets,
-      grandResets: char.grandResets,
       pk: {
         level: char.pkLevel,
         kills: char.pkCount
@@ -164,6 +204,8 @@ const distributePoints = async (req, res) => {
     const { accountId } = req.user;
     const { strength, dexterity, vitality, energy, command } = req.body;
     
+    console.log(`🎯 Distribuindo pontos para ${name}:`, { strength, dexterity, vitality, energy, command });
+    
     // Calcular total de pontos a distribuir
     const totalPoints = (strength || 0) + (dexterity || 0) + (vitality || 0) + (energy || 0) + (command || 0);
     
@@ -173,14 +215,15 @@ const distributePoints = async (req, res) => {
     
     // Verificar se o personagem existe e pertence à conta
     const checkSql = `
-      SELECT LevelUpPoint as points, ctlcode as online
-      FROM ${tables.characters}
-      WHERE Name = ? AND AccountID = ?
+      SELECT points, online
+      FROM ${tables.characterInfo}
+      WHERE name = ? AND account_id = ?
     `;
     
     const checkResult = await executeQueryMU(checkSql, [name, accountId]);
     
     if (!checkResult.success || checkResult.data.length === 0) {
+      console.log(`❌ Personagem não encontrado: ${name}`);
       return errorResponse(res, 'Personagem não encontrado', 404);
     }
     
@@ -188,25 +231,27 @@ const distributePoints = async (req, res) => {
     
     // Verificar se está online
     if (character.online === 1) {
+      console.log(`⚠️ Personagem online, não pode distribuir pontos: ${name}`);
       return errorResponse(res, 'Não é possível distribuir pontos com personagem online', 400);
     }
     
     // Verificar se tem pontos suficientes
     if (character.points < totalPoints) {
+      console.log(`⚠️ Pontos insuficientes: tem ${character.points}, precisa ${totalPoints}`);
       return errorResponse(res, 'Pontos insuficientes', 400);
     }
     
     // Atualizar stats
     const updateSql = `
-      UPDATE ${tables.characters}
+      UPDATE ${tables.characterInfo}
       SET 
-        Strength = Strength + ?,
-        Dexterity = Dexterity + ?,
-        Vitality = Vitality + ?,
-        Energy = Energy + ?,
-        Leadership = Leadership + ?,
-        LevelUpPoint = LevelUpPoint - ?
-      WHERE Name = ? AND AccountID = ?
+        strength = strength + ?,
+        agility = agility + ?,
+        vitality = vitality + ?,
+        energy = energy + ?,
+        leadership = leadership + ?,
+        points = points - ?
+      WHERE name = ? AND account_id = ?
     `;
     
     const updateResult = await executeQueryMU(updateSql, [
@@ -221,8 +266,11 @@ const distributePoints = async (req, res) => {
     ]);
     
     if (!updateResult.success) {
+      console.error(`❌ Erro ao distribuir pontos:`, updateResult.error);
       return errorResponse(res, 'Erro ao distribuir pontos', 500);
     }
+    
+    console.log(`✅ Pontos distribuídos com sucesso para ${name}`);
     
     return successResponse(res, {
       pointsDistributed: totalPoints,
@@ -236,7 +284,7 @@ const distributePoints = async (req, res) => {
     }, 'Pontos distribuídos com sucesso');
     
   } catch (error) {
-    console.error('❌ Erro ao distribuir pontos:', error);
+    console.error('❌ Exception ao distribuir pontos:', error);
     return errorResponse(res, 'Erro ao distribuir pontos', 500);
   }
 };
@@ -249,20 +297,23 @@ const resetCharacter = async (req, res) => {
     const { name } = req.params;
     const { accountId } = req.user;
     
+    console.log(`🔄 Tentando resetar personagem: ${name}`);
+    
     // Verificar se o personagem existe e pode resetar
     const checkSql = `
       SELECT 
-        cLevel as level,
-        ResetCount as resets,
-        ctlcode as online,
-        Money as zen
-      FROM ${tables.characters}
-      WHERE Name = ? AND AccountID = ?
+        level,
+        reset as resets,
+        online,
+        money as zen
+      FROM ${tables.characterInfo}
+      WHERE name = ? AND account_id = ?
     `;
     
     const checkResult = await executeQueryMU(checkSql, [name, accountId]);
     
     if (!checkResult.success || checkResult.data.length === 0) {
+      console.log(`❌ Personagem não encontrado: ${name}`);
       return errorResponse(res, 'Personagem não encontrado', 404);
     }
     
@@ -270,38 +321,43 @@ const resetCharacter = async (req, res) => {
     
     // Verificar se está online
     if (character.online === 1) {
+      console.log(`⚠️ Personagem online, não pode resetar: ${name}`);
       return errorResponse(res, 'Não é possível resetar personagem online', 400);
     }
     
     // Verificar requisitos de reset (level 400)
     const requiredLevel = 400;
     if (character.level < requiredLevel) {
+      console.log(`⚠️ Level insuficiente: ${character.level} < ${requiredLevel}`);
       return errorResponse(res, `Level mínimo para reset: ${requiredLevel}`, 400);
     }
     
     // Custo de reset (pode ser configurável)
     const resetCost = 5000000; // 5kk zen
     if (character.zen < resetCost) {
+      console.log(`⚠️ Zen insuficiente: ${character.zen} < ${resetCost}`);
       return errorResponse(res, 'Zen insuficiente para reset', 400);
     }
     
     // Realizar reset
     const resetSql = `
-      UPDATE ${tables.characters}
+      UPDATE ${tables.characterInfo}
       SET 
-        cLevel = 1,
-        Experience = 0,
-        ResetCount = ResetCount + 1,
-        LevelUpPoint = LevelUpPoint + 500,
-        Money = Money - ?
-      WHERE Name = ? AND AccountID = ?
+        level = 1,
+        reset = reset + 1,
+        points = points + 500,
+        money = money - ?
+      WHERE name = ? AND account_id = ?
     `;
     
     const resetResult = await executeQueryMU(resetSql, [resetCost, name, accountId]);
     
     if (!resetResult.success) {
+      console.error(`❌ Erro ao resetar:`, resetResult.error);
       return errorResponse(res, 'Erro ao realizar reset', 500);
     }
+    
+    console.log(`✅ Reset realizado com sucesso: ${name} → Reset #${character.resets + 1}`);
     
     return successResponse(res, {
       newResetCount: character.resets + 1,
@@ -310,7 +366,7 @@ const resetCharacter = async (req, res) => {
     }, 'Reset realizado com sucesso');
     
   } catch (error) {
-    console.error('❌ Erro ao resetar personagem:', error);
+    console.error('❌ Exception ao resetar personagem:', error);
     return errorResponse(res, 'Erro ao realizar reset', 500);
   }
 };
