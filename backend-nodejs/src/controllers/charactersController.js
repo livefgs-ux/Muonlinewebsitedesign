@@ -2,7 +2,7 @@
  * Controller de Personagens
  */
 
-const { executeQuery, executeTransaction } = require('../config/database');
+const { executeQueryMU, executeQueryWEB } = require('../config/database');
 const { tables } = require('../config/auth');
 const { getClassName, successResponse, errorResponse } = require('../utils/helpers');
 
@@ -39,7 +39,7 @@ const getAccountCharacters = async (req, res) => {
       ORDER BY Name ASC
     `;
     
-    const result = await executeQuery(sql, [accountId]);
+    const result = await executeQueryMU(sql, [accountId]);
     
     if (!result.success) {
       return errorResponse(res, 'Erro ao buscar personagens', 500);
@@ -113,7 +113,7 @@ const getCharacterDetails = async (req, res) => {
       WHERE Name = ? AND AccountID = ?
     `;
     
-    const result = await executeQuery(sql, [name, accountId]);
+    const result = await executeQueryMU(sql, [name, accountId]);
     
     if (!result.success) {
       return errorResponse(res, 'Erro ao buscar personagem', 500);
@@ -178,7 +178,7 @@ const distributePoints = async (req, res) => {
       WHERE Name = ? AND AccountID = ?
     `;
     
-    const checkResult = await executeQuery(checkSql, [name, accountId]);
+    const checkResult = await executeQueryMU(checkSql, [name, accountId]);
     
     if (!checkResult.success || checkResult.data.length === 0) {
       return errorResponse(res, 'Personagem não encontrado', 404);
@@ -209,7 +209,7 @@ const distributePoints = async (req, res) => {
       WHERE Name = ? AND AccountID = ?
     `;
     
-    const updateResult = await executeQuery(updateSql, [
+    const updateResult = await executeQueryMU(updateSql, [
       strength || 0,
       dexterity || 0,
       vitality || 0,
@@ -260,7 +260,7 @@ const resetCharacter = async (req, res) => {
       WHERE Name = ? AND AccountID = ?
     `;
     
-    const checkResult = await executeQuery(checkSql, [name, accountId]);
+    const checkResult = await executeQueryMU(checkSql, [name, accountId]);
     
     if (!checkResult.success || checkResult.data.length === 0) {
       return errorResponse(res, 'Personagem não encontrado', 404);
@@ -297,7 +297,7 @@ const resetCharacter = async (req, res) => {
       WHERE Name = ? AND AccountID = ?
     `;
     
-    const resetResult = await executeQuery(resetSql, [resetCost, name, accountId]);
+    const resetResult = await executeQueryMU(resetSql, [resetCost, name, accountId]);
     
     if (!resetResult.success) {
       return errorResponse(res, 'Erro ao realizar reset', 500);

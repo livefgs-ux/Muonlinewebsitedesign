@@ -3,14 +3,15 @@
  * Gerencia pacotes de WCoin configuráveis
  */
 
-const db = require('../config/database');
+const { executeQueryWEB } = require('../config/database');
+const { successResponse, errorResponse } = require('../utils/helpers');
 
 /**
  * Listar todos os pacotes de WCoin
  */
 const getAllPackages = async (req, res) => {
   try {
-    const [packages] = await db.query(`
+    const sql = `
       SELECT 
         id,
         name,
@@ -26,18 +27,18 @@ const getAllPackages = async (req, res) => {
       FROM wcoin_packages
       WHERE is_active = 1
       ORDER BY display_order ASC, wcoin_amount ASC
-    `);
+    `;
+    
+    const result = await executeQueryWEB(sql, []);
+    
+    if (!result.success) {
+      return errorResponse(res, 'Erro ao buscar pacotes de WCoin', 500);
+    }
 
-    res.json({
-      success: true,
-      data: packages
-    });
+    return successResponse(res, result.data);
   } catch (error) {
-    console.error('Erro ao buscar pacotes de WCoin:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao buscar pacotes de WCoin'
-    });
+    console.error('❌ Erro ao buscar pacotes de WCoin:', error);
+    return errorResponse(res, 'Erro ao buscar pacotes de WCoin', 500);
   }
 };
 
@@ -48,27 +49,27 @@ const getPackageById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [packages] = await db.query(`
+    const sql = `
       SELECT * FROM wcoin_packages WHERE id = ?
-    `, [id]);
+    `;
+    
+    const result = await executeQueryWEB(sql, [id]);
+    
+    if (!result.success) {
+      return errorResponse(res, 'Erro ao buscar pacote', 500);
+    }
 
-    if (packages.length === 0) {
+    if (result.data.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Pacote não encontrado'
       });
     }
 
-    res.json({
-      success: true,
-      data: packages[0]
-    });
+    return successResponse(res, result.data[0]);
   } catch (error) {
-    console.error('Erro ao buscar pacote:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao buscar pacote'
-    });
+    console.error('❌ Erro ao buscar pacote:', error);
+    return errorResponse(res, 'Erro ao buscar pacote', 500);
   }
 };
 
@@ -103,7 +104,7 @@ const createPackage = async (req, res) => {
       });
     }
 
-    const [result] = await db.query(`
+    const sql = `
       INSERT INTO wcoin_packages (
         name,
         wcoin_amount,
@@ -114,7 +115,9 @@ const createPackage = async (req, res) => {
         is_active,
         display_order
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
+    `;
+    
+    const result = await executeQueryWEB(sql, [
       name,
       wcoin_amount,
       bonus_amount,
@@ -125,27 +128,24 @@ const createPackage = async (req, res) => {
       display_order
     ]);
 
-    res.status(201).json({
-      success: true,
-      message: 'Pacote criado com sucesso',
-      data: {
-        id: result.insertId,
-        name,
-        wcoin_amount,
-        bonus_amount,
-        price,
-        currency,
-        purchase_link,
-        is_active,
-        display_order
-      }
-    });
+    if (!result.success) {
+      return errorResponse(res, 'Erro ao criar pacote', 500);
+    }
+
+    return successResponse(res, {
+      id: result.insertId,
+      name,
+      wcoin_amount,
+      bonus_amount,
+      price,
+      currency,
+      purchase_link,
+      is_active,
+      display_order
+    }, 201);
   } catch (error) {
-    console.error('Erro ao criar pacote:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao criar pacote'
-    });
+    console.error('❌ Erro ao criar pacote:', error);
+    return errorResponse(res, 'Erro ao criar pacote', 500);
   }
 };
 
@@ -167,9 +167,15 @@ const updatePackage = async (req, res) => {
     } = req.body;
 
     // Verificar se pacote existe
-    const [existing] = await db.query('SELECT id FROM wcoin_packages WHERE id = ?', [id]);
+    const sqlCheck = 'SELECT id FROM wcoin_packages WHERE id = ?';
     
-    if (existing.length === 0) {
+    const resultCheck = await executeQueryWEB(sqlCheck, [id]);
+    
+    if (!resultCheck.success) {
+      return errorResponse(res, 'Erro ao buscar pacote', 500);
+    }
+    
+    if (resultCheck.data.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Pacote não encontrado'
@@ -224,26 +230,34 @@ const updatePackage = async (req, res) => {
     updates.push('updated_at = NOW()');
     values.push(id);
 
-    await db.query(`
+    const sqlUpdate = `
       UPDATE wcoin_packages 
       SET ${updates.join(', ')}
       WHERE id = ?
-    `, values);
+    `;
+    
+    const resultUpdate = await executeQueryWEB(sqlUpdate, values);
+    
+    if (!resultUpdate.success) {
+      return errorResponse(res, 'Erro ao atualizar pacote', 500);
+    }
 
     // Buscar pacote atualizado
-    const [updated] = await db.query('SELECT * FROM wcoin_packages WHERE id = ?', [id]);
+    const sqlSelect = 'SELECT * FROM wcoin_packages WHERE id = ?';
+    
+    const resultSelect = await executeQueryWEB(sqlSelect, [id]);
+    
+    if (!resultSelect.success) {
+      return errorResponse(res, 'Erro ao buscar pacote atualizado', 500);
+    }
 
-    res.json({
-      success: true,
+    return successResponse(res, {
       message: 'Pacote atualizado com sucesso',
-      data: updated[0]
+      data: resultSelect.data[0]
     });
   } catch (error) {
-    console.error('Erro ao atualizar pacote:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao atualizar pacote'
-    });
+    console.error('❌ Erro ao atualizar pacote:', error);
+    return errorResponse(res, 'Erro ao atualizar pacote', 500);
   }
 };
 
@@ -254,9 +268,15 @@ const deletePackage = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [existing] = await db.query('SELECT id FROM wcoin_packages WHERE id = ?', [id]);
+    const sqlCheck = 'SELECT id FROM wcoin_packages WHERE id = ?';
     
-    if (existing.length === 0) {
+    const resultCheck = await executeQueryWEB(sqlCheck, [id]);
+    
+    if (!resultCheck.success) {
+      return errorResponse(res, 'Erro ao buscar pacote', 500);
+    }
+    
+    if (resultCheck.data.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Pacote não encontrado'
@@ -264,22 +284,22 @@ const deletePackage = async (req, res) => {
     }
 
     // Soft delete - apenas desativa
-    await db.query(`
+    const sqlUpdate = `
       UPDATE wcoin_packages 
       SET is_active = 0, updated_at = NOW()
       WHERE id = ?
-    `, [id]);
+    `;
+    
+    const resultUpdate = await executeQueryWEB(sqlUpdate, [id]);
+    
+    if (!resultUpdate.success) {
+      return errorResponse(res, 'Erro ao desativar pacote', 500);
+    }
 
-    res.json({
-      success: true,
-      message: 'Pacote desativado com sucesso'
-    });
+    return successResponse(res, 'Pacote desativado com sucesso');
   } catch (error) {
-    console.error('Erro ao deletar pacote:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao deletar pacote'
-    });
+    console.error('❌ Erro ao deletar pacote:', error);
+    return errorResponse(res, 'Erro ao deletar pacote', 500);
   }
 };
 
@@ -290,27 +310,33 @@ const permanentDeletePackage = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [existing] = await db.query('SELECT id FROM wcoin_packages WHERE id = ?', [id]);
+    const sqlCheck = 'SELECT id FROM wcoin_packages WHERE id = ?';
     
-    if (existing.length === 0) {
+    const resultCheck = await executeQueryWEB(sqlCheck, [id]);
+    
+    if (!resultCheck.success) {
+      return errorResponse(res, 'Erro ao buscar pacote', 500);
+    }
+    
+    if (resultCheck.data.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Pacote não encontrado'
       });
     }
 
-    await db.query('DELETE FROM wcoin_packages WHERE id = ?', [id]);
+    const sqlDelete = 'DELETE FROM wcoin_packages WHERE id = ?';
+    
+    const resultDelete = await executeQueryWEB(sqlDelete, [id]);
+    
+    if (!resultDelete.success) {
+      return errorResponse(res, 'Erro ao remover pacote', 500);
+    }
 
-    res.json({
-      success: true,
-      message: 'Pacote removido permanentemente'
-    });
+    return successResponse(res, 'Pacote removido permanentemente');
   } catch (error) {
-    console.error('Erro ao deletar pacote:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao deletar pacote'
-    });
+    console.error('❌ Erro ao deletar pacote:', error);
+    return errorResponse(res, 'Erro ao deletar pacote', 500);
   }
 };
 
@@ -319,21 +345,21 @@ const permanentDeletePackage = async (req, res) => {
  */
 const getAllPackagesAdmin = async (req, res) => {
   try {
-    const [packages] = await db.query(`
+    const sql = `
       SELECT * FROM wcoin_packages
       ORDER BY display_order ASC, wcoin_amount ASC
-    `);
+    `;
+    
+    const result = await executeQueryWEB(sql, []);
+    
+    if (!result.success) {
+      return errorResponse(res, 'Erro ao buscar pacotes', 500);
+    }
 
-    res.json({
-      success: true,
-      data: packages
-    });
+    return successResponse(res, result.data);
   } catch (error) {
-    console.error('Erro ao buscar pacotes:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao buscar pacotes'
-    });
+    console.error('❌ Erro ao buscar pacotes:', error);
+    return errorResponse(res, 'Erro ao buscar pacotes', 500);
   }
 };
 
