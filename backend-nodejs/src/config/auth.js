@@ -18,10 +18,13 @@ module.exports = {
   
   // ═══════════════════════════════════════════════════════════════
   // SEASON 19 DV TEAMS - NOMES CORRETOS DAS TABELAS E COLUNAS
+  // Versão: 529 (2025-12-29 01:00)
+  // Fix: Adicionados aliases para compatibilidade com controllers
   // ═══════════════════════════════════════════════════════════════
   
   // Tabelas do banco
   tables: {
+    // Tabelas principais
     accounts: process.env.TABLE_ACCOUNTS || 'accounts',
     accountsStatus: 'accounts_status',
     accountData: 'account_data',
@@ -29,7 +32,12 @@ module.exports = {
     guildList: process.env.TABLE_GUILD || 'guild_list',
     guildMembers: process.env.TABLE_GUILD_MEMBER || 'guild_members',
     characterGens: 'character_gens',
-    accountsSecurity: 'accounts_security'
+    accountsSecurity: 'accounts_security',
+    
+    // ✅ ALIASES PARA COMPATIBILIDADE COM CONTROLLERS (V.529)
+    // Os controllers usam nomes curtos, mas auth.js usa nomes descritivos
+    get characters() { return this.characterInfo; },
+    get guild() { return this.guildList; }
   },
   
   // ═══════════════════════════════════════════════════════════════

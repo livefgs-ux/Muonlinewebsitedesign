@@ -1,7 +1,7 @@
 # 🧠 MEMÓRIA DO PROJETO - MEUMU ONLINE
-**Versão:** 528  
-**Data:** 2025-12-29 00:30 UTC  
-**Última Atualização:** V.528 - Hash Algorithm Fix (DV Teams)
+**Versão:** 529  
+**Data:** 2025-12-29 01:00 UTC  
+**Última Atualização:** V.529 - Table Aliases Fix (undefined tables)
 
 ---
 
@@ -218,6 +218,12 @@ SHA-256(username + ':' + password)
 - **Solução:** Adicionado algoritmo correto no helpers.js
 - **Próximo passo:** Executar `test-login-completo.js` para validar
 
+### 🔴 **CRÍTICO: Rankings mostravam "undefined"**
+- **Status:** ✅ CORRIGIDO NA V.529
+- **Causa:** Controllers usavam `tables.characters`, mas auth.js definia `tables.characterInfo`
+- **Solução:** Adicionados getters como aliases no auth.js
+- **Próximo passo:** Reiniciar servidor com `pm2 restart meumu-backend`
+
 ### 🔴 **CRÍTICO: Registro de conta**
 - **Status:** NÃO TESTADO
 - **Depende de:** Descobrir algoritmo de hash correto
@@ -297,6 +303,6 @@ curl http://localhost:3001/api/health
 
 ---
 
-**Última atualização:** 2025-12-29 00:30 UTC  
-**Versão do instalador:** 528  
+**Última atualização:** 2025-12-29 01:00 UTC  
+**Versão do instalador:** 529  
 **Status:** ⏳ Aguardando teste de login (algoritmo corrigido)

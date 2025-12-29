@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="528"
-VERSION_DATE="2025-12-29 00:30 - HASH ALGORITHM FIX (DV TEAMS)"
+VERSION="529"
+VERSION_DATE="2025-12-29 01:00 - TABLE ALIASES FIX (undefined tables)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -1193,7 +1193,7 @@ configurar_litespeed_proxy() {
     echo "════════════════════════════════════════════════════════════"
     echo ""
     echo -e "${CYAN}Este assistente irá configurar o LiteSpeed como proxy reverso${NC}"
-    echo -e "${CYAN}para o backend Node.js (compatível com CyberPanel).${NC}"
+    echo -e "${CYAN}para o backend Node.js (compat��vel com CyberPanel).${NC}"
     echo ""
     echo -e "${YELLOW}⚠️  ATENÇÃO: ${NC}"
     echo -e "${YELLOW}   • Você está usando CyberPanel + OpenLiteSpeed${NC}"
