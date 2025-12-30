@@ -144,13 +144,13 @@ const login = async (req, res) => {
     
     try {
       // ========================================================================
-      // SEASON 19 DV TEAMS: account_id é STRING (nome da conta), NÃO GUID!
+      // SEASON 19 DV TEAMS: account_id é INTEGER (GUID), NÃO STRING!
       // ========================================================================
       const adminCheckResult = await executeQueryMU(
         `SELECT MAX(authority) as max_authority 
          FROM character_info 
          WHERE account_id = ?`,
-        [account.username]  // ✅ CORRETO! account_id é STRING
+        [account.guid]  // ✅ CORRETO! account_id é FK para accounts.guid (INTEGER)
       );
       
       if (!adminCheckResult.success) {

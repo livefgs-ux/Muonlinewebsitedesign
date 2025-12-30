@@ -9,6 +9,21 @@ const { tables } = require('../config/auth');
 const { getClassName, successResponse, errorResponse } = require('../utils/helpers');
 
 /**
+ * Helper: Buscar GUID da conta a partir do username
+ * ✅ SEASON 19 DV TEAMS: account_id é INTEGER (GUID), não STRING!
+ */
+const getAccountGuid = async (accountUsername) => {
+  const sql = `SELECT guid FROM ${tables.accounts} WHERE account = ?`;
+  const result = await executeQueryMU(sql, [accountUsername]);
+  
+  if (!result.success || result.data.length === 0) {
+    return null;
+  }
+  
+  return result.data[0].guid;
+};
+
+/**
  * Listar personagens de uma conta
  */
 const getAccountCharacters = async (req, res) => {
@@ -23,13 +38,25 @@ const getAccountCharacters = async (req, res) => {
     console.log(`📊 Tabela: ${tables.characterInfo}`);
     
     // ========================================================================
-    // SEASON 19 DV TEAMS - ESTRUTURA REAL DO MUONLINE.SQL
+    // ✅ SEASON 19 DV TEAMS: account_id é INTEGER (GUID), NÃO STRING!
     // ========================================================================
-    // Tabela character_info:
-    //   - account_id NÃO é GUID! É uma STRING com o nome da conta
-    //   - Buscar diretamente por account_id = accountName
+    // CORREÇÃO CRÍTICA:
+    //   - character_info.account_id é FK para accounts.guid (INTEGER)
+    //   - JWT armazena accountId como STRING (nome da conta)
+    //   - Precisamos buscar o GUID da conta PRIMEIRO!
     // ========================================================================
     
+    // Buscar GUID da conta
+    const accountGuid = await getAccountGuid(accountId);
+    
+    if (!accountGuid) {
+      console.log(`❌ Conta não encontrada: ${accountId}`);
+      return errorResponse(res, 'Conta não encontrada', 404);
+    }
+    
+    console.log(`✅ GUID da conta encontrado: ${accountGuid}`);
+    
+    // Agora buscar personagens usando o GUID
     const sql = `
       SELECT 
         name,
@@ -58,9 +85,9 @@ const getAccountCharacters = async (req, res) => {
     
     console.log(`📊 SQL Query:`);
     console.log(sql);
-    console.log(`📊 Parâmetros: [${accountId}]`);
+    console.log(`📊 Parâmetros: [${accountGuid}] (GUID INTEGER)`);
     
-    const result = await executeQueryMU(sql, [accountId]);
+    const result = await executeQueryMU(sql, [accountGuid]);  // ✅ USAR GUID!
     
     console.log(`📊 Query executada!`);
     console.log(`📊 Success: ${result.success}`);
@@ -142,6 +169,14 @@ const getCharacterDetails = async (req, res) => {
     
     console.log(`📊 Buscando detalhes do personagem: ${name} (conta: ${accountId})`);
     
+    // Buscar GUID da conta
+    const accountGuid = await getAccountGuid(accountId);
+    
+    if (!accountGuid) {
+      console.log(`❌ Conta não encontrada: ${accountId}`);
+      return errorResponse(res, 'Conta não encontrada', 404);
+    }
+    
     const sql = `
       SELECT 
         name,
@@ -167,7 +202,7 @@ const getCharacterDetails = async (req, res) => {
       WHERE name = ? AND account_id = ?
     `;
     
-    const result = await executeQueryMU(sql, [name, accountId]);
+    const result = await executeQueryMU(sql, [name, accountGuid]);  // ✅ USAR GUID!
     
     if (!result.success) {
       console.error(`❌ Erro SQL ao buscar personagem:`, result.error);
@@ -223,6 +258,14 @@ const distributePoints = async (req, res) => {
     
     console.log(`🎯 Distribuindo pontos para ${name}:`, { strength, dexterity, vitality, energy, command });
     
+    // Buscar GUID da conta
+    const accountGuid = await getAccountGuid(accountId);
+    
+    if (!accountGuid) {
+      console.log(`❌ Conta não encontrada: ${accountId}`);
+      return errorResponse(res, 'Conta não encontrada', 404);
+    }
+    
     // Calcular total de pontos a distribuir
     const totalPoints = (strength || 0) + (dexterity || 0) + (vitality || 0) + (energy || 0) + (command || 0);
     
@@ -237,7 +280,7 @@ const distributePoints = async (req, res) => {
       WHERE name = ? AND account_id = ?
     `;
     
-    const checkResult = await executeQueryMU(checkSql, [name, accountId]);
+    const checkResult = await executeQueryMU(checkSql, [name, accountGuid]);  // ✅ USAR GUID!
     
     if (!checkResult.success || checkResult.data.length === 0) {
       console.log(`❌ Personagem não encontrado: ${name}`);
@@ -279,7 +322,7 @@ const distributePoints = async (req, res) => {
       command || 0,
       totalPoints,
       name,
-      accountId
+      accountGuid  // ✅ USAR GUID!
     ]);
     
     if (!updateResult.success) {
@@ -316,6 +359,14 @@ const resetCharacter = async (req, res) => {
     
     console.log(`🔄 Tentando resetar personagem: ${name}`);
     
+    // Buscar GUID da conta
+    const accountGuid = await getAccountGuid(accountId);
+    
+    if (!accountGuid) {
+      console.log(`❌ Conta não encontrada: ${accountId}`);
+      return errorResponse(res, 'Conta não encontrada', 404);
+    }
+    
     // Verificar se o personagem existe e pode resetar
     const checkSql = `
       SELECT 
@@ -327,7 +378,7 @@ const resetCharacter = async (req, res) => {
       WHERE name = ? AND account_id = ?
     `;
     
-    const checkResult = await executeQueryMU(checkSql, [name, accountId]);
+    const checkResult = await executeQueryMU(checkSql, [name, accountGuid]);  // ✅ USAR GUID!
     
     if (!checkResult.success || checkResult.data.length === 0) {
       console.log(`❌ Personagem não encontrado: ${name}`);
@@ -367,7 +418,7 @@ const resetCharacter = async (req, res) => {
       WHERE name = ? AND account_id = ?
     `;
     
-    const resetResult = await executeQueryMU(resetSql, [resetCost, name, accountId]);
+    const resetResult = await executeQueryMU(resetSql, [resetCost, name, accountGuid]);  // ✅ USAR GUID!
     
     if (!resetResult.success) {
       console.error(`❌ Erro ao resetar:`, resetResult.error);
