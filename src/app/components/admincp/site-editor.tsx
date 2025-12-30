@@ -62,6 +62,14 @@ export function SiteEditor({}: SiteEditorProps) {
     localStorage.getItem('admin_particleColor') || '#FFB800'
   );
   const [backgroundPreview, setBackgroundPreview] = useState<string | null>(null);
+  
+  // Background filter states (V585)
+  const [brightness, setBrightness] = useState<number>(
+    Number(localStorage.getItem('admin_brightness')) || 100
+  );
+  const [contrast, setContrast] = useState<number>(
+    Number(localStorage.getItem('admin_contrast')) || 100
+  );
 
   useEffect(() => {
     loadConfig();
@@ -217,7 +225,9 @@ export function SiteEditor({}: SiteEditorProps) {
     if (backgroundPreview) {
       localStorage.setItem('admin_customBackground', backgroundPreview);
       setCustomBackground(backgroundPreview);
-      toast.success('✅ Background salvo com sucesso! Recarregue a página para ver as mudanças.');
+      toast.success('✅ Background salvo! Abra o site em nova aba para ver (botão "Ver Site ao Vivo").', {
+        duration: 5000
+      });
       setBackgroundPreview(null);
     }
   };
@@ -226,19 +236,42 @@ export function SiteEditor({}: SiteEditorProps) {
     localStorage.removeItem('admin_customBackground');
     setCustomBackground(null);
     setBackgroundPreview(null);
-    toast.success('✅ Background padrão restaurado! Recarregue a página para ver as mudanças.');
+    toast.success('✅ Background padrão restaurado! Abra o site em nova aba para ver.', {
+      duration: 5000
+    });
   };
 
   const handleSaveParticleColor = () => {
     localStorage.setItem('admin_particleColor', particleColor);
-    toast.success('✅ Cor das partículas salva! Recarregue a página para ver as mudanças.');
+    toast.success('✅ Cor das partículas salva! Abra o site em nova aba para ver.', {
+      duration: 5000
+    });
   };
 
   const handleResetParticleColor = () => {
     const defaultColor = '#FFB800';
     setParticleColor(defaultColor);
     localStorage.setItem('admin_particleColor', defaultColor);
-    toast.success('✅ Cor padrão restaurada! Recarregue a página para ver as mudanças.');
+    toast.success('✅ Cor padrão restaurada! Abra o site em nova aba para ver.', {
+      duration: 5000
+    });
+  };
+
+  // V585: Handlers de brilho/contraste
+  const handleSaveBrightnessContrast = () => {
+    localStorage.setItem('admin_brightness', brightness.toString());
+    localStorage.setItem('admin_contrast', contrast.toString());
+    toast.success('✅ Filtros salvos! Abra o site em nova aba para ver (botão "Ver Site ao Vivo").', {
+      duration: 5000
+    });
+  };
+
+  const handleResetFilters = () => {
+    setBrightness(100);
+    setContrast(100);
+    localStorage.setItem('admin_brightness', '100');
+    localStorage.setItem('admin_contrast', '100');
+    toast.success('✅ Filtros resetados para padrão!');
   };
 
   if (loading) {
@@ -593,6 +626,119 @@ export function SiteEditor({}: SiteEditorProps) {
                   </Button>
                   <Button 
                     onClick={handleResetParticleColor}
+                    variant="outline"
+                    className="border-amber-500/30 hover:bg-amber-500/10"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Resetar
+                  </Button>
+                </div>
+              </div>
+
+              {/* Brightness/Contrast Filters Section - V585 */}
+              <div className="border-t border-amber-500/20 pt-6 space-y-4">
+                <div className="flex items-start gap-3 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                  <Info className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-purple-300">
+                    <p className="font-semibold mb-1">🎨 Ajuste o Brilho e Contraste do Background:</p>
+                    <p>Use os sliders abaixo para ajustar a visibilidade do plano de fundo. Ideal para melhorar a legibilidade do texto sobre imagens escuras ou claras.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Brightness Slider */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="brightness" className="flex items-center gap-2 text-base">
+                        <Zap className="w-4 h-4" />
+                        Brilho do Background
+                      </Label>
+                      <span className="text-sm font-mono text-amber-400 bg-black/60 px-3 py-1 rounded-md border border-amber-500/30">
+                        {brightness}%
+                      </span>
+                    </div>
+                    
+                    <input
+                      id="brightness"
+                      type="range"
+                      value={brightness}
+                      onChange={(e) => setBrightness(Number(e.target.value))}
+                      min="0"
+                      max="200"
+                      step="5"
+                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                    />
+                    
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Mais Escuro (0%)</span>
+                      <span>Padrão (100%)</span>
+                      <span>Mais Claro (200%)</span>
+                    </div>
+                  </div>
+
+                  {/* Contrast Slider */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="contrast" className="flex items-center gap-2 text-base">
+                        <Zap className="w-4 h-4" />
+                        Contraste do Background
+                      </Label>
+                      <span className="text-sm font-mono text-amber-400 bg-black/60 px-3 py-1 rounded-md border border-amber-500/30">
+                        {contrast}%
+                      </span>
+                    </div>
+                    
+                    <input
+                      id="contrast"
+                      type="range"
+                      value={contrast}
+                      onChange={(e) => setContrast(Number(e.target.value))}
+                      min="0"
+                      max="200"
+                      step="5"
+                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                    />
+                    
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Sem Contraste (0%)</span>
+                      <span>Padrão (100%)</span>
+                      <span>Alto Contraste (200%)</span>
+                    </div>
+                  </div>
+
+                  {/* Preview Box - V585 */}
+                  {(customBackground || backgroundPreview) && (
+                    <div className="p-4 bg-black/40 rounded-lg border border-amber-500/30">
+                      <p className="text-sm text-gray-400 mb-3 font-semibold">Preview dos Filtros:</p>
+                      <div 
+                        className="w-full h-32 rounded-md overflow-hidden border-2 border-amber-500/50"
+                        style={{
+                          backgroundImage: `url(${backgroundPreview || customBackground})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          filter: `brightness(${brightness}%) contrast(${contrast}%)`
+                        }}
+                      >
+                        <div className="w-full h-full bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center p-4">
+                          <p className="text-white font-semibold text-sm">
+                            Brilho: {brightness}% | Contraste: {contrast}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleSaveBrightnessContrast}
+                    className="flex-1 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 flex items-center justify-center gap-2"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Salvar Filtros
+                  </Button>
+                  <Button 
+                    onClick={handleResetFilters}
                     variant="outline"
                     className="border-amber-500/30 hover:bg-amber-500/10"
                   >

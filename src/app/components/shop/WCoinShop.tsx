@@ -10,6 +10,7 @@ import { ShoppingCart, Coins, Sparkles } from 'lucide-react';
 import { GlassCard } from '../ui/glass-card';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import { API_CONFIG, getApiUrl } from '../../config/api';
+import { toast } from 'sonner';
 
 interface WCoinPackage {
   id: number;
@@ -22,6 +23,16 @@ interface WCoinPackage {
 interface WCoinShopProps {
   isAdminMode?: boolean;
   onPurchase?: (packageId: number) => void;
+}
+
+interface PurchaseLinks {
+  default: string;
+  package_500: string;
+  package_1000: string;
+  package_2000: string;
+  package_5000: string;
+  package_10000: string;
+  package_20000: string;
 }
 
 export function WCoinShop({ 
@@ -59,12 +70,78 @@ export function WCoinShop({
     }).format(value);
   };
 
+  // V586: Mapeamento de WCoin para chave do link
+  const getPackageKey = (wcoin: number): keyof PurchaseLinks => {
+    const packageMap: Record<number, keyof PurchaseLinks> = {
+      500: 'package_500',
+      1000: 'package_1000',
+      2000: 'package_2000',
+      5000: 'package_5000',
+      10000: 'package_10000',
+      20000: 'package_20000',
+    };
+    return packageMap[wcoin] || 'default';
+  };
+
   const handlePurchase = (packageId: number) => {
-    if (onPurchase) {
+    // Se for AdminMode, chamar função customizada
+    if (isAdminMode && onPurchase) {
       onPurchase(packageId);
-    } else {
-      console.log('Comprar pacote:', packageId);
-      // TODO: Integrar com sistema de pagamento
+      return;
+    }
+
+    // V586: Verificar se há link de pagamento configurado
+    try {
+      const savedLinks = localStorage.getItem('wcoin_purchase_links');
+      
+      if (!savedLinks) {
+        // Nenhum link configurado
+        toast.error('⚠️ Sistema de pagamento não configurado!', {
+          description: 'Entre em contato com a administração do servidor para habilitar a compra de WCoin.',
+          duration: 5000
+        });
+        return;
+      }
+
+      const links: PurchaseLinks = JSON.parse(savedLinks);
+      
+      // Encontrar o pacote pelo ID
+      const pkg = packages.find(p => p.id === packageId);
+      if (!pkg) {
+        toast.error('Pacote não encontrado!');
+        return;
+      }
+
+      // Obter a chave do link baseado no WCoin
+      const linkKey = getPackageKey(pkg.wcoin);
+      const packageLink = links[linkKey] || links.default;
+
+      if (!packageLink) {
+        // Link específico não configurado
+        toast.warning('⚠️ Link de pagamento não disponível para este pacote!', {
+          description: 'Este pacote ainda não está disponível para compra. Tente outro ou entre em contato com a administração.',
+          duration: 5000
+        });
+        return;
+      }
+
+      // Redirecionar para o link de pagamento
+      toast.success('🚀 Redirecionando para pagamento...', {
+        description: `Pacote: ${pkg.wcoin} WCoin - ${formatCurrency(pkg.price, pkg.currency)}`,
+        duration: 3000
+      });
+      
+      // Abrir em nova aba após 1 segundo (para usuário ver o toast)
+      setTimeout(() => {
+        window.open(packageLink, '_blank', 'noopener,noreferrer');
+      }, 1000);
+
+    } catch (error) {
+      console.error('Erro ao processar compra:', error);
+      toast.error('Erro ao processar pagamento', {
+        description: 'Tente novamente ou entre em contato com o suporte.',
+        duration: 5000
+      });
     }
   };
 

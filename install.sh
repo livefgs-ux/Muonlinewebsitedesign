@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="585"
-VERSION_DATE="2025-12-31 01:40 CET - V585: FIX UX - Contraste melhorado no Editor de Site (inputs legíveis)"
+VERSION="587"
+VERSION_DATE="2025-12-31 02:30 CET - V587: FEATURE - Sistema de pagamento WCoin com validação e redirecionamento"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

@@ -18,31 +18,45 @@ const DEFAULT_BACKGROUND = 'https://i.postimg.cc/1XHKxhv1/8393fd9b_a4f8_4ab5_a5c
 
 export const SharedBackground = memo(function SharedBackground() {
   const [backgroundUrl, setBackgroundUrl] = useState<string>(DEFAULT_BACKGROUND);
+  // V585: Filtros de brilho e contraste
+  const [brightness, setBrightness] = useState<number>(100);
+  const [contrast, setContrast] = useState<number>(100);
 
   useEffect(() => {
     // 1. Verificar localStorage primeiro (prioridade imediata)
     const localBg = localStorage.getItem('admin_customBackground');
+    const localBrightness = localStorage.getItem('admin_brightness');
+    const localContrast = localStorage.getItem('admin_contrast');
+    
     if (localBg) {
       setBackgroundUrl(localBg);
-      return;
+    }
+    if (localBrightness) {
+      setBrightness(Number(localBrightness));
+    }
+    if (localContrast) {
+      setContrast(Number(localContrast));
     }
 
-    // 2. Buscar configuração do banco de dados
-    const fetchBackground = async () => {
-      try {
-        const response = await fetch('/api/site-editor/background');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.backgroundUrl) {
-            setBackgroundUrl(data.backgroundUrl);
+    // Se não houver bg customizado, buscar do banco de dados
+    if (!localBg) {
+      // 2. Buscar configuração do banco de dados
+      const fetchBackground = async () => {
+        try {
+          const response = await fetch('/api/site-editor/background');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.backgroundUrl) {
+              setBackgroundUrl(data.backgroundUrl);
+            }
           }
+        } catch (error) {
+          console.log('ℹ️ Usando background padrão');
         }
-      } catch (error) {
-        console.log('ℹ️ Usando background padrão');
-      }
-    };
+      };
 
-    fetchBackground();
+      fetchBackground();
+    }
   }, []);
 
   return (
@@ -58,6 +72,7 @@ export const SharedBackground = memo(function SharedBackground() {
           style={{
             backgroundImage: `url(${backgroundUrl})`,
             willChange: 'transform',
+            filter: `brightness(${brightness}%) contrast(${contrast}%)`,
           }}
         />
         
