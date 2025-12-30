@@ -187,3 +187,137 @@ exports.deletePlugin = async (req, res) => {
     });
   }
 };
+
+/**
+ * POST /api/admin/plugins/install
+ * Instala plugin a partir de arquivo ZIP
+ */
+exports.installPlugin = async (req, res) => {
+  const multer = require('multer');
+  const path = require('path');
+  const fs = require('fs');
+  const AdmZip = require('adm-zip');
+
+  try {
+    // Configurar multer para upload
+    const storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        const uploadDir = path.join(process.cwd(), 'uploads/plugins');
+        
+        // Criar diretório se não existir
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        
+        cb(null, uploadDir);
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+      }
+    });
+
+    const upload = multer({ 
+      storage: storage,
+      fileFilter: (req, file, cb) => {
+        if (path.extname(file.originalname).toLowerCase() !== '.zip') {
+          return cb(new Error('Apenas arquivos .zip são permitidos'));
+        }
+        cb(null, true);
+      }
+    }).single('plugin');
+
+    // Processar upload
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message || 'Erro ao fazer upload do plugin'
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nenhum arquivo enviado'
+        });
+      }
+
+      try {
+        const zipPath = req.file.path;
+        const pluginsDir = path.join(process.cwd(), 'plugins');
+        
+        // Criar diretório de plugins se não existir
+        if (!fs.existsSync(pluginsDir)) {
+          fs.mkdirSync(pluginsDir, { recursive: true });
+        }
+
+        // Extrair ZIP
+        const zip = new AdmZip(zipPath);
+        zip.extractAllTo(pluginsDir, true);
+
+        // Tentar ler manifest.json
+        const extractedFiles = fs.readdirSync(pluginsDir);
+        let pluginInfo = {
+          name: req.file.originalname.replace('.zip', ''),
+          version: '1.0.0',
+          author: 'Unknown',
+          description: 'Plugin instalado via upload'
+        };
+
+        // Procurar por manifest.json
+        for (const file of extractedFiles) {
+          const manifestPath = path.join(pluginsDir, file, 'manifest.json');
+          if (fs.existsSync(manifestPath)) {
+            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            pluginInfo = {
+              name: manifest.name || pluginInfo.name,
+              version: manifest.version || pluginInfo.version,
+              author: manifest.author || pluginInfo.author,
+              description: manifest.description || pluginInfo.description
+            };
+            break;
+          }
+        }
+
+        // Salvar no banco de dados
+        const [result] = await pool.query(
+          `INSERT INTO plugins (name, description, version, author, enabled, created_at) 
+           VALUES (?, ?, ?, ?, true, NOW())`,
+          [pluginInfo.name, pluginInfo.description, pluginInfo.version, pluginInfo.author]
+        );
+
+        // Remover arquivo ZIP temporário
+        fs.unlinkSync(zipPath);
+
+        res.json({
+          success: true,
+          message: 'Plugin instalado com sucesso!',
+          data: {
+            id: result.insertId,
+            ...pluginInfo
+          }
+        });
+
+      } catch (error) {
+        // Limpar arquivo temporário em caso de erro
+        if (req.file && fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+
+        console.error('❌ Erro ao processar plugin:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Erro ao processar plugin: ' + error.message
+        });
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao instalar plugin:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao instalar plugin'
+    });
+  }
+};

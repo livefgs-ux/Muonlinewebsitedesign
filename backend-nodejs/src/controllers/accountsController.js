@@ -370,3 +370,81 @@ exports.getAccountStats = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Criar nova conta (AdminCP)
+ * POST /api/admin/accounts/create
+ */
+exports.createAccount = async (req, res, next) => {
+  try {
+    const { username, password, email, adminLevel } = req.body;
+
+    // Validações
+    const validation = validateRequired({ username, password, email });
+    if (!validation.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: validation.error
+      });
+    }
+
+    // Validar tamanho do username
+    if (username.length < 4 || username.length > 10) {
+      return res.status(400).json({
+        success: false,
+        error: 'Username deve ter entre 4 e 10 caracteres'
+      });
+    }
+
+    // Validar tamanho da senha
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: 'Senha deve ter no mínimo 6 caracteres'
+      });
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email inválido'
+      });
+    }
+
+    // Verificar se username já existe
+    const [existingAccount] = await poolMU.query(`
+      SELECT account FROM accounts WHERE account = ?
+    `, [username]);
+
+    if (existingAccount.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Username já está em uso'
+      });
+    }
+
+    // Hash da senha
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Criar conta
+    await poolMU.query(`
+      INSERT INTO accounts (
+        account,
+        password,
+        email,
+        admin_level,
+        cash,
+        created_at
+      ) VALUES (?, ?, ?, ?, 0, NOW())
+    `, [username, hashedPassword, email, adminLevel || 0]);
+
+    res.json({
+      success: true,
+      message: 'Conta criada com sucesso'
+    });
+  } catch (error) {
+    next(error);
+  }
+};

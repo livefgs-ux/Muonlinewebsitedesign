@@ -3,8 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import { Input } from '../../ui/input';
+import { toast } from 'sonner';
 
 export function SiteEditorSection() {
+  const handlePreview = () => {
+    toast.info('Preview do site será aberto em breve...');
+    // TODO: Implementar preview
+  };
+
+  const handleSave = () => {
+    toast.success('Mudanças salvas com sucesso!');
+    // TODO: Implementar save
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -13,11 +24,18 @@ export function SiteEditorSection() {
           <p className="text-sm text-slate-400">Personalize o visual e conteúdo do site</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
+          <Button 
+            variant="outline" 
+            className="border-slate-700 text-slate-300 hover:bg-slate-800"
+            onClick={handlePreview}
+          >
             <Eye className="w-4 h-4 mr-2" />
             Preview
           </Button>
-          <Button className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold">
+          <Button 
+            className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold"
+            onClick={handleSave}
+          >
             <Save className="w-4 h-4 mr-2" />
             Salvar Mudanças
           </Button>

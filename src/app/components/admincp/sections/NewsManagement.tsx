@@ -30,6 +30,7 @@ export function NewsManagement() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [publishing, setPublishing] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
 
   useEffect(() => {
     loadNews();
@@ -99,6 +100,49 @@ export function NewsManagement() {
       toast.error('Erro ao publicar notícia');
     } finally {
       setPublishing(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!newsForm.title || !newsForm.content) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    try {
+      setSavingDraft(true);
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
+      const response = await fetch('/api/news', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: newsForm.title,
+          content: newsForm.content,
+          status: 'draft'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('✅ Rascunho salvo com sucesso!');
+        setNewsForm({ title: '', content: '' });
+        loadNews(); // Recarregar lista
+      }
+    } catch (error) {
+      console.error('❌ Erro ao salvar rascunho:', error);
+      toast.error('Erro ao salvar rascunho');
+    } finally {
+      setSavingDraft(false);
     }
   };
 
@@ -174,13 +218,18 @@ export function NewsManagement() {
             <Button 
               className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold"
               onClick={handlePublish}
-              disabled={publishing}
+              disabled={publishing || savingDraft}
             >
               <FileText className="w-4 h-4 mr-2" />
               {publishing ? 'Publicando...' : 'Publicar'}
             </Button>
-            <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
-              Salvar como Rascunho
+            <Button 
+              variant="outline" 
+              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              onClick={handleSaveDraft}
+              disabled={publishing || savingDraft}
+            >
+              {savingDraft ? 'Salvando...' : 'Salvar como Rascunho'}
             </Button>
           </div>
         </CardContent>

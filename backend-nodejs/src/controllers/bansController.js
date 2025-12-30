@@ -155,6 +155,12 @@ exports.banAccount = async (req, res, next) => {
 };
 
 /**
+ * Criar banimento (alias para banAccount)
+ * POST /api/admin/bans/create
+ */
+exports.createBan = exports.banAccount;
+
+/**
  * Desbanir conta
  * POST /api/admin/bans/unban
  */

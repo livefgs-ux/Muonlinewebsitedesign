@@ -6,6 +6,8 @@ import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Badge } from '../../ui/badge';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog';
+import { Label } from '../../ui/label';
 
 /**
  * 👥 Account Management Section
@@ -27,6 +29,14 @@ export function AccountManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newAccount, setNewAccount] = useState({
+    username: '',
+    password: '',
+    email: '',
+    adminLevel: 0
+  });
 
   const searchAccount = async () => {
     if (!searchTerm || searchTerm.trim().length === 0) return;
@@ -71,6 +81,56 @@ export function AccountManagement() {
     }
   };
 
+  const handleCreateAccount = async () => {
+    // Validações
+    if (!newAccount.username || newAccount.username.length < 4 || newAccount.username.length > 10) {
+      toast.error('Username deve ter entre 4 e 10 caracteres');
+      return;
+    }
+
+    if (!newAccount.password || newAccount.password.length < 6) {
+      toast.error('Senha deve ter no mínimo 6 caracteres');
+      return;
+    }
+
+    if (!newAccount.email || !newAccount.email.includes('@')) {
+      toast.error('Email inválido');
+      return;
+    }
+
+    try {
+      setCreating(true);
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+
+      const response = await fetch('/api/admin/accounts/create', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newAccount)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Conta criada com sucesso!');
+        setShowCreateModal(false);
+        setNewAccount({ username: '', password: '', email: '', adminLevel: 0 });
+        // Se houver busca ativa, recarregar
+        if (searchTerm) searchAccount();
+      } else {
+        toast.error(data.message || 'Erro ao criar conta');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao criar conta:', error);
+      toast.error('Erro ao criar conta');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Actions */}
@@ -81,12 +141,97 @@ export function AccountManagement() {
         </div>
         
         <div className="flex gap-2">
-          <Button className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold shadow-lg shadow-amber-500/30">
+          <Button 
+            onClick={() => setShowCreateModal(true)}
+            className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold shadow-lg shadow-amber-500/30"
+          >
             <UserPlus className="w-4 h-4 mr-2" />
             Nova Conta
           </Button>
         </div>
       </div>
+
+      {/* Create Account Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="bg-slate-900 border-amber-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-amber-400">Criar Nova Conta</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Preencha os dados para criar uma nova conta de jogador
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="new-username" className="text-white">Username</Label>
+              <Input
+                id="new-username"
+                type="text"
+                placeholder="Digite o username (4-10 caracteres)"
+                value={newAccount.username}
+                onChange={(e) => setNewAccount({ ...newAccount, username: e.target.value })}
+                maxLength={10}
+                className="bg-black/40 border-slate-700 text-white"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="new-password" className="text-white">Senha</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="Digite a senha (mínimo 6 caracteres)"
+                value={newAccount.password}
+                onChange={(e) => setNewAccount({ ...newAccount, password: e.target.value })}
+                className="bg-black/40 border-slate-700 text-white"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="new-email" className="text-white">Email</Label>
+              <Input
+                id="new-email"
+                type="email"
+                placeholder="Digite o email"
+                value={newAccount.email}
+                onChange={(e) => setNewAccount({ ...newAccount, email: e.target.value })}
+                className="bg-black/40 border-slate-700 text-white"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="new-admin-level" className="text-white">Nível Admin</Label>
+              <Input
+                id="new-admin-level"
+                type="number"
+                min="0"
+                max="8"
+                value={newAccount.adminLevel}
+                onChange={(e) => setNewAccount({ ...newAccount, adminLevel: parseInt(e.target.value) || 0 })}
+                className="bg-black/40 border-slate-700 text-white"
+              />
+              <p className="text-xs text-slate-500 mt-1">0 = Jogador normal, 1-8 = Níveis de admin</p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowCreateModal(false)}
+              className="border-slate-700 text-slate-300"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateAccount}
+              disabled={creating}
+              className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold"
+            >
+              {creating ? 'Criando...' : 'Criar Conta'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Search and Filters */}
       <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 shadow-xl">

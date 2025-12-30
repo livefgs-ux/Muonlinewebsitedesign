@@ -11,6 +11,9 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 // Todas as rotas requerem autenticação de admin
 router.use(authenticate, requireAdmin);
 
+// Criar conta
+router.post('/create', accountsController.createAccount);
+
 // Buscar conta
 router.get('/search', accountsController.searchAccount);
 

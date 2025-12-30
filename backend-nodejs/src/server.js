@@ -264,6 +264,7 @@ app.use('/api/admin/accounts', require('./routes/accounts')); // ✅ NOVO V558: 
 app.use('/api/admin/bans', require('./routes/bans')); // ✅ NOVO V558: Sistema de bans
 app.use('/api/admin/site-editor', require('./routes/siteEditor')); // ✅ NOVO V563: Site Editor
 app.use('/api/admin/plugins', require('./routes/plugins')); // ✅ NOVO V564: Sistema de plugins
+app.use('/api/admin/crons', require('./routes/crons')); // ✅ NOVO V577: Cron Jobs Manager
 app.use('/api/sandbox', sandboxRoutes);
 app.use('/api/settings', require('./routes/settings')); // ✅ Configurações do site
 

@@ -372,5 +372,131 @@ module.exports = {
   getServerConfig,
   toggleMaintenance,
   updateSmtpSettings,
-  getMaintenanceStatus
+  getMaintenanceStatus,
+  updateGeneralSettings,
+  updateDatabaseSettings
+};
+
+/**
+ * ✅ V577: Atualizar configurações gerais
+ * POST /api/admin/settings/general
+ */
+const updateGeneralSettings = async (req, res) => {
+  try {
+    const { siteName, discordLink, whatsappLink } = req.body;
+
+    // Criar tabela se não existir
+    await executeQueryWEB(`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        server_name VARCHAR(255) DEFAULT 'MeuMU Online',
+        discord_link VARCHAR(255),
+        whatsapp_link VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Verificar se registro existe
+    const checkResult = await executeQueryWEB(`SELECT id FROM site_settings WHERE id = 1`);
+    
+    if (checkResult.success && checkResult.data && checkResult.data.length > 0) {
+      // UPDATE
+      const sql = `
+        UPDATE site_settings SET
+          server_name = ?,
+          discord_link = ?,
+          whatsapp_link = ?,
+          updated_at = NOW()
+        WHERE id = 1
+      `;
+      await executeQueryWEB(sql, [siteName, discordLink || '', whatsappLink || '']);
+    } else {
+      // INSERT
+      const sql = `
+        INSERT INTO site_settings (server_name, discord_link, whatsapp_link)
+        VALUES (?, ?, ?)
+      `;
+      await executeQueryWEB(sql, [siteName, discordLink || '', whatsappLink || '']);
+    }
+
+    console.log('✅ Configurações gerais atualizadas!');
+    return successResponse(res, { message: 'Configurações gerais salvas com sucesso!' });
+
+  } catch (error) {
+    console.error('❌ Erro ao atualizar configurações gerais:', error);
+    return errorResponse(res, 'Erro ao atualizar configurações gerais', 500);
+  }
+};
+
+/**
+ * ✅ V577: Atualizar configurações de banco de dados (.env)
+ * POST /api/admin/settings/database
+ * 
+ * ⚠️ ATENÇÃO: Esta função modifica o arquivo .env
+ */
+const updateDatabaseSettings = async (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+
+  try {
+    const { dbHost, dbPort, dbName, dbUser, dbPassword } = req.body;
+
+    // Validações
+    if (!dbHost || !dbPort || !dbName) {
+      return errorResponse(res, 'Host, Port e Nome do Banco são obrigatórios', 400);
+    }
+
+    // Caminho do arquivo .env
+    const envPath = path.join(process.cwd(), '.env');
+    
+    if (!fs.existsSync(envPath)) {
+      return errorResponse(res, 'Arquivo .env não encontrado', 404);
+    }
+
+    // Ler arquivo .env
+    let envContent = fs.readFileSync(envPath, 'utf8');
+
+    // Atualizar variáveis
+    const updates = {
+      'DB_HOST': dbHost,
+      'DB_PORT': dbPort,
+      'DB_DATABASE': dbName,
+    };
+
+    // Atualizar usuário se fornecido
+    if (dbUser) {
+      updates['DB_USER'] = dbUser;
+    }
+
+    // Atualizar senha apenas se fornecida (não vazia)
+    if (dbPassword && dbPassword.trim() !== '') {
+      updates['DB_PASSWORD'] = dbPassword;
+    }
+
+    // Aplicar atualizações
+    for (const [key, value] of Object.entries(updates)) {
+      const regex = new RegExp(`^${key}=.*$`, 'm');
+      if (regex.test(envContent)) {
+        envContent = envContent.replace(regex, `${key}=${value}`);
+      } else {
+        envContent += `\n${key}=${value}`;
+      }
+    }
+
+    // Salvar arquivo .env
+    fs.writeFileSync(envPath, envContent, 'utf8');
+
+    console.log('✅ Configurações de banco de dados atualizadas no .env!');
+    console.log('⚠️  NOTA: Reinicie o servidor para aplicar as mudanças');
+
+    return successResponse(res, { 
+      message: 'Configurações de banco de dados salvas com sucesso!',
+      warning: 'Reinicie o servidor para aplicar as mudanças'
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao atualizar configurações de banco:', error);
+    return errorResponse(res, 'Erro ao atualizar configurações de banco de dados', 500);
+  }
 };

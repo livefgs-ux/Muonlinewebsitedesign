@@ -17,6 +17,9 @@ router.get('/search', bansController.searchBans);
 // Últimos bans
 router.get('/latest', bansController.getLatestBans);
 
+// Criar banimento (alias)
+router.post('/create', bansController.createBan);
+
 // Banir conta
 router.post('/ban', bansController.banAccount);
 

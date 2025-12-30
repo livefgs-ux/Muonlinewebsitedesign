@@ -18,6 +18,7 @@ interface Plugin {
 export function PluginsSection() {
   const [plugins, setPlugins] = useState<Plugin[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadPlugins();
@@ -117,6 +118,49 @@ export function PluginsSection() {
     }
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.zip')) {
+      toast.error('Apenas arquivos .zip são permitidos');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
+      const formData = new FormData();
+      formData.append('plugin', file);
+
+      const response = await fetch('/api/admin/plugins/install', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('Plugin instalado com sucesso!');
+        loadPlugins();
+      } else {
+        toast.error(data.message || 'Erro ao instalar plugin');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao fazer upload do plugin:', error);
+      toast.error('Erro ao fazer upload do plugin');
+    } finally {
+      setUploading(false);
+      // Limpar input
+      event.target.value = '';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -124,10 +168,21 @@ export function PluginsSection() {
           <h2 className="text-2xl font-black text-white mb-1">Gerenciar Plugins</h2>
           <p className="text-sm text-slate-400">Estenda as funcionalidades do servidor</p>
         </div>
-        <Button className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold">
+        <Button 
+          onClick={() => document.getElementById('plugin-file-upload')?.click()}
+          disabled={uploading}
+          className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold"
+        >
           <Plus className="w-4 h-4 mr-2" />
-          Instalar Plugin
+          {uploading ? 'Instalando...' : 'Instalar Plugin'}
         </Button>
+        <input
+          id="plugin-file-upload"
+          type="file"
+          accept=".zip"
+          className="hidden"
+          onChange={handleFileUpload}
+        />
       </div>
 
       <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 shadow-xl">

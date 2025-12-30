@@ -203,7 +203,9 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
     if (!confirm('Deseja realmente desativar este pacote?')) return;
     
     try {
-      const token = localStorage.getItem('admin_token');
+      // ✅ V576 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
       
       const response = await fetch(`${apiBaseUrl}/wcoin/admin/packages/${id}`, {
         method: 'DELETE',
@@ -231,7 +233,9 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
     if (!confirm('⚠️ ATENÇÃO: Isso deletará o pacote PERMANENTEMENTE! Esta ação não pode ser desfeita. Deseja continuar?')) return;
     
     try {
-      const token = localStorage.getItem('admin_token');
+      // ✅ V576 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
       
       const response = await fetch(`${apiBaseUrl}/wcoin/admin/packages/${id}/permanent`, {
         method: 'DELETE',
@@ -257,7 +261,9 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
   // Toggle ativo/inativo
   const toggleActive = async (pkg: WCoinPackage) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      // ✅ V576 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
       
       const response = await fetch(`${apiBaseUrl}/wcoin/admin/packages/${pkg.id}`, {
         method: 'PUT',

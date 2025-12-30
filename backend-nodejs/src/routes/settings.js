@@ -10,7 +10,9 @@ const {
   getServerConfig,
   toggleMaintenance,
   updateSmtpSettings,
-  getMaintenanceStatus
+  getMaintenanceStatus,
+  updateGeneralSettings,
+  updateDatabaseSettings
 } = require('../controllers/settingsController');
 const { requireAdmin } = require('../middleware/auth');
 
@@ -21,6 +23,8 @@ router.get('/maintenance', getMaintenanceStatus);
 // 🔒 Rotas protegidas - Admin apenas
 router.get('/all', requireAdmin, getAllSettings);
 router.put('/update', requireAdmin, updateSettings);
+router.post('/general', requireAdmin, updateGeneralSettings); // ✅ V577
+router.post('/database', requireAdmin, updateDatabaseSettings); // ✅ V577
 router.post('/maintenance/toggle', requireAdmin, toggleMaintenance);
 router.post('/smtp/update', requireAdmin, updateSmtpSettings);
 
