@@ -81,12 +81,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         const data = await response.json();
         console.log(`📊 [PlayerContext] Dados recebidos:`, data);
         
-        setCharacters(data.characters || []);
+        // ✅ CORREÇÃO: Backend retorna { success, data: [...] }, não { characters: [...] }
+        const charactersArray = Array.isArray(data.data) ? data.data : (data.characters || []);
+        setCharacters(charactersArray);
         setPlayerStats(data.stats || null);
         
         // Se há um personagem selecionado, atualizá-lo
         if (selectedCharacter) {
-          const updated = data.characters.find((c: Character) => c.name === selectedCharacter.name);
+          const updated = charactersArray.find((c: Character) => c.name === selectedCharacter.name);
           if (updated) {
             setSelectedCharacter(updated);
           }

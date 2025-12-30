@@ -13,7 +13,9 @@ import {
   EyeOff,
   ArrowUp,
   ArrowDown,
-  AlertCircle
+  AlertCircle,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,6 +42,9 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
+  
+  // ✅ NOVO: Estado para seleção múltipla
+  const [selectedPackages, setSelectedPackages] = useState<number[]>([]);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -297,7 +302,69 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
       'EUR': '€',
       'GBP': '£'
     };
-    return `${symbols[currency] || currency} ${parseFloat(price).toFixed(2)}`;
+    return `${symbols[currency] || currency} ${parseFloat(price).toFixed(2)}`
+  };
+
+  // ✅ NOVO: Funções de seleção múltipla
+  const toggleSelectPackage = (id: number) => {
+    setSelectedPackages(prev => 
+      prev.includes(id) 
+        ? prev.filter(pkgId => pkgId !== id)
+        : [...prev, id]
+    );
+  };
+
+  const selectAll = () => {
+    setSelectedPackages(packages.map(pkg => pkg.id));
+  };
+
+  const deselectAll = () => {
+    setSelectedPackages([]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPackages.length === 0) {
+      toast.error('Nenhum pacote selecionado');
+      return;
+    }
+
+    if (!confirm(`⚠️ ATENÇÃO: Você está prestes a DELETAR PERMANENTEMENTE ${selectedPackages.length} pacote(s)! Esta ação NÃO PODE SER DESFEITA. Deseja continuar?`)) {
+      return;
+    }
+
+    const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+    if (!token) {
+      toast.error('Token não encontrado');
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const id of selectedPackages) {
+      try {
+        const response = await fetch(`${apiBaseUrl}/wcoin/admin/packages/${id}/permanent`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      } catch (error) {
+        errorCount++;
+      }
+    }
+
+    toast.success(`${successCount} pacote(s) removido(s) com sucesso!` + (errorCount > 0 ? ` (${errorCount} erro(s))` : ''));
+    setSelectedPackages([]);
+    loadPackages();
   };
 
   if (loading) {
@@ -506,10 +573,55 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
 
       {/* Lista de Pacotes */}
       <div className="backdrop-blur-xl bg-black/60 border border-[#FFB800]/20 rounded-xl overflow-hidden">
+        {/* ✅ NOVO: Barra de Ações em Massa */}
+        {selectedPackages.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-[#FFB800]/20 border-b border-[#FFB800]/30 px-6 py-3 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <CheckSquare className="w-5 h-5 text-[#FFB800]" />
+              <span className="text-white font-semibold">
+                {selectedPackages.length} pacote(s) selecionado(s)
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={deselectAll}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-all"
+              >
+                Desmarcar Todos
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-all"
+              >
+                <Trash2 className="w-4 h-4" />
+                Deletar Selecionados
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-black/40">
               <tr className="text-left text-gray-400 border-b border-gray-700">
+                {/* ✅ NOVO: Checkbox para selecionar todos */}
+                <th className="px-6 py-4 w-12">
+                  <button
+                    onClick={selectedPackages.length === packages.length ? deselectAll : selectAll}
+                    className="text-[#FFB800] hover:text-[#FFC933] transition-colors"
+                    title={selectedPackages.length === packages.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
+                  >
+                    {selectedPackages.length === packages.length ? (
+                      <CheckSquare className="w-5 h-5" />
+                    ) : (
+                      <Square className="w-5 h-5" />
+                    )}
+                  </button>
+                </th>
                 <th className="px-6 py-4 font-semibold">Pacote</th>
                 <th className="px-6 py-4 font-semibold">WCoin</th>
                 <th className="px-6 py-4 font-semibold">Bônus</th>
@@ -523,13 +635,31 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
             <tbody>
               {packages.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                     Nenhum pacote cadastrado. Clique em "Novo Pacote" para começar.
                   </td>
                 </tr>
               ) : (
                 packages.map((pkg) => (
-                  <tr key={pkg.id} className="border-b border-gray-800 hover:bg-white/5 transition-colors">
+                  <tr 
+                    key={pkg.id} 
+                    className={`border-b border-gray-800 hover:bg-white/5 transition-colors ${
+                      selectedPackages.includes(pkg.id) ? 'bg-[#FFB800]/10' : ''
+                    }`}
+                  >
+                    {/* ✅ NOVO: Checkbox para cada pacote */}
+                    <td className="px-6 py-4">
+                      <button
+                        onClick={() => toggleSelectPackage(pkg.id)}
+                        className="text-[#FFB800] hover:text-[#FFC933] transition-colors"
+                      >
+                        {selectedPackages.includes(pkg.id) ? (
+                          <CheckSquare className="w-5 h-5" />
+                        ) : (
+                          <Square className="w-5 h-5" />
+                        )}
+                      </button>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <Coins className="w-5 h-5 text-[#FFB800]" />
