@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Swords, Search, Shield, Award, TrendingUp, RefreshCw, AlertCircle, Eye } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Search, RefreshCw, AlertCircle, Trash2, Edit, Shield } from 'lucide-react';
+import { motion } from 'motion/react'; // ✅ V581: Import motion
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card'; // ✅ V581: Import CardHeader
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Badge } from '../../ui/badge';
+import { getApiUrl, getAuthHeaders } from '../../../config/api'; // ✅ V581: Import helpers
 
 /**
  * ⚔️ Character Management Section
@@ -61,8 +62,9 @@ export function CharacterManagement() {
         throw new Error('Token de autenticação não encontrado');
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const url = new URL(`${API_URL}/api/admin/all-characters`);
+      // ✅ V581 FIX: Usar getApiUrl() corretamente
+      const baseUrl = getApiUrl('/admin/all-characters'); // Retorna /api/admin/all-characters OU http://localhost:3001/api/admin/all-characters
+      const url = new URL(baseUrl, window.location.origin); // Converte para URL absoluta
       url.searchParams.append('page', page.toString());
       url.searchParams.append('limit', '50');
       if (searchTerm && searchTerm.trim() !== '') {
@@ -74,10 +76,7 @@ export function CharacterManagement() {
       console.log('🔍 Buscando personagens:', url.toString());
 
       const response = await fetch(url.toString(), {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders(token) // ✅ V581: Use helper function
       });
 
       if (!response.ok) {
@@ -155,7 +154,7 @@ export function CharacterManagement() {
       {!loading && !error && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <StatCard 
-            icon={Swords} 
+            icon={Shield} 
             label="Total de Personagens" 
             value={pagination.total.toLocaleString()} 
             color="text-purple-400" 
@@ -167,13 +166,13 @@ export function CharacterManagement() {
             color="text-green-400" 
           />
           <StatCard 
-            icon={Award} 
+            icon={Shield} 
             label="Nível Máximo" 
             value={characters.length > 0 ? Math.max(...characters.map(c => c.level)).toString() : '0'} 
             color="text-amber-400" 
           />
           <StatCard 
-            icon={TrendingUp} 
+            icon={Shield} 
             label="Total de Resets" 
             value={characters.reduce((sum, c) => sum + c.reset, 0).toLocaleString()} 
             color="text-blue-400" 
@@ -230,7 +229,7 @@ export function CharacterManagement() {
         <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-400">
-              <Swords className="w-5 h-5" />
+              <Shield className="w-5 h-5" />
               Lista de Personagens ({characters.length})
             </CardTitle>
           </CardHeader>
@@ -302,7 +301,14 @@ export function CharacterManagement() {
                           size="sm"
                           className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </td>
                     </motion.tr>
@@ -347,7 +353,7 @@ export function CharacterManagement() {
       {!loading && !error && characters.length === 0 && (
         <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 shadow-xl">
           <CardContent className="p-12 text-center">
-            <Swords className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <Shield className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-slate-400 mb-2">Nenhum Personagem Encontrado</h3>
             <p className="text-slate-500">
               {searchTerm 

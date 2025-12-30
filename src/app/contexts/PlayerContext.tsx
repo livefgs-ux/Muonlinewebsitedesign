@@ -53,9 +53,42 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [playerStats, setPlayerStats] = useState<PlayerStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 🛡️ V582 FIX CRÍTICO: Limpar dados ao deslogar
+  // Monitora mudanças no token de autenticação
   useEffect(() => {
-    refreshCharacters();
-  }, []);
+    const checkToken = () => {
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      
+      if (!token) {
+        // ✅ TOKEN REMOVIDO = LOGOUT → LIMPAR TUDO!
+        console.log('🧹 [PlayerContext] Token removido - limpando dados de personagens');
+        setCharacters([]);
+        setSelectedCharacter(null);
+        setPlayerStats(null);
+        setIsLoading(false);
+      } else {
+        // ✅ TOKEN EXISTE = LOGIN → BUSCAR PERSONAGENS
+        refreshCharacters();
+      }
+    };
+    
+    // Executar na montagem
+    checkToken();
+    
+    // 🛡️ V582 FIX: Escutar mudanças no sessionStorage/localStorage (logout de outra aba)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'auth_token' || e.key === 'admin_token') {
+        console.log('🔄 [PlayerContext] Detectada mudança no token - atualizando...');
+        checkToken();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []); // ✅ EXECUTAR APENAS UMA VEZ NA MONTAGEM
 
   const refreshCharacters = async () => {
     // ✅ BUSCAR TOKEN EM MÚLTIPLOS LOCAIS (jogador OU admin)

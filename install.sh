@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="581"
-VERSION_DATE="2025-12-31 00:35 CET - V581: FIX HTTP 304 - Personagens agora carregam sem cache (no-cache headers)"
+VERSION="583"
+VERSION_DATE="2025-12-31 01:10 CET - V583: FIX CRÍTICO - Vazamento de dados entre contas corrigido (cleanup PlayerContext)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -955,7 +955,7 @@ EOF
         echo ""
         echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
         echo -e "${GREEN}✅ Frontend buildado com sucesso!${NC}"
-        echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
+        echo -e "${GREEN}═══════════════════════════════════════════════════���════════${NC}"
     else
         echo ""
         echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
@@ -1437,7 +1437,7 @@ configurar_litespeed_proxy() {
         echo ""
         echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
         echo -e "${RED}❌ Erro ao configurar proxy reverso!${NC}"
-        echo -e "${RED}═══════════���════════════════════════════════════════════════${NC}"
+        echo -e "${RED}═══════════�����════════════════════════════════════════════════${NC}"
         echo ""
         echo -e "${YELLOW}⚠️  Configure manualmente via CyberPanel:${NC}"
         echo -e "${CYAN}   https://meumu.com:8090${NC}"
