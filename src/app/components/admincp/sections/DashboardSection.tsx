@@ -87,7 +87,7 @@ export function DashboardSection() {
       }
 
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/admin/dashboard-stats`, {
+      const response = await fetch(`${API_URL}/admin/dashboard-stats`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

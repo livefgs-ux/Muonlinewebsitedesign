@@ -22,6 +22,7 @@ router.get('/maintenance', getMaintenanceStatus);
 
 // 🔒 Rotas protegidas - Admin apenas
 router.get('/all', requireAdmin, getAllSettings);
+router.get('/', requireAdmin, getAllSettings); // ✅ V577: Alias para /all
 router.put('/update', requireAdmin, updateSettings);
 router.post('/general', requireAdmin, updateGeneralSettings); // ✅ V577
 router.post('/database', requireAdmin, updateDatabaseSettings); // ✅ V577
