@@ -5,7 +5,7 @@
  */
 
 const { executeQueryMU, executeQueryWeb } = require('../config/database');
-const { successResponse, errorResponse } = require('../utils/responses');
+const { successResponse, errorResponse } = require('../utils/helpers');
 
 /**
  * 📊 Dashboard Stats - Estatísticas gerais do servidor
