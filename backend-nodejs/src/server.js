@@ -258,6 +258,7 @@ app.use('/api/server', serverRoutes);
 app.use('/api/wcoin', wcoinRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/downloads', require('./routes/downloads')); // ✅ NOVO V558: Downloads
+app.use('/api/admin', require('./routes/admin')); // ✅ NOVO V573: Admin dashboard & stats
 app.use('/api/admin/logs', adminLogsRoutes);
 app.use('/api/admin/accounts', require('./routes/accounts')); // ✅ NOVO V558: Gerenciar contas
 app.use('/api/admin/bans', require('./routes/bans')); // ✅ NOVO V558: Sistema de bans

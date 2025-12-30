@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Swords, Search, Shield, Award, TrendingUp } from 'lucide-react';
+import { Swords, Search, Shield, Award, TrendingUp, RefreshCw, AlertCircle, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
@@ -8,35 +8,177 @@ import { Badge } from '../../ui/badge';
 
 /**
  * ⚔️ Character Management Section
- * Gerenciamento completo de personagens
+ * ✅ V573+ - DADOS REAIS DO BACKEND
+ * Gerenciamento completo de personagens com dados do banco de dados
  */
 
-const MOCK_CHARACTERS = [
-  { id: 1, name: 'DarkWarrior', class: 'Dark Knight', level: 400, resets: 15, account: 'DarkLord99', online: true },
-  { id: 2, name: 'FireMage', class: 'Soul Master', level: 387, resets: 12, account: 'MageSupreme', online: true },
-  { id: 3, name: 'FastElf', class: 'Muse Elf', level: 395, resets: 14, account: 'WarriorKing', online: false },
-  { id: 4, name: 'MagicGladiator', class: 'Duel Master', level: 370, resets: 10, account: 'HealerPro', online: true },
-  { id: 5, name: 'ShadowNinja', class: 'Bloody Summoner', level: 361, resets: 8, account: 'NinjaStrike', online: false },
-];
+interface Character {
+  guid: number;
+  name: string;
+  race: number;
+  className: string;
+  level: number;
+  level_master: number;
+  level_majestic: number;
+  totalLevel: number;
+  reset: number;
+  online: number;
+  money: number;
+  account_username: string;
+  account_guid: number;
+  authority: number;
+  isGM: boolean;
+}
+
+interface PaginationData {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 
 export function CharacterManagement() {
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [pagination, setPagination] = useState<PaginationData>({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0
+  });
+
+  // Função para buscar personagens
+  const fetchCharacters = async (page: number = 1, search: string = '') => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const url = new URL(`${API_URL}/api/admin/all-characters`);
+      url.searchParams.append('page', page.toString());
+      url.searchParams.append('limit', '50');
+      if (search && search.trim() !== '') {
+        url.searchParams.append('search', search.trim());
+      }
+      url.searchParams.append('sortBy', 'level');
+      url.searchParams.append('sortOrder', 'DESC');
+
+      console.log('🔍 Buscando personagens:', url.toString());
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        throw new Error(`Erro ao buscar personagens: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Erro ao buscar personagens');
+      }
+
+      console.log('✅ Personagens recebidos:', data.data.characters.length);
+      setCharacters(data.data.characters);
+      setPagination(data.data.pagination);
+    } catch (err) {
+      console.error('❌ Erro ao buscar personagens:', err);
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Buscar personagens ao montar o componente
+  useEffect(() => {
+    fetchCharacters(1, searchTerm);
+  }, []);
+
+  // Buscar com delay ao digitar
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm !== '') {
+        fetchCharacters(1, searchTerm);
+      } else {
+        fetchCharacters(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // Mudar página
+  const handlePageChange = (newPage: number) => {
+    fetchCharacters(newPage, searchTerm);
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-black text-white mb-1">Gerenciar Personagens</h2>
-        <p className="text-sm text-slate-400">Visualize e edite personagens dos jogadores</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-black text-white mb-1">Gerenciar Personagens</h2>
+          <p className="text-sm text-slate-400">
+            {pagination.total > 0 
+              ? `${pagination.total} personagens encontrados` 
+              : 'Visualize e edite personagens dos jogadores'}
+          </p>
+        </div>
+        <Button
+          onClick={() => fetchCharacters(pagination.page, searchTerm)}
+          disabled={loading}
+          variant="outline"
+          size="sm"
+          className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Atualizar
+        </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard icon={Swords} label="Total de Personagens" value="3,542" color="text-purple-400" />
-        <StatCard icon={Shield} label="Personagens Online" value="156" color="text-green-400" />
-        <StatCard icon={Award} label="Nível Médio" value="287" color="text-amber-400" />
-        <StatCard icon={TrendingUp} label="Resets Totais" value="28,456" color="text-blue-400" />
-      </div>
+      {!loading && !error && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <StatCard 
+            icon={Swords} 
+            label="Total de Personagens" 
+            value={pagination.total.toLocaleString()} 
+            color="text-purple-400" 
+          />
+          <StatCard 
+            icon={Shield} 
+            label="Personagens Online" 
+            value={characters.filter(c => c.online === 1).length.toString()} 
+            color="text-green-400" 
+          />
+          <StatCard 
+            icon={Award} 
+            label="Nível Máximo" 
+            value={characters.length > 0 ? Math.max(...characters.map(c => c.level)).toString() : '0'} 
+            color="text-amber-400" 
+          />
+          <StatCard 
+            icon={TrendingUp} 
+            label="Total de Resets" 
+            value={characters.reduce((sum, c) => sum + c.reset, 0).toLocaleString()} 
+            color="text-blue-400" 
+          />
+        </div>
+      )}
 
       {/* Search */}
       <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 shadow-xl">
@@ -54,100 +196,192 @@ export function CharacterManagement() {
         </CardContent>
       </Card>
 
-      {/* Characters Table */}
-      <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 shadow-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-400">
-            <Swords className="w-5 h-5" />
-            Lista de Personagens ({MOCK_CHARACTERS.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-800/50 text-slate-400 text-sm">
-                  <th className="text-left p-3 font-semibold">Personagem</th>
-                  <th className="text-left p-3 font-semibold">Classe</th>
-                  <th className="text-left p-3 font-semibold">Nível</th>
-                  <th className="text-left p-3 font-semibold">Resets</th>
-                  <th className="text-left p-3 font-semibold">Conta</th>
-                  <th className="text-left p-3 font-semibold">Status</th>
-                  <th className="text-right p-3 font-semibold">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {MOCK_CHARACTERS.map((char, index) => (
-                  <motion.tr
-                    key={char.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="border-b border-slate-800/30 hover:bg-slate-800/30 transition-colors"
-                  >
-                    <td className="p-3">
-                      <div className="flex items-center gap-3">
-                        <Swords className="w-5 h-5 text-amber-400" />
-                        <span className="font-bold text-white">{char.name}</span>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                        {char.class}
-                      </Badge>
-                    </td>
-                    <td className="p-3">
-                      <span className="text-green-400 font-bold text-lg">{char.level}</span>
-                    </td>
-                    <td className="p-3">
-                      <span className="text-amber-400 font-bold">{char.resets}</span>
-                      <span className="text-slate-500 text-sm ml-1">resets</span>
-                    </td>
-                    <td className="p-3 text-slate-400 text-sm">{char.account}</td>
-                    <td className="p-3">
-                      {char.online ? (
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                          Online
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-slate-500/20 text-slate-400 border-slate-500/30">
-                          Offline
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30"
-                        >
-                          Editar
-                        </Button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center h-[300px]">
+          <div className="text-center">
+            <RefreshCw className="w-12 h-12 text-amber-400 animate-spin mx-auto mb-4" />
+            <p className="text-white font-semibold">Carregando personagens...</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <Card className="bg-red-500/10 border-red-500/30">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-red-400 mb-2">Erro ao Carregar Personagens</h3>
+            <p className="text-slate-300 mb-4">{error}</p>
+            <Button 
+              onClick={() => fetchCharacters(pagination.page, searchTerm)}
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border-red-500/30"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Tentar Novamente
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Characters Table */}
+      {!loading && !error && characters.length > 0 && (
+        <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-400">
+              <Swords className="w-5 h-5" />
+              Lista de Personagens ({characters.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-800/50">
+                    <th className="text-left p-3 text-sm font-semibold text-slate-400">Nome</th>
+                    <th className="text-left p-3 text-sm font-semibold text-slate-400">Classe</th>
+                    <th className="text-left p-3 text-sm font-semibold text-slate-400">Nível</th>
+                    <th className="text-left p-3 text-sm font-semibold text-slate-400">Resets</th>
+                    <th className="text-left p-3 text-sm font-semibold text-slate-400">Conta</th>
+                    <th className="text-left p-3 text-sm font-semibold text-slate-400">Status</th>
+                    <th className="text-left p-3 text-sm font-semibold text-slate-400">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {characters.map((char, index) => (
+                    <motion.tr
+                      key={char.guid}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                      className="border-b border-slate-800/30 hover:bg-slate-800/30 transition-colors"
+                    >
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-semibold">{char.name}</span>
+                          {char.isGM && (
+                            <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-xs">
+                              GM
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3 text-slate-300 text-sm">{char.className}</td>
+                      <td className="p-3">
+                        <div className="flex flex-col">
+                          <span className="text-white font-bold">{char.level}</span>
+                          {char.level_master > 0 && (
+                            <span className="text-xs text-blue-400">M: {char.level_master}</span>
+                          )}
+                          {char.level_majestic > 0 && (
+                            <span className="text-xs text-purple-400">Maj: {char.level_majestic}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                          {char.reset}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-slate-400 text-sm">{char.account_username}</td>
+                      <td className="p-3">
+                        {char.online === 1 ? (
+                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                            Online
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-slate-500/20 text-slate-400 border-slate-500/30">
+                            Offline
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between border-t border-slate-800/50 pt-4">
+                <p className="text-sm text-slate-400">
+                  Página {pagination.page} de {pagination.totalPages}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page === 1 || loading}
+                    variant="outline"
+                    size="sm"
+                    className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10 disabled:opacity-50"
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page === pagination.totalPages || loading}
+                    variant="outline"
+                    size="sm"
+                    className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10 disabled:opacity-50"
+                  >
+                    Próxima
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && characters.length === 0 && (
+        <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 shadow-xl">
+          <CardContent className="p-12 text-center">
+            <Swords className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-slate-400 mb-2">Nenhum Personagem Encontrado</h3>
+            <p className="text-slate-500">
+              {searchTerm 
+                ? `Nenhum resultado para "${searchTerm}"` 
+                : 'Não há personagens cadastrados no servidor'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
 
-function StatCard({ icon: Icon, label, value, color }: any) {
+// ========================================
+// Componentes Auxiliares
+// ========================================
+
+interface StatCardProps {
+  icon: any;
+  label: string;
+  value: string;
+  color: string;
+}
+
+function StatCard({ icon: Icon, label, value, color }: StatCardProps) {
   return (
-    <Card className="bg-slate-900/40 backdrop-blur-2xl border-amber-500/20 hover:border-amber-500/40 transition-all shadow-xl">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <Icon className={`w-8 h-8 ${color}`} />
-          <div>
-            <p className="text-2xl font-black text-white">{value}</p>
-            <p className="text-xs text-slate-400">{label}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2 }}
+      className="bg-slate-900/40 backdrop-blur-2xl border border-amber-500/20 rounded-xl p-4 hover:border-amber-500/40 transition-all"
+    >
+      <Icon className={`w-5 h-5 ${color} mb-2`} />
+      <p className="text-2xl font-black text-white mb-1">{value}</p>
+      <p className="text-xs text-slate-400 font-medium">{label}</p>
+    </motion.div>
   );
 }

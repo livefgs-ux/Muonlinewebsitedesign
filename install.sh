@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="572"
-VERSION_DATE="2025-12-30 09:30 CET - CRITICAL: PlayerContext endpoints fix + Events seeder UTF8 fix"
+VERSION="573"
+VERSION_DATE="2025-12-30 15:30 CET - CRITICAL FIX: Database/System tab crash + 8 components placeholders"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

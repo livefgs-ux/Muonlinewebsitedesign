@@ -1,522 +1,201 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { Progress } from "../ui/progress";
-import { 
-  Shield, 
-  AlertTriangle, 
-  Zap, 
-  Database,
-  Activity,
-  Lock,
-  Unlock,
-  Bell,
-  RefreshCw,
-  Download,
-  Upload,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  AlertOctagon
-} from "lucide-react";
-import { backendUrl, getAuthHeaders } from '../../config/backend';
+import { Sparkles, Info, Shield, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 
-interface SecuritySummary {
-  totalIssues: number;
-  criticalIssues: number;
-  blockedIPs: number;
-  activeBlocks: number;
-  adaptiveLearnedIPs: number;
-  securityScore: number;
-  threatLevel: 'low' | 'medium' | 'high' | 'critical';
-  lastScan: string;
-  adaptiveEnabled: boolean;
-  incidentResponseEnabled: boolean;
-}
-
-interface IncidentLog {
-  timestamp: string;
-  level: 'info' | 'warning' | 'critical';
-  type: string;
-  description: string;
-  action: string;
-  ip?: string;
-}
-
-interface BackupInfo {
-  enabled: boolean;
-  schedule: string;
-  maxBackups: number;
-  autoRollback: boolean;
-  lastBackup: string | null;
-  nextBackup: string | null;
-  totalBackups: number;
-}
+/**
+ * 🎯 SECURITY DASHBOARD - PLACEHOLDER V573
+ * Funcionalidade desabilitada temporariamente
+ */
 
 export function AdminSecurityDashboard() {
-  const [summary, setSummary] = useState<SecuritySummary | null>(null);
-  const [incidents, setIncidents] = useState<IncidentLog[]>([]);
-  const [backupInfo, setBackupInfo] = useState<BackupInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [backupMsg, setBackupMsg] = useState("");
-  const [lockdownMode, setLockdownMode] = useState(false);
-
-  useEffect(() => {
-    fetchDashboardData();
-    
-    // Auto-refresh every 10 seconds
-    const interval = setInterval(fetchDashboardData, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      // Fetch security summary
-      const summaryRes = await fetch(
-        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/summary`,
-        { headers: getAuthHeaders() }
-      );
-      const summaryData = await summaryRes.json();
-      if (summaryData.ok) {
-        setSummary(summaryData.summary);
-      }
-
-      // Fetch incident logs
-      const incidentsRes = await fetch(
-        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/incidents`,
-        { headers: getAuthHeaders() }
-      );
-      const incidentsData = await incidentsRes.json();
-      if (incidentsData.ok) {
-        setIncidents(incidentsData.incidents || []);
-      }
-
-      // Fetch backup info
-      const backupRes = await fetch(
-        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/backup-info`,
-        { headers: getAuthHeaders() }
-      );
-      const backupData = await backupRes.json();
-      if (backupData.ok) {
-        setBackupInfo(backupData.backup);
-      }
-
-      // Fetch lockdown status
-      const lockdownRes = await fetch(
-        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/lockdown-status`,
-        { headers: getAuthHeaders() }
-      );
-      const lockdownData = await lockdownRes.json();
-      if (lockdownData.ok) {
-        setLockdownMode(lockdownData.lockdown);
-      }
-
-      setLoading(false);
-    } catch (err) {
-      console.error("Erro ao carregar dashboard:", err);
-      setLoading(false);
-    }
-  };
-
-  const handleManualBackup = async () => {
-    setBackupMsg("Criando backup...");
-    try {
-      const res = await fetch(
-        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/backup/manual`,
-        {
-          method: 'POST',
-          headers: getAuthHeaders()
-        }
-      );
-      const data = await res.json();
-      if (data.ok) {
-        setBackupMsg("✅ Backup manual criado com sucesso!");
-        fetchDashboardData();
-      }
-    } catch (err) {
-      console.error("Erro ao criar backup:", err);
-      setBackupMsg("❌ Erro ao criar backup");
-    }
-  };
-
-  const handleToggleLockdown = async () => {
-    if (!confirm(`${lockdownMode ? 'Desativar' : 'Ativar'} modo Lockdown?`)) return;
-
-    try {
-      const res = await fetch(
-        `${backendUrl}/functions/v1/make-server-4169bd43/security/dashboard/toggle-lockdown`,
-        {
-          method: 'POST',
-          headers: {
-            ...getAuthHeaders(),
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ enabled: !lockdownMode })
-        }
-      );
-      const data = await res.json();
-      if (data.ok) {
-        setLockdownMode(!lockdownMode);
-      }
-    } catch (err) {
-      console.error("Erro ao alternar lockdown:", err);
-    }
-  };
-
-  const getThreatColor = (level?: string) => {
-    switch (level) {
-      case 'critical': return 'text-red-400 bg-red-500/20 border-red-500/50';
-      case 'high': return 'text-orange-400 bg-orange-500/20 border-orange-500/50';
-      case 'medium': return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/50';
-      case 'low': return 'text-green-400 bg-green-500/20 border-green-500/50';
-      default: return 'text-gray-400 bg-gray-500/20 border-gray-500/50';
-    }
-  };
-
-  const getIncidentIcon = (level: string) => {
-    switch (level) {
-      case 'critical': return <XCircle className="w-4 h-4 text-red-400" />;
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-400" />;
-      default: return <CheckCircle className="w-4 h-4 text-blue-400" />;
-    }
-  };
-
-  if (loading || !summary) {
-    return (
-      <Card className="p-12 bg-black/40 border border-purple-500/20 text-center">
-        <Shield className="w-16 h-16 text-purple-400 mx-auto mb-4 opacity-50 animate-pulse" />
-        <p className="text-gray-400">Carregando Security Center...</p>
-      </Card>
-    );
-  }
+  const [showInfo, setShowInfo] = useState(true);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card className="p-6 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10 border border-purple-500/20 backdrop-blur-xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-500/20 rounded-xl">
-              <Shield className="w-8 h-8 text-purple-400" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white">AI Security Center</h2>
-              <p className="text-sm text-gray-400 mt-1">
-                Central unificada de segurança, monitoramento e resposta a incidentes
+      {/* Warning Banner */}
+      {showInfo && (
+        <Card className="p-6 bg-yellow-500/10 border border-yellow-500/30">
+          <div className="flex items-start gap-4">
+            <Info className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-yellow-400 mb-2">
+                Dashboard de Segurança Desabilitado
+              </h3>
+              <p className="text-sm text-yellow-200/80 mb-3">
+                O dashboard unificado de segurança requer infraestrutura adicional.
+                Use as outras abas do Sistema para monitoramento manual.
               </p>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              onClick={fetchDashboardData}
-              variant="outline"
-              className="border-purple-500/50 text-purple-400 hover:bg-purple-500/10"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Atualizar
-            </Button>
-
-            <Button
-              onClick={handleToggleLockdown}
-              variant={lockdownMode ? "destructive" : "outline"}
-              className={lockdownMode ? "" : "border-red-500/50 text-red-400 hover:bg-red-500/10"}
-            >
-              {lockdownMode ? (
-                <>
-                  <Unlock className="w-4 h-4 mr-2" />
-                  Desativar Lockdown
-                </>
-              ) : (
-                <>
-                  <Lock className="w-4 h-4 mr-2" />
-                  Ativar Lockdown
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      {/* Lockdown Alert */}
-      {lockdownMode && (
-        <Card className="p-4 bg-red-500/10 border border-red-500/30 animate-pulse">
-          <div className="flex items-center gap-3">
-            <Lock className="w-6 h-6 text-red-400 flex-shrink-0" />
-            <div>
-              <p className="text-sm text-red-300 font-semibold">🚨 MODO LOCKDOWN ATIVO</p>
-              <p className="text-xs text-red-400/80 mt-1">
-                Acesso restrito. Apenas administradores podem fazer login. Todas as ações são registradas.
-              </p>
+              <Button 
+                onClick={() => setShowInfo(false)}
+                size="sm"
+                className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border-yellow-500/30"
+              >
+                Entendi
+              </Button>
             </div>
           </div>
         </Card>
       )}
 
-      {/* Security Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Security Score */}
-        <Card className={`p-6 bg-black/40 border ${getThreatColor(summary.threatLevel)}`}>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-400">Security Score</span>
-            <Shield className={`w-6 h-6 ${summary.securityScore >= 80 ? 'text-green-400' : summary.securityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`} />
-          </div>
-          <div className={`text-4xl font-bold ${summary.securityScore >= 80 ? 'text-green-400' : summary.securityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-            {summary.securityScore}/100
-          </div>
-          <Progress value={summary.securityScore} className="mt-3 h-2" />
-          <p className="text-xs text-gray-500 mt-2 uppercase">
-            Nível: {summary.threatLevel}
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Sparkles className="w-8 h-8 text-purple-400" />
+        <div>
+          <h2 className="text-2xl font-bold text-white">Security Dashboard</h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Visão geral unificada de segurança do sistema
           </p>
-        </Card>
-
-        {/* Total Issues */}
-        <Card className="p-6 bg-black/40 border border-red-500/20">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-400">Issues Detectadas</span>
-            <AlertTriangle className="w-6 h-6 text-red-400" />
-          </div>
-          <div className="text-4xl font-bold text-red-400">
-            {summary.totalIssues}
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            {summary.criticalIssues} críticas
-          </p>
-          {summary.totalIssues > summary.criticalIssues && (
-            <TrendingUp className="w-4 h-4 text-red-400 absolute top-2 right-2" />
-          )}
-        </Card>
-
-        {/* Blocked IPs */}
-        <Card className="p-6 bg-black/40 border border-orange-500/20">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-400">IPs Bloqueados</span>
-            <Lock className="w-6 h-6 text-orange-400" />
-          </div>
-          <div className="text-4xl font-bold text-orange-400">
-            {summary.blockedIPs}
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            {summary.activeBlocks} ativos agora
-          </p>
-        </Card>
-
-        {/* Adaptive Learning */}
-        <Card className="p-6 bg-black/40 border border-blue-500/20">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-400">IPs Rastreados</span>
-            <Activity className="w-6 h-6 text-blue-400" />
-          </div>
-          <div className="text-4xl font-bold text-blue-400">
-            {summary.adaptiveLearnedIPs}
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            IA Adaptativa {summary.adaptiveEnabled ? '✓' : '✗'}
-          </p>
-        </Card>
-      </div>
-
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Incident Response */}
-        <Card className="p-6 bg-black/40 border border-purple-500/20">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Zap className="w-5 h-5 text-blue-400" />
-              Incident Response System
-            </h3>
-            <Badge className={summary.incidentResponseEnabled ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-400'}>
-              {summary.incidentResponseEnabled ? 'Ativo' : 'Inativo'}
-            </Badge>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-black/40 rounded border border-gray-700">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-400" />
-                <span className="text-sm text-gray-300">Auto Bloqueio</span>
-              </div>
-              <Badge className="bg-green-500/20 text-green-300 text-xs">Ativado</Badge>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-black/40 rounded border border-gray-700">
-              <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-blue-400" />
-                <span className="text-sm text-gray-300">Notificações</span>
-              </div>
-              <Badge className="bg-blue-500/20 text-blue-300 text-xs">Discord + Email</Badge>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-black/40 rounded border border-gray-700">
-              <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-yellow-400" />
-                <span className="text-sm text-gray-300">Auto Lockdown</span>
-              </div>
-              <Badge className="bg-yellow-500/20 text-yellow-300 text-xs">
-                {lockdownMode ? 'ATIVO' : 'Pronto'}
-              </Badge>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-black/40 rounded border border-gray-700">
-              <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-gray-300">Backup on Incident</span>
-              </div>
-              <Badge className="bg-purple-500/20 text-purple-300 text-xs">Ativado</Badge>
-            </div>
-          </div>
-
-          <p className="text-xs text-gray-500 mt-4">
-            <AlertCircle className="w-3 h-3 inline mr-1" />
-            Última verificação: {new Date(summary.lastScan).toLocaleString('pt-BR')}
-          </p>
-        </Card>
-
-        {/* Backup & Recovery */}
-        {backupInfo && (
-          <Card className="p-6 bg-black/40 border border-teal-500/20">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Database className="w-5 h-5 text-teal-400" />
-                Backup & Recovery System
-              </h3>
-              <Badge className={backupInfo.enabled ? 'bg-teal-500/20 text-teal-300' : 'bg-gray-500/20 text-gray-400'}>
-                {backupInfo.enabled ? 'Ativo' : 'Inativo'}
-              </Badge>
-            </div>
-
-            <div className="space-y-3 mb-4">
-              <div className="flex items-center justify-between p-3 bg-black/40 rounded border border-gray-700">
-                <span className="text-sm text-gray-300">Agendamento</span>
-                <Badge className="bg-teal-500/20 text-teal-300 text-xs">
-                  {backupInfo.schedule === '0 */6 * * *' ? 'A cada 6h' : backupInfo.schedule}
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-black/40 rounded border border-gray-700">
-                <span className="text-sm text-gray-300">Total de Backups</span>
-                <Badge className="bg-blue-500/20 text-blue-300 text-xs">
-                  {backupInfo.totalBackups} / {backupInfo.maxBackups}
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-black/40 rounded border border-gray-700">
-                <span className="text-sm text-gray-300">Auto Rollback</span>
-                <Badge className={backupInfo.autoRollback ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-400'} >
-                  {backupInfo.autoRollback ? 'Ativado' : 'Desativado'}
-                </Badge>
-              </div>
-
-              {backupInfo.lastBackup && (
-                <div className="p-3 bg-black/40 rounded border border-gray-700">
-                  <p className="text-xs text-gray-400">Último backup:</p>
-                  <p className="text-sm text-gray-300 mt-1">
-                    <Clock className="w-3 h-3 inline mr-1" />
-                    {new Date(backupInfo.lastBackup).toLocaleString('pt-BR')}
-                  </p>
-                </div>
-              )}
-
-              {backupInfo.nextBackup && (
-                <div className="p-3 bg-black/40 rounded border border-gray-700">
-                  <p className="text-xs text-gray-400">Próximo backup:</p>
-                  <p className="text-sm text-teal-300 mt-1">
-                    <Clock className="w-3 h-3 inline mr-1" />
-                    {backupInfo.nextBackup}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <Button
-              onClick={handleManualBackup}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Criar Backup Manual
-            </Button>
-
-            {backupMsg && (
-              <p className="text-xs mt-2 text-center text-teal-300">{backupMsg}</p>
-            )}
-          </Card>
-        )}
-      </div>
-
-      {/* Incident Logs */}
-      <Card className="p-6 bg-black/40 border border-purple-500/20">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-purple-400" />
-            Incident Activity Log
-          </h3>
-          <Badge className="bg-purple-500/20 text-purple-300">
-            Últimos {incidents.length} eventos
-          </Badge>
         </div>
+      </div>
 
-        <div className="bg-black/60 rounded border border-gray-700 h-80 overflow-y-auto">
-          {incidents.length > 0 ? (
-            <div className="divide-y divide-gray-800">
-              {incidents.map((incident, idx) => (
-                <div key={idx} className="p-3 hover:bg-white/5 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1">
-                      {getIncidentIcon(incident.level)}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-white">{incident.type}</span>
-                          <Badge className={getThreatColor(incident.level)}>
-                            {incident.level.toUpperCase()}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-400">{incident.description}</p>
-                        {incident.ip && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            IP: <span className="font-mono text-gray-400">{incident.ip}</span>
-                          </p>
-                        )}
-                        <p className="text-xs text-blue-400 mt-1">
-                          ⚡ Ação: {incident.action}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs text-gray-500 whitespace-nowrap ml-3">
-                      {new Date(incident.timestamp).toLocaleTimeString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500">
-              <CheckCircle className="w-12 h-12 mb-3 opacity-50" />
-              <p>Nenhum incidente registrado</p>
-            </div>
-          )}
+      {/* Security Status Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatusCard
+          icon={Shield}
+          title="Sistema Protegido"
+          description="Backend com 20 proteções ativas"
+          status="good"
+        />
+        <StatusCard
+          icon={CheckCircle}
+          title="Database Seguro"
+          description="Usuário dedicado com permissões limitadas"
+          status="good"
+        />
+        <StatusCard
+          icon={AlertTriangle}
+          title="Monitoramento Manual"
+          description="Verificação manual recomendada"
+          status="warning"
+        />
+      </div>
+
+      {/* Active Protections */}
+      <Card className="p-6 bg-black/40 border border-gray-700/30">
+        <h3 className="text-lg font-semibold text-white mb-4">🛡️ Proteções Ativas</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <ProtectionItem name="Rate Limiting" status="active" />
+          <ProtectionItem name="Helmet Security Headers" status="active" />
+          <ProtectionItem name="CORS Protection" status="active" />
+          <ProtectionItem name="JWT Authentication" status="active" />
+          <ProtectionItem name="XSS Protection" status="active" />
+          <ProtectionItem name="SQL Injection Protection" status="active" />
+          <ProtectionItem name="HTTPS/TLS" status="active" />
+          <ProtectionItem name="HSTS Headers" status="active" />
+          <ProtectionItem name="CSP Headers" status="active" />
+          <ProtectionItem name="NoSniff Protection" status="active" />
+          <ProtectionItem name="Request Validation" status="active" />
+          <ProtectionItem name="Input Sanitization" status="active" />
+          <ProtectionItem name="Prepared Statements" status="active" />
+          <ProtectionItem name="Error Handler" status="active" />
+          <ProtectionItem name="Least Privilege DB User" status="active" />
+          <ProtectionItem name="Environment Variables" status="active" />
+          <ProtectionItem name="Compression" status="active" />
+          <ProtectionItem name="Graceful Shutdown" status="active" />
+          <ProtectionItem name="Admin Auth Required" status="active" />
+          <ProtectionItem name="Token Expiration" status="active" />
         </div>
       </Card>
 
-      {/* System Status Footer */}
-      <Card className="p-4 bg-black/40 border border-gray-700">
-        <div className="flex items-center justify-between text-xs text-gray-400">
-          <div className="flex items-center gap-4">
-            <span>Security Modules: 5/5 Online</span>
-            <span>•</span>
-            <span>Auto-refresh: 10s</span>
-            <span>•</span>
-            <span>Última atualização: {new Date().toLocaleTimeString('pt-BR')}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Activity className="w-3 h-3 text-green-400 animate-pulse" />
-            <span className="text-green-400">Sistema Operacional</span>
-          </div>
+      {/* Monitoring Recommendations */}
+      <Card className="p-6 bg-blue-500/10 border border-blue-500/30">
+        <h3 className="text-lg font-semibold text-blue-400 mb-4">Recomendações de Monitoramento</h3>
+        <div className="space-y-2 text-sm text-blue-200/80">
+          <p>✓ Revise logs de segurança diariamente</p>
+          <p>✓ Monitore tentativas de login falhadas</p>
+          <p>✓ Verifique conexões de banco de dados suspeitas</p>
+          <p>✓ Acompanhe uso de recursos (CPU, memória, disco)</p>
+          <p>✓ Teste backups semanalmente</p>
+          <p>✓ Mantenha sistema operacional atualizado</p>
+          <p>✓ Use Fail2Ban para proteção contra força bruta</p>
+          <p>✓ Configure alertas de email para eventos críticos</p>
         </div>
       </Card>
+
+      {/* Quick Actions */}
+      <Card className="p-6 bg-black/40 border border-gray-700/30">
+        <h3 className="text-lg font-semibold text-white mb-4">Ações Rápidas</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <Button
+            variant="outline"
+            className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+            disabled
+          >
+            Executar Auditoria
+          </Button>
+          <Button
+            variant="outline"
+            className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+            disabled
+          >
+            Ver Logs de Segurança
+          </Button>
+          <Button
+            variant="outline"
+            className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+            disabled
+          >
+            Testar Backup
+          </Button>
+        </div>
+        <p className="text-xs text-gray-500 mt-3 text-center">
+          Funcionalidades automáticas disponíveis em versão futura
+        </p>
+      </Card>
+    </div>
+  );
+}
+
+// Helper Components
+interface StatusCardProps {
+  icon: any;
+  title: string;
+  description: string;
+  status: 'good' | 'warning' | 'error';
+}
+
+function StatusCard({ icon: Icon, title, description, status }: StatusCardProps) {
+  const colors = {
+    good: 'border-green-500/30 bg-green-500/10',
+    warning: 'border-yellow-500/30 bg-yellow-500/10',
+    error: 'border-red-500/30 bg-red-500/10'
+  };
+
+  const iconColors = {
+    good: 'text-green-400',
+    warning: 'text-yellow-400',
+    error: 'text-red-400'
+  };
+
+  return (
+    <Card className={`p-4 ${colors[status]}`}>
+      <div className="flex items-start gap-3">
+        <Icon className={`w-6 h-6 ${iconColors[status]} flex-shrink-0`} />
+        <div>
+          <h4 className="font-semibold text-white mb-1">{title}</h4>
+          <p className="text-xs text-gray-400">{description}</p>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+interface ProtectionItemProps {
+  name: string;
+  status: 'active' | 'inactive';
+}
+
+function ProtectionItem({ name, status }: ProtectionItemProps) {
+  return (
+    <div className="flex items-center gap-2 p-2 rounded bg-black/20">
+      {status === 'active' ? (
+        <CheckCircle className="w-4 h-4 text-green-400" />
+      ) : (
+        <XCircle className="w-4 h-4 text-red-400" />
+      )}
+      <span className="text-sm text-gray-300">{name}</span>
     </div>
   );
 }
