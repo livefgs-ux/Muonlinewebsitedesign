@@ -366,17 +366,6 @@ const getMaintenanceStatus = async (req, res) => {
   }
 };
 
-module.exports = {
-  getAllSettings,
-  updateSettings,
-  getServerConfig,
-  toggleMaintenance,
-  updateSmtpSettings,
-  getMaintenanceStatus,
-  updateGeneralSettings,
-  updateDatabaseSettings
-};
-
 /**
  * ✅ V577: Atualizar configurações gerais
  * POST /api/admin/settings/general
@@ -499,4 +488,15 @@ const updateDatabaseSettings = async (req, res) => {
     console.error('❌ Erro ao atualizar configurações de banco:', error);
     return errorResponse(res, 'Erro ao atualizar configurações de banco de dados', 500);
   }
+};
+
+module.exports = {
+  getAllSettings,
+  updateSettings,
+  getServerConfig,
+  toggleMaintenance,
+  updateSmtpSettings,
+  getMaintenanceStatus,
+  updateGeneralSettings,
+  updateDatabaseSettings
 };
