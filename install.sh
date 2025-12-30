@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="577"
-VERSION_DATE="2025-12-30 23:55 CET - V577: Backend 100% completo + 5 correções críticas (AdminCP finalizado)"
+VERSION="578"
+VERSION_DATE="2025-12-30 23:59 CET - V578: PlayerContext fix + Seleção múltipla WCoin + Migration ban system"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
