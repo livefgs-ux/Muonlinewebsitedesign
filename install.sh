@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="580"
-VERSION_DATE="2025-12-31 00:20 CET - V580: AUDITORIA COMPLETA DE SEGURANÇA - 20/20 proteções ativas (Score 98/100)"
+VERSION="581"
+VERSION_DATE="2025-12-31 00:35 CET - V581: FIX HTTP 304 - Personagens agora carregam sem cache (no-cache headers)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

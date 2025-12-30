@@ -71,18 +71,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     setIsLoading(true);
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CHARACTERS), {  // ✅ CORRETO: CHARACTERS, não PLAYER_CHARACTERS
-        headers: getAuthHeaders(token)
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CHARACTERS), {
+        headers: {
+          ...getAuthHeaders(token),
+          // 🛡️ V580 FIX: Desabilitar cache para evitar HTTP 304 sem body
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       console.log(`📊 [PlayerContext] Response status: ${response.status}`);
 
       if (response.ok) {
         const data = await response.json();
+        
         console.log(`📊 [PlayerContext] Dados recebidos:`, data);
         
         // ✅ CORREÇÃO: Backend retorna { success, data: [...] }, não { characters: [...] }
         const charactersArray = Array.isArray(data.data) ? data.data : (data.characters || []);
+        
+        console.log(`📊 [PlayerContext] Personagens processados (${charactersArray.length}):`, charactersArray);
+        
         setCharacters(charactersArray);
         setPlayerStats(data.stats || null);
         
