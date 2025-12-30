@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS events (
     
     -- Configuração visual
     icon VARCHAR(50) DEFAULT 'Trophy',  -- Nome do ícone do lucide-react
-    color VARCHAR(20) DEFAULT 'yellow', -- red, purple, orange, yellow, blue, green
+    color VARCHAR(20) DEFAULT 'yellow', -- Aceita qualquer cor (removido ENUM)
     imageUrl VARCHAR(500),
     
     -- Configuração de horários

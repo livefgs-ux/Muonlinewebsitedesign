@@ -26,7 +26,7 @@ export function PluginsSection() {
   const loadPlugins = async () => {
     try {
       setLoading(true);
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
       const response = await fetch('/api/admin/plugins', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -54,7 +54,7 @@ export function PluginsSection() {
 
   const togglePlugin = async (id: number, currentState: boolean) => {
     try {
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
       const response = await fetch(`/api/admin/plugins/${id}/toggle`, {
         method: 'PATCH',
         headers: {
@@ -83,7 +83,7 @@ export function PluginsSection() {
     if (!confirm('Tem certeza que deseja deletar este plugin?')) return;
 
     try {
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
       const response = await fetch(`/api/admin/plugins/${id}`, {
         method: 'DELETE',
         headers: {

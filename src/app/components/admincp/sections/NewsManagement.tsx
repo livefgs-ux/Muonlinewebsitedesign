@@ -64,7 +64,7 @@ export function NewsManagement() {
 
     try {
       setPublishing(true);
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
       
       const response = await fetch('/api/news', {
         method: 'POST',
@@ -103,7 +103,7 @@ export function NewsManagement() {
     if (!confirm('Tem certeza que deseja deletar esta notícia?')) return;
 
     try {
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
       
       const response = await fetch(`/api/news/${id}`, {
         method: 'DELETE',

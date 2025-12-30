@@ -27,7 +27,7 @@ export function LogsSection() {
   const loadLogs = async () => {
     try {
       setLoading(true);
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO
       const response = await fetch('/api/admin/logs/logs', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -55,7 +55,7 @@ export function LogsSection() {
 
   const handleExport = async () => {
     try {
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO
       const response = await fetch('/api/admin/logs/export', {
         headers: {
           'Authorization': `Bearer ${token}`

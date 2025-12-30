@@ -48,7 +48,7 @@ const DonationsPanel = () => {
 
     try {
       setLoading(true);
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO
       
       // TODO: Implementar endpoint /api/admin/send-coins
       const response = await fetch('/api/admin/send-coins', {

@@ -28,7 +28,7 @@ export function BansSection() {
   const loadBans = async () => {
     try {
       setLoading(true);
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO
       const response = await fetch('/api/admin/bans/latest', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -56,7 +56,7 @@ export function BansSection() {
 
   const handleUnban = async (username: string) => {
     try {
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO
       const response = await fetch('/api/admin/bans/unban', {
         method: 'POST',
         headers: {

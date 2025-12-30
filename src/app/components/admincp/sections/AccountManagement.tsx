@@ -36,7 +36,7 @@ export function AccountManagement() {
 
     try {
       setLoading(true);
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
       const response = await fetch(`/api/admin/accounts/search?username=${encodeURIComponent(searchTerm)}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
