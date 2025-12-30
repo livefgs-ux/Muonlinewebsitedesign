@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="578"
-VERSION_DATE="2025-12-30 23:59 CET - V578: PlayerContext fix + Seleção múltipla WCoin + Migration ban system"
+VERSION="579"
+VERSION_DATE="2025-12-31 00:05 CET - V579: FIX CRÍTICO - AdminCP não desaparece mais em erros HTTP (cache persistente)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
