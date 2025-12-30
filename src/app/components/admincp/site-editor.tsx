@@ -307,7 +307,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   id="banner-title"
                   value={homeBanner.title as string}
                   onChange={(e) => setHomeBanner({ ...homeBanner, title: e.target.value })}
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -317,7 +317,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   id="banner-subtitle"
                   value={homeBanner.subtitle as string}
                   onChange={(e) => setHomeBanner({ ...homeBanner, subtitle: e.target.value })}
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -328,7 +328,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   value={homeBanner.description as string}
                   onChange={(e) => setHomeBanner({ ...homeBanner, description: e.target.value })}
                   rows={3}
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -339,7 +339,7 @@ export function SiteEditor({}: SiteEditorProps) {
                     id="banner-button-text"
                     value={homeBanner.buttonText as string}
                     onChange={(e) => setHomeBanner({ ...homeBanner, buttonText: e.target.value })}
-                    className="bg-black/40 border-amber-500/20"
+                    className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                   />
                 </div>
 
@@ -350,7 +350,7 @@ export function SiteEditor({}: SiteEditorProps) {
                     value={homeBanner.buttonLink as string}
                     onChange={(e) => setHomeBanner({ ...homeBanner, buttonLink: e.target.value })}
                     placeholder="#downloads"
-                    className="bg-black/40 border-amber-500/20"
+                    className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                   />
                 </div>
               </div>
@@ -385,7 +385,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   value={socialLinks.discord as string}
                   onChange={(e) => setSocialLinks({ ...socialLinks, discord: e.target.value })}
                   placeholder="https://discord.gg/meumu"
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -397,7 +397,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   value={socialLinks.whatsapp as string}
                   onChange={(e) => setSocialLinks({ ...socialLinks, whatsapp: e.target.value })}
                   placeholder="https://wa.me/5511999999999"
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -409,7 +409,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   value={socialLinks.facebook as string}
                   onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
                   placeholder="https://facebook.com/meumu"
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -421,7 +421,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   value={socialLinks.instagram as string}
                   onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
                   placeholder="https://instagram.com/meumu"
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -433,7 +433,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   value={socialLinks.youtube as string}
                   onChange={(e) => setSocialLinks({ ...socialLinks, youtube: e.target.value })}
                   placeholder="https://youtube.com/@meumu"
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -634,7 +634,7 @@ export function SiteEditor({}: SiteEditorProps) {
                     id="server-name"
                     value={siteSettings.serverName as string}
                     onChange={(e) => setSiteSettings({ ...siteSettings, serverName: e.target.value })}
-                    className="bg-black/40 border-amber-500/20"
+                    className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                   />
                 </div>
 
@@ -644,7 +644,7 @@ export function SiteEditor({}: SiteEditorProps) {
                     id="server-season"
                     value={siteSettings.serverSeason as string}
                     onChange={(e) => setSiteSettings({ ...siteSettings, serverSeason: e.target.value })}
-                    className="bg-black/40 border-amber-500/20"
+                    className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                   />
                 </div>
               </div>
@@ -656,7 +656,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   value={siteSettings.metaDescription as string}
                   onChange={(e) => setSiteSettings({ ...siteSettings, metaDescription: e.target.value })}
                   rows={2}
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -667,7 +667,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   value={siteSettings.metaKeywords as string}
                   onChange={(e) => setSiteSettings({ ...siteSettings, metaKeywords: e.target.value })}
                   placeholder="mu online, muonline, servidor mu"
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -678,7 +678,7 @@ export function SiteEditor({}: SiteEditorProps) {
                   value={siteSettings.googleAnalytics as string}
                   onChange={(e) => setSiteSettings({ ...siteSettings, googleAnalytics: e.target.value })}
                   placeholder="G-XXXXXXXXXX"
-                  className="bg-black/40 border-amber-500/20"
+                  className="bg-slate-800/80 border-amber-500/20 text-white placeholder:text-slate-400"
                 />
               </div>
 

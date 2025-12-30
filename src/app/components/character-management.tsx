@@ -108,11 +108,11 @@ export function CharacterManagement() {
                 <div className="flex items-center gap-6">
                   <div className="text-center">
                     <p className="text-xs text-slate-400">Level</p>
-                    <p className="text-xl text-blue-400">{character.cLevel}</p>
+                    <p className="text-xl text-blue-400">{character.level}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-xs text-slate-400">Points</p>
-                    <p className="text-xl text-green-400">{character.levelUpPoints}</p>
+                    <p className="text-xl text-green-400">{character.points}</p>
                   </div>
                   <Button 
                     variant="ghost" 
@@ -135,7 +135,7 @@ export function CharacterManagement() {
                       <Sword className="size-5 text-red-400" />
                       <div>
                         <p className="text-xs text-slate-400">Strength</p>
-                        <p className="text-lg text-white">{character.strength}</p>
+                        <p className="text-lg text-white">{character.stats.strength}</p>
                       </div>
                     </div>
 
@@ -143,7 +143,7 @@ export function CharacterManagement() {
                       <Target className="size-5 text-green-400" />
                       <div>
                         <p className="text-xs text-slate-400">Agility</p>
-                        <p className="text-lg text-white">{character.agility}</p>
+                        <p className="text-lg text-white">{character.stats.dexterity}</p>
                       </div>
                     </div>
 
@@ -151,7 +151,7 @@ export function CharacterManagement() {
                       <Heart className="size-5 text-orange-400" />
                       <div>
                         <p className="text-xs text-slate-400">Vitality</p>
-                        <p className="text-lg text-white">{character.vitality}</p>
+                        <p className="text-lg text-white">{character.stats.vitality}</p>
                       </div>
                     </div>
 
@@ -159,7 +159,7 @@ export function CharacterManagement() {
                       <Zap className="size-5 text-blue-400" />
                       <div>
                         <p className="text-xs text-slate-400">Energy</p>
-                        <p className="text-lg text-white">{character.energy}</p>
+                        <p className="text-lg text-white">{character.stats.energy}</p>
                       </div>
                     </div>
 
@@ -167,7 +167,7 @@ export function CharacterManagement() {
                       <Crown className="size-5 text-purple-400" />
                       <div>
                         <p className="text-xs text-slate-400">Command</p>
-                        <p className="text-lg text-white">{character.command}</p>
+                        <p className="text-lg text-white">{character.stats.command}</p>
                       </div>
                     </div>
                   </div>
@@ -179,7 +179,7 @@ export function CharacterManagement() {
                         <MapPin className="size-4 text-slate-400" />
                         <p className="text-xs text-slate-400">Location</p>
                       </div>
-                      <p className="text-sm text-white">{character.location || 'Lorencia'}</p>
+                      <p className="text-sm text-white">Lorencia</p>
                     </div>
 
                     <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
@@ -188,7 +188,7 @@ export function CharacterManagement() {
                         <p className="text-xs text-slate-400">Zen</p>
                       </div>
                       <p className="text-sm text-amber-400">
-                        {character.money?.toLocaleString() || '0'}
+                        {character.zen?.toLocaleString() || '0'}
                       </p>
                     </div>
 
@@ -199,25 +199,25 @@ export function CharacterManagement() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge 
-                          variant={character.pkLevel > 3 ? "destructive" : "outline"}
-                          className={character.pkLevel > 3 ? "" : "border-green-500/30 text-green-400"}
+                          variant={character.pk.level > 3 ? "destructive" : "outline"}
+                          className={character.pk.level > 3 ? "" : "border-green-500/30 text-green-400"}
                         >
-                          {character.pkLevel > 3 ? 'Murderer' : 'Hero'}
+                          {character.pk.level > 3 ? 'Murderer' : 'Hero'}
                         </Badge>
-                        <span className="text-xs text-slate-400">({character.pkCount} kills)</span>
+                        <span className="text-xs text-slate-400">({character.pk.kills} kills)</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Level Progress */}
-                  {character.levelUpPoints > 0 && (
+                  {character.points > 0 && (
                     <div className="mt-4 p-3 rounded-lg bg-green-950/20 border border-green-500/20">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm text-green-400 flex items-center gap-2">
                           <TrendingUp className="size-4" />
                           {t.dashboard?.availablePoints || 'Pontos Disponíveis'}
                         </p>
-                        <p className="text-lg text-white">{character.levelUpPoints}</p>
+                        <p className="text-lg text-white">{character.points}</p>
                       </div>
                       <p className="text-xs text-slate-400">
                         {t.dashboard?.distributePointsHint || 'Use a aba "Distribuir Pontos" para alocar seus pontos'}
