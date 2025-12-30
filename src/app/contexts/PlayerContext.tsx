@@ -70,12 +70,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     setIsLoading(true);
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.PLAYER_CHARACTERS), {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CHARACTERS), {  // ✅ CORRETO: CHARACTERS, não PLAYER_CHARACTERS
         headers: getAuthHeaders(token)
       });
 
+      console.log(`📊 [PlayerContext] Response status: ${response.status}`);
+
       if (response.ok) {
         const data = await response.json();
+        console.log(`📊 [PlayerContext] Dados recebidos:`, data);
+        
         setCharacters(data.characters || []);
         setPlayerStats(data.stats || null);
         
@@ -86,10 +90,22 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
             setSelectedCharacter(updated);
           }
         }
+      } else {
+        // ✅ LOGAR ERRO REAL DO BACKEND
+        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+        console.error(`❌ [PlayerContext] Erro ${response.status}:`, errorData);
+        
+        // Mesmo com erro, não bloqueia - dados vazios
+        setCharacters([]);
+        setPlayerStats(null);
       }
     } catch (error) {
-      console.log('⚠️ Não foi possível carregar personagens - servidor pode estar offline');
-      // Não mostra erro ao usuário, apenas loga
+      // ✅ LOGAR ERRO DE REDE (não tem nada a ver com servidor do jogo!)
+      console.error('❌ [PlayerContext] Erro de requisição (backend Node.js pode estar offline):', error);
+      
+      // Mesmo com erro de rede, não bloqueia
+      setCharacters([]);
+      setPlayerStats(null);
     } finally {
       setIsLoading(false);
     }
@@ -112,13 +128,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.PLAYER_DISTRIBUTE_POINTS), {
-        method: 'POST',
+      const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.CHARACTERS}/${characterName}/points`), {  // ✅ CORRETO
+        method: 'PUT',  // ✅ PUT, não POST
         headers: {
           ...getAuthHeaders(token),
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ characterName, stats })
+        body: JSON.stringify({ stats })
       });
 
       const data = await response.json();
@@ -142,7 +158,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.PLAYER_RESET), {
+      const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.CHARACTERS}/${characterName}/reset`), {  // ✅ CORRETO
         method: 'POST',
         headers: {
           ...getAuthHeaders(token),
