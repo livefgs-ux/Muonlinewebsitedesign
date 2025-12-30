@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
 VERSION="577"
-VERSION_DATE="2025-12-30 23:45 CET - V577: Backend completo + correções urgentes (11 endpoints + 3 fixes críticos)"
+VERSION_DATE="2025-12-30 23:55 CET - V577: Backend 100% completo + 5 correções críticas (AdminCP finalizado)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

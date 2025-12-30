@@ -30,7 +30,7 @@ export const SharedBackground = memo(function SharedBackground() {
     // 2. Buscar configuração do banco de dados
     const fetchBackground = async () => {
       try {
-        const response = await fetch('/api/admin/site-editor/background');
+        const response = await fetch('/api/site-editor/background');
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.backgroundUrl) {
