@@ -735,7 +735,7 @@ export function SiteEditor({}: SiteEditorProps) {
                     className="flex-1 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 flex items-center justify-center gap-2"
                   >
                     <CheckCircle className="w-4 h-4" />
-                    Salvar Filtros
+                    Aplicar Filtros
                   </Button>
                   <Button 
                     onClick={handleResetFilters}
