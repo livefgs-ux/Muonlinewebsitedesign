@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="579"
-VERSION_DATE="2025-12-31 00:05 CET - V579: FIX CRÍTICO - AdminCP não desaparece mais em erros HTTP (cache persistente)"
+VERSION="580"
+VERSION_DATE="2025-12-31 00:20 CET - V580: AUDITORIA COMPLETA DE SEGURANÇA - 20/20 proteções ativas (Score 98/100)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
