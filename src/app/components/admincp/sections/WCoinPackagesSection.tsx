@@ -57,7 +57,9 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
   const loadPackages = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('admin_token');
+      // ✅ V575 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
       
       const response = await fetch(`${apiBaseUrl}/wcoin/admin/packages`, {
         headers: {
@@ -105,7 +107,9 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
     e.preventDefault();
     
     try {
-      const token = localStorage.getItem('admin_token');
+      // ✅ V575 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
       
       const response = await fetch(`${apiBaseUrl}/wcoin/admin/packages`, {
         method: 'POST',
@@ -160,7 +164,9 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
     if (!editingId) return;
     
     try {
-      const token = localStorage.getItem('admin_token');
+      // ✅ V575 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
       
       const response = await fetch(`${apiBaseUrl}/wcoin/admin/packages/${editingId}`, {
         method: 'PUT',

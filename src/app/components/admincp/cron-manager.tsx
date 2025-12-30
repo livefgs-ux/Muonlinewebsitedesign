@@ -51,11 +51,14 @@ export function CronManager({}: CronManagerProps) {
   }, []);
 
   const loadCrons = async () => {
-    setLoading(true);
     try {
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch('/api/admin/crons', {
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -76,10 +79,14 @@ export function CronManager({}: CronManagerProps) {
   const executeCron = async (cron: CronJob) => {
     setExecuting(cron.id);
     try {
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch(`/api/admin/crons/${cron.id}/execute`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -101,10 +108,14 @@ export function CronManager({}: CronManagerProps) {
 
   const toggleCron = async (cron: CronJob) => {
     try {
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch(`/api/admin/crons/${cron.id}/toggle`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 

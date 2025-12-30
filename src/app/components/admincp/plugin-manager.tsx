@@ -57,11 +57,14 @@ export function PluginManager({}: PluginManagerProps) {
   }, []);
 
   const loadPlugins = async () => {
-    setLoading(true);
     try {
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch('/api/admin/plugins', {
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -81,10 +84,14 @@ export function PluginManager({}: PluginManagerProps) {
 
   const togglePlugin = async (plugin: Plugin) => {
     try {
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch(`/api/admin/plugins/${plugin.id}/toggle`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -108,10 +115,14 @@ export function PluginManager({}: PluginManagerProps) {
 
   const deletePlugin = async (plugin: Plugin) => {
     try {
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch(`/api/admin/plugins/${plugin.id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -142,13 +153,17 @@ export function PluginManager({}: PluginManagerProps) {
 
     setUploading(true);
     try {
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const formData = new FormData();
       formData.append('plugin', file);
 
       const response = await fetch('/api/admin/plugins/install', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       });

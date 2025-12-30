@@ -26,7 +26,10 @@ export function PluginsSection() {
   const loadPlugins = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
+      // ✅ V575 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch('/api/admin/plugins', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -54,7 +57,10 @@ export function PluginsSection() {
 
   const togglePlugin = async (id: number, currentState: boolean) => {
     try {
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
+      // ✅ V575 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch(`/api/admin/plugins/${id}/toggle`, {
         method: 'PATCH',
         headers: {
@@ -83,7 +89,10 @@ export function PluginsSection() {
     if (!confirm('Tem certeza que deseja deletar este plugin?')) return;
 
     try {
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
+      // ✅ V575 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch(`/api/admin/plugins/${id}`, {
         method: 'DELETE',
         headers: {

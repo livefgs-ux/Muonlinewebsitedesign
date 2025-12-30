@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
 VERSION="574"
-VERSION_DATE="2025-12-30 17:20 CET - FIX: SecurityPanel + WCoin duplicates + events table color field"
+VERSION_DATE="2025-12-30 18:00 CET - FIX: Token multi-source (session+local) em AdminCP sections"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

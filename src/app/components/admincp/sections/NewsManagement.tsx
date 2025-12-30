@@ -23,8 +23,10 @@ interface NewsItem {
 }
 
 export function NewsManagement() {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [newsForm, setNewsForm] = useState({
+    title: '',
+    content: ''
+  });
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [publishing, setPublishing] = useState(false);
@@ -57,14 +59,16 @@ export function NewsManagement() {
   };
 
   const handlePublish = async () => {
-    if (!title.trim() || !content.trim()) {
-      toast.error('Preencha título e conteúdo!');
+    if (!newsForm.title || !newsForm.content) {
+      toast.error('Preencha todos os campos obrigatórios');
       return;
     }
 
     try {
       setPublishing(true);
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
       
       const response = await fetch('/api/news', {
         method: 'POST',
@@ -73,8 +77,8 @@ export function NewsManagement() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title,
-          content,
+          title: newsForm.title,
+          content: newsForm.content,
           status: 'published'
         })
       });
@@ -87,8 +91,7 @@ export function NewsManagement() {
       
       if (data.success) {
         toast.success('✅ Notícia publicada com sucesso!');
-        setTitle('');
-        setContent('');
+        setNewsForm({ title: '', content: '' });
         loadNews(); // Recarregar lista
       }
     } catch (error) {
@@ -103,7 +106,9 @@ export function NewsManagement() {
     if (!confirm('Tem certeza que deseja deletar esta notícia?')) return;
 
     try {
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
       
       const response = await fetch(`/api/news/${id}`, {
         method: 'DELETE',
@@ -150,8 +155,8 @@ export function NewsManagement() {
             <Input
               type="text"
               placeholder="Digite o título da notícia..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={newsForm.title}
+              onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })}
               className="bg-slate-800/50 border-slate-700/50 text-white"
             />
           </div>
@@ -159,8 +164,8 @@ export function NewsManagement() {
             <label className="block text-sm font-medium text-slate-300 mb-2">Conteúdo</label>
             <Textarea
               placeholder="Digite o conteúdo da notícia..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={newsForm.content}
+              onChange={(e) => setNewsForm({ ...newsForm, content: e.target.value })}
               rows={6}
               className="bg-slate-800/50 border-slate-700/50 text-white resize-none"
             />

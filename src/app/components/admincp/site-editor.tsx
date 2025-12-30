@@ -64,15 +64,18 @@ export function SiteEditor({}: SiteEditorProps) {
   const [backgroundPreview, setBackgroundPreview] = useState<string | null>(null);
 
   useEffect(() => {
-    loadSiteConfig();
+    loadConfig();
   }, []);
 
-  const loadSiteConfig = async () => {
-    setLoading(true);
+  const loadConfig = async () => {
     try {
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch('/api/admin/site-editor/config', {
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -96,11 +99,15 @@ export function SiteEditor({}: SiteEditorProps) {
   const saveHomeBanner = async () => {
     setSaving(true);
     try {
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch('/api/admin/site-editor/home-banner', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(homeBanner)
       });
@@ -780,7 +787,7 @@ export function SiteEditor({}: SiteEditorProps) {
             size="sm"
             onClick={() => {
               if (confirm('Recarregar configurações? Alterações não salvas serão perdidas.')) {
-                loadSiteConfig();
+                loadConfig();
               }
             }}
             className="border-amber-500/30 hover:bg-amber-500/10"

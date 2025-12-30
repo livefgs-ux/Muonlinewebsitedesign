@@ -28,15 +28,15 @@ export function AccountManagement() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const searchAccounts = async () => {
-    if (!searchTerm.trim()) {
-      toast.error('Digite um nome de usuário para buscar');
-      return;
-    }
+  const searchAccount = async () => {
+    if (!searchTerm || searchTerm.trim().length === 0) return;
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch(`/api/admin/accounts/search?username=${encodeURIComponent(searchTerm)}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -67,7 +67,7 @@ export function AccountManagement() {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      searchAccounts();
+      searchAccount();
     }
   };
 
@@ -104,7 +104,7 @@ export function AccountManagement() {
               />
             </div>
             <Button 
-              onClick={searchAccounts}
+              onClick={searchAccount}
               disabled={loading}
               className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold"
             >

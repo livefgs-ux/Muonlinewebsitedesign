@@ -80,7 +80,8 @@ export function DashboardSection() {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
+      // ✅ V574 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
       if (!token) {
         throw new Error('Token de autenticação não encontrado');
       }

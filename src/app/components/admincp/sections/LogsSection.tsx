@@ -27,8 +27,11 @@ export function LogsSection() {
   const loadLogs = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO
-      const response = await fetch('/api/admin/logs/logs', {
+      // ✅ V575 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
+      const response = await fetch('/api/admin/logs', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -55,7 +58,10 @@ export function LogsSection() {
 
   const handleExport = async () => {
     try {
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO
+      // ✅ V575 FIX: Buscar token do sessionStorage (auth_token) OU localStorage (admin_token)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
+      if (!token) throw new Error('Token não encontrado');
+      
       const response = await fetch('/api/admin/logs/export', {
         headers: {
           'Authorization': `Bearer ${token}`
