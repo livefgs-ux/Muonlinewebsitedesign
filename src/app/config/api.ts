@@ -75,7 +75,14 @@ export const getAuthHeaders = (token?: string | null): HeadersInit => {
     'Content-Type': 'application/json',
   };
   
-  const authToken = token || sessionStorage.getItem('auth_token');
+  // ✅ BUSCAR TOKEN EM MÚLTIPLOS LOCAIS (jogador OU admin)
+  // 1. Token fornecido diretamente (parâmetro)
+  // 2. sessionStorage (login de jogador)
+  // 3. localStorage (login de admin)
+  const authToken = token || 
+                    sessionStorage.getItem('auth_token') || 
+                    localStorage.getItem('admin_token');
+  
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }

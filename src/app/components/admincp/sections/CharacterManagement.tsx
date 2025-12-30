@@ -50,12 +50,12 @@ export function CharacterManagement() {
   });
 
   // Função para buscar personagens
-  const fetchCharacters = async (page: number = 1, search: string = '') => {
+  const fetchCharacters = async (page = 1, searchTerm = '') => {
     try {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
       if (!token) {
         throw new Error('Token de autenticação não encontrado');
       }
@@ -64,8 +64,8 @@ export function CharacterManagement() {
       const url = new URL(`${API_URL}/api/admin/all-characters`);
       url.searchParams.append('page', page.toString());
       url.searchParams.append('limit', '50');
-      if (search && search.trim() !== '') {
-        url.searchParams.append('search', search.trim());
+      if (searchTerm && searchTerm.trim() !== '') {
+        url.searchParams.append('search', searchTerm.trim());
       }
       url.searchParams.append('sortBy', 'level');
       url.searchParams.append('sortOrder', 'DESC');

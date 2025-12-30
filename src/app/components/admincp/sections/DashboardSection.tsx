@@ -80,7 +80,7 @@ export function DashboardSection() {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
       if (!token) {
         throw new Error('Token de autenticação não encontrado');
       }

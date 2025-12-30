@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
 VERSION="573"
-VERSION_DATE="2025-12-30 15:30 CET - CRITICAL FIX: Database/System tab crash + 8 components placeholders"
+VERSION_DATE="2025-12-30 16:15 CET - FIX: Player Dashboard characters + token multi-source"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -1108,7 +1108,7 @@ verificar_mysql() {
     pause
 }
 
-# ════════════════════════════════��═════════════════════════════
+# ════��═══════════════════════════��═════════════════════════════
 # FUNÇÃO 7: VERIFICAR PORTAS
 # ═══════════════════════════════════════════════════════════════
 

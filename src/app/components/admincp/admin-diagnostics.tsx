@@ -52,7 +52,7 @@ export function AdminDiagnostics() {
     
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
       
       if (!token) {
         throw new Error('Token de autenticação não encontrado');
