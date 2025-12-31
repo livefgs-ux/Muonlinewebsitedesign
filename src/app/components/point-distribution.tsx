@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -39,7 +39,7 @@ export function PointDistribution() {
 
   const character = characters.find(c => c.name === selectedCharacter);
   const totalAllocated = strength + agility + vitality + energy + command;
-  const remainingPoints = (character?.levelUpPoints || 0) - totalAllocated;
+  const remainingPoints = (character?.points || 0) - totalAllocated;
 
   const handleIncrement = (stat: 'str' | 'agi' | 'vit' | 'ene' | 'cmd') => {
     if (remainingPoints <= 0) return;
@@ -85,7 +85,7 @@ export function PointDistribution() {
       return;
     }
 
-    if (totalAllocated > (character?.levelUpPoints || 0)) {
+    if (totalAllocated > (character?.points || 0)) {
       setMessage({ type: 'error', text: t.dashboard?.tooManyPoints || 'Você alocou mais pontos do que possui' });
       return;
     }
@@ -118,7 +118,8 @@ export function PointDistribution() {
     value, 
     current,
     onIncrement, 
-    onDecrement 
+    onDecrement,
+    onChange
   }: { 
     icon: any; 
     label: string; 
@@ -127,47 +128,99 @@ export function PointDistribution() {
     current: number;
     onIncrement: () => void; 
     onDecrement: () => void; 
-  }) => (
-    <div className="flex items-center justify-between p-4 rounded-lg bg-slate-800/30 border border-slate-700/50">
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg bg-${color}-950/30 border border-${color}-500/20`}>
-          <Icon className={`size-5 text-${color}-400`} />
+    onChange: (newValue: number) => void;
+  }) => {
+    const [inputValue, setInputValue] = useState(value.toString());
+
+    // Sincronizar input com valor externo
+    useEffect(() => {
+      setInputValue(value.toString());
+    }, [value]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      
+      // Permitir campo vazio temporariamente
+      if (newValue === '') {
+        setInputValue('');
+        return;
+      }
+
+      // Validar apenas números
+      if (!/^\d+$/.test(newValue)) {
+        return;
+      }
+
+      const numValue = parseInt(newValue, 10);
+      
+      // Limitar ao máximo de pontos disponíveis
+      const maxAllowable = remainingPoints + value; // Pontos restantes + pontos já alocados neste stat
+      const finalValue = Math.min(numValue, maxAllowable);
+      
+      setInputValue(finalValue.toString());
+      onChange(finalValue);
+    };
+
+    const handleInputBlur = () => {
+      // Se campo vazio, resetar para 0
+      if (inputValue === '') {
+        setInputValue('0');
+        onChange(0);
+      }
+    };
+
+    return (
+      <div className="flex items-center justify-between p-4 rounded-lg bg-slate-800/30 border border-slate-700/50">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg bg-${color}-950/30 border border-${color}-500/20`}>
+            <Icon className={`size-5 text-${color}-400`} />
+          </div>
+          <div>
+            <p className="text-sm text-slate-300">{label}</p>
+            <p className="text-xs text-slate-500">Current: {current}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm text-slate-300">{label}</p>
-          <p className="text-xs text-slate-500">Current: {current}</p>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onDecrement}
+            disabled={value === 0}
+            className="h-8 w-8 p-0 border-slate-600 hover:bg-red-500/20"
+          >
+            <Minus className="size-4" />
+          </Button>
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-slate-400">+</span>
+              <Input
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                className="w-20 h-8 text-center text-lg font-semibold bg-slate-900/50 border-slate-600 text-white px-1"
+                placeholder="0"
+              />
+            </div>
+            {value > 0 && (
+              <p className="text-xs text-green-400 whitespace-nowrap">→ {current + value}</p>
+            )}
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onIncrement}
+            disabled={remainingPoints === 0}
+            className="h-8 w-8 p-0 border-slate-600 hover:bg-green-500/20"
+          >
+            <Plus className="size-4" />
+          </Button>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={onDecrement}
-          disabled={value === 0}
-          className="h-8 w-8 p-0 border-slate-600 hover:bg-red-500/20"
-        >
-          <Minus className="size-4" />
-        </Button>
-        <div className="w-16 text-center">
-          <p className="text-xl text-white font-semibold">+{value}</p>
-          {value > 0 && (
-            <p className="text-xs text-green-400">→ {current + value}</p>
-          )}
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={onIncrement}
-          disabled={remainingPoints === 0}
-          className="h-8 w-8 p-0 border-slate-600 hover:bg-green-500/20"
-        >
-          <Plus className="size-4" />
-        </Button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -195,7 +248,7 @@ export function PointDistribution() {
                 <SelectContent className="bg-slate-900 border-slate-700">
                   {characters.map((char) => (
                     <SelectItem key={char.name} value={char.name} className="text-white">
-                      {char.name} - Lv.{char.cLevel} ({char.levelUpPoints} {t.dashboard?.points || 'pontos'})
+                      {char.name} - Lv.{char.level} ({char.points} {t.dashboard?.points || 'pontos'})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -209,7 +262,7 @@ export function PointDistribution() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-slate-300">{t.dashboard?.availablePoints || 'Pontos Disponíveis'}</p>
-                      <p className="text-3xl text-blue-400 mt-1">{character.levelUpPoints}</p>
+                      <p className="text-3xl text-blue-400 mt-1">{character.points}</p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-300">{t.dashboard?.allocated || 'Alocados'}</p>
@@ -233,9 +286,10 @@ export function PointDistribution() {
                     label="Strength (STR)"
                     color="red"
                     value={strength}
-                    current={character.strength}
+                    current={character.stats.strength}
                     onIncrement={() => handleIncrement('str')}
                     onDecrement={() => handleDecrement('str')}
+                    onChange={setStrength}
                   />
 
                   <StatRow
@@ -243,9 +297,10 @@ export function PointDistribution() {
                     label="Agility (AGI)"
                     color="green"
                     value={agility}
-                    current={character.agility}
+                    current={character.stats.dexterity}
                     onIncrement={() => handleIncrement('agi')}
                     onDecrement={() => handleDecrement('agi')}
+                    onChange={setAgility}
                   />
 
                   <StatRow
@@ -253,9 +308,10 @@ export function PointDistribution() {
                     label="Vitality (VIT)"
                     color="orange"
                     value={vitality}
-                    current={character.vitality}
+                    current={character.stats.vitality}
                     onIncrement={() => handleIncrement('vit')}
                     onDecrement={() => handleDecrement('vit')}
+                    onChange={setVitality}
                   />
 
                   <StatRow
@@ -263,9 +319,10 @@ export function PointDistribution() {
                     label="Energy (ENE)"
                     color="blue"
                     value={energy}
-                    current={character.energy}
+                    current={character.stats.energy}
                     onIncrement={() => handleIncrement('ene')}
                     onDecrement={() => handleDecrement('ene')}
+                    onChange={setEnergy}
                   />
 
                   <StatRow
@@ -273,9 +330,10 @@ export function PointDistribution() {
                     label="Command (CMD)"
                     color="purple"
                     value={command}
-                    current={character.command}
+                    current={character.stats.command}
                     onIncrement={() => handleIncrement('cmd')}
                     onDecrement={() => handleDecrement('cmd')}
+                    onChange={setCommand}
                   />
                 </div>
 
