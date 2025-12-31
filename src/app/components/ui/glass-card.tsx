@@ -1,15 +1,14 @@
 /**
  * 🎨 GLASS CARD - Componente Reutilizável Glassmorphism
- * Elimina 50+ duplicações de código
- * V561 - Refatoração completa
- * V564 - Import corrigido definitivamente
+ * Padrão Oficial Dark Medieval Fantasy MeuMU Online
+ * V568 - Padronização completa de glassmorphism
  */
 
 import React from 'react';
 import { cn } from './utils';
 
 interface GlassCardProps {
-  variant?: 'default' | 'intense' | 'subtle' | 'gradient';
+  variant?: 'default' | 'intense' | 'subtle' | 'premium' | 'dialog';
   children: React.ReactNode;
   className?: string;
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
@@ -26,10 +25,20 @@ export function GlassCard({
   onClick
 }: GlassCardProps) {
   const variants = {
-    default: 'bg-black/40 backdrop-blur-xl border border-yellow-500/30',
-    intense: 'bg-black/60 backdrop-blur-lg border border-yellow-500/40',
-    subtle: 'bg-black/20 backdrop-blur-md border border-yellow-500/20',
-    gradient: 'bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-xl border border-yellow-500/30'
+    // Padrão principal - uso geral em todo o site
+    default: 'bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-xl border border-yellow-500/30',
+    
+    // Versão mais intensa - AdminCP, modais importantes
+    intense: 'bg-gradient-to-br from-black/80 to-black/60 backdrop-blur-2xl border border-yellow-500/40',
+    
+    // Versão sutil - widgets, cards secundários
+    subtle: 'bg-black/40 backdrop-blur-lg border border-yellow-500/20',
+    
+    // Versão premium - hero sections, destaques
+    premium: 'bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-xl border-2 border-yellow-500/40 shadow-2xl shadow-yellow-500/10',
+    
+    // Versão dialog - modais e overlays
+    dialog: 'bg-gradient-to-br from-black/95 to-black/90 backdrop-blur-2xl border-2 border-yellow-500/30 shadow-2xl shadow-black/50'
   };
 
   const paddings = {
@@ -40,7 +49,10 @@ export function GlassCard({
     xl: 'p-12'
   };
 
-  const hoverClasses = hover ? 'transition-all duration-300 hover:border-yellow-500/50 hover:shadow-lg hover:shadow-yellow-500/10' : '';
+  const hoverClasses = hover 
+    ? 'transition-all duration-300 hover:border-yellow-500/50 hover:shadow-lg hover:shadow-yellow-500/20' 
+    : '';
+  
   const clickableClasses = onClick ? 'cursor-pointer' : '';
 
   return (

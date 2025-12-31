@@ -1,0 +1,118 @@
+{
+  "name": "MeuMU Online - Servidor MU Online Season 19",
+  "short_name": "MeuMU Online",
+  "description": "Servidor privado de MU Online Season 19 com tema Dark Medieval Fantasy. Eventos em tempo real, rankings automáticos, sistema de reset e muito mais!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#d4af37",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "scope": "/",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-home.png",
+      "type": "image/png",
+      "sizes": "1920x1080",
+      "form_factor": "wide",
+      "label": "MeuMU Online Homepage"
+    },
+    {
+      "src": "/screenshots/mobile-home.png",
+      "type": "image/png",
+      "sizes": "750x1334",
+      "form_factor": "narrow",
+      "label": "MeuMU Online Mobile View"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Rankings",
+      "short_name": "Rankings",
+      "description": "Ver rankings de jogadores e guildas",
+      "url": "/rankings",
+      "icons": [
+        {
+          "src": "/icons/rankings-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "short_name": "Eventos",
+      "description": "Ver eventos ativos e cronômetros",
+      "url": "/events",
+      "icons": [
+        {
+          "src": "/icons/events-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "News",
+      "short_name": "Notícias",
+      "description": "Últimas notícias do servidor",
+      "url": "/news",
+      "icons": [
+        {
+          "src": "/icons/news-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Player Dashboard",
+      "short_name": "Dashboard",
+      "description": "Área do jogador",
+      "url": "/player",
+      "icons": [
+        {
+          "src": "/icons/player-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

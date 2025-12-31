@@ -152,7 +152,7 @@ export function WCoinShop({
   if (packages.length === 0) {
     return (
       <div className="col-span-full text-center py-12">
-        <ShoppingCart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+        <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-400">Nenhum pacote disponível no momento</p>
       </div>
     );

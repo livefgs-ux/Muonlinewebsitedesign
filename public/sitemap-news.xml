@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+  
+  <!-- Example news article (update dynamically with real news) -->
+  <url>
+    <loc>https://www.meumu.online/news/castle-siege-season-10</loc>
+    <news:news>
+      <news:publication>
+        <news:name>MeuMU Online News</news:name>
+        <news:language>pt</news:language>
+      </news:publication>
+      <news:publication_date>2025-01-10T10:30:00Z</news:publication_date>
+      <news:title>Novo Evento: Castle Siege Season 10</news:title>
+      <news:keywords>castle siege, evento, mu online, season 10, guildas</news:keywords>
+    </news:news>
+    <lastmod>2025-01-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Add more news articles dynamically -->
+  
+</urlset>

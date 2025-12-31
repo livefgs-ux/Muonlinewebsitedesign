@@ -117,7 +117,7 @@ export function NewsModal({ isOpen, onClose, news, language, t }: NewsModalProps
                 <div className="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b border-gold/20">
                   <div className="flex items-center gap-2 text-ethereal">
                     <Calendar className="w-5 h-5" />
-                    <span className="text-sm">
+                    <span className="text-sm text-ethereal">
                       {new Date(news.date).toLocaleDateString(language, {
                         day: '2-digit',
                         month: 'long',
@@ -127,7 +127,7 @@ export function NewsModal({ isOpen, onClose, news, language, t }: NewsModalProps
                   </div>
                   <div className="flex items-center gap-2 text-gold">
                     <User className="w-5 h-5" />
-                    <span className="text-sm">{t('news.by')} {news.author}</span>
+                    <span className="text-sm text-gold">{t('news.by')} {news.author}</span>
                   </div>
                 </div>
 
@@ -155,7 +155,7 @@ export function NewsModal({ isOpen, onClose, news, language, t }: NewsModalProps
                           className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-ethereal/10 to-ethereal/5 hover:from-ethereal/20 hover:to-ethereal/10 border border-ethereal/30 hover:border-ethereal/50 rounded-lg text-ethereal hover:text-white transition-all group/link"
                         >
                           <LinkIcon className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-sm flex-1 truncate">{link.title}</span>
+                          <span className="text-sm flex-1 truncate text-ethereal group-hover/link:text-white">{link.title}</span>
                           <ArrowRight className="w-4 h-4 flex-shrink-0 group-hover/link:translate-x-1 transition-transform" />
                         </a>
                       ))}

@@ -52,7 +52,7 @@ export function NewsSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30 overflow-hidden hover:border-gold/50 transition-all group cursor-pointer"
+              <Card className="glass-dialog overflow-hidden group cursor-pointer"
                 onClick={() => setSelectedNews(newsItem)}
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -79,7 +79,7 @@ export function NewsSection() {
                     <div className="flex flex-wrap items-center gap-4 mb-4">
                       <div className="flex items-center gap-2 text-ethereal">
                         <Calendar className="w-4 h-4" />
-                        <span className="text-sm">
+                        <span className="text-sm text-ethereal">
                           {new Date(newsItem.date).toLocaleDateString(language, {
                             day: '2-digit',
                             month: 'long',
@@ -89,7 +89,7 @@ export function NewsSection() {
                       </div>
                       <div className="flex items-center gap-2 text-gold">
                         <User className="w-4 h-4" />
-                        <span className="text-sm">{t('news.by')} {newsItem.author}</span>
+                        <span className="text-sm text-gold">{t('news.by')} {newsItem.author}</span>
                       </div>
                     </div>
 
@@ -112,12 +112,12 @@ export function NewsSection() {
                             className="flex items-center gap-2 px-4 py-2 bg-ethereal/10 hover:bg-ethereal/20 border border-ethereal/30 rounded-lg text-ethereal hover:text-white transition-all group/link"
                           >
                             <LinkIcon className="w-4 h-4" />
-                            <span className="text-sm">{link.title}</span>
+                            <span className="text-sm text-ethereal group-hover/link:text-white">{link.title}</span>
                             <ArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
                           </a>
                         ))}
                         {newsItem.links.length > 2 && (
-                          <span className="text-sm text-gray-500 px-4 py-2">
+                          <span className="text-sm text-gray-400 px-4 py-2">
                             +{newsItem.links.length - 2} {t('news.moreLinks')}
                           </span>
                         )}

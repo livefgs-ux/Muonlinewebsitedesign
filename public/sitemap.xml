@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://www.meumu.online/</loc>
+    <lastmod>2025-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.meumu.online/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.meumu.online/en/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.meumu.online/es/" />
+  </url>
+  
+  <!-- News Section -->
+  <url>
+    <loc>https://www.meumu.online/news</loc>
+    <lastmod>2025-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.meumu.online/news" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.meumu.online/en/news" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.meumu.online/es/news" />
+  </url>
+  
+  <!-- Rankings Section -->
+  <url>
+    <loc>https://www.meumu.online/rankings</loc>
+    <lastmod>2025-12-31</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.meumu.online/rankings" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.meumu.online/en/rankings" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.meumu.online/es/rankings" />
+  </url>
+  
+  <!-- Events Section -->
+  <url>
+    <loc>https://www.meumu.online/events</loc>
+    <lastmod>2025-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.meumu.online/events" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.meumu.online/en/events" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.meumu.online/es/events" />
+  </url>
+  
+  <!-- Downloads Section -->
+  <url>
+    <loc>https://www.meumu.online/downloads</loc>
+    <lastmod>2025-12-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.meumu.online/downloads" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.meumu.online/en/downloads" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.meumu.online/es/downloads" />
+  </url>
+  
+  <!-- Player Dashboard (requires login, but index for SEO) -->
+  <url>
+    <loc>https://www.meumu.online/player</loc>
+    <lastmod>2025-12-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Register/Login -->
+  <url>
+    <loc>https://www.meumu.online/register</loc>
+    <lastmod>2025-12-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.meumu.online/register" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.meumu.online/en/register" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.meumu.online/es/register" />
+  </url>
+  
+  <!-- Language Versions - Homepage -->
+  <url>
+    <loc>https://www.meumu.online/en/</loc>
+    <lastmod>2025-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.meumu.online/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.meumu.online/en/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.meumu.online/es/" />
+  </url>
+  
+  <url>
+    <loc>https://www.meumu.online/es/</loc>
+    <lastmod>2025-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.meumu.online/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.meumu.online/en/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.meumu.online/es/" />
+  </url>
+  
+</urlset>

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Alert, AlertDescription } from './ui/alert';
 import { Loader2, Lock, Mail, User, Shield, Sparkles, ArrowLeft, Check, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import { logger } from '../utils/logger';
 
 interface LoginSectionProps {
   onLoginSuccess?: () => void;
@@ -125,7 +126,7 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
         setLoginError(result.message);
       }
     } catch (error) {
-      console.error('Erro no login:', error);
+      logger.error('Erro no login:', error);
       setLoginError('Erro inesperado ao fazer login');
     } finally {
       setLoginLoading(false);
@@ -263,7 +264,7 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Card className="w-full max-w-md bg-black/40 backdrop-blur-xl border-amber-500/20 shadow-2xl shadow-amber-500/10">
+          <Card className="glass-dialog w-full max-w-md shadow-2xl shadow-amber-500/10">
             <CardHeader className="space-y-1 text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 rounded-full bg-gradient-to-br from-amber-500/20 to-blue-500/20 border border-amber-500/30">

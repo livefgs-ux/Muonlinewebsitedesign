@@ -74,7 +74,7 @@ export function PlayersOnlineHero({
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-gold)]/20 to-[var(--color-blue)]/20 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
       
-      <div className="relative bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-xl border border-[var(--color-gold)]/30 rounded-2xl p-8 text-center">
+      <div className="glass-dialog p-8 text-center relative">
         <Users className="w-12 h-12 text-[var(--color-gold)] mx-auto mb-4" />
         
         <div className="text-sm text-gray-400 uppercase tracking-widest mb-2">

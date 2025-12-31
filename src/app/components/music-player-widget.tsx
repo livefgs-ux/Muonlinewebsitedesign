@@ -42,7 +42,7 @@ export const MusicPlayerWidget = memo(function MusicPlayerWidget({ currentSectio
         <div className="relative pointer-events-auto">
           <button
             onClick={() => setIsExpanded(true)}
-            className="group relative bg-gradient-to-br from-obsidian/95 to-obsidian-light/95 backdrop-blur-md border border-gold/20 rounded-full p-4 shadow-2xl hover:shadow-gold/20 transition-all duration-300 hover:scale-105"
+            className="group relative glass-default glass-hover rounded-full p-4 shadow-2xl hover:shadow-gold/20 transition-all duration-300 hover:scale-105"
             title={`${currentTrack.title} - ${currentTrack.artist}`}
           >
             <Music2 className="w-6 h-6 text-gold" />

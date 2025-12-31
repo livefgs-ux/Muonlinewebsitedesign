@@ -34,6 +34,13 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
     const loadServerStats = async () => {
       try {
         const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.SERVER_STATUS));
+        
+        // Se backend não responder, silenciosamente usa valores padrão
+        if (!response.ok) {
+          setLoading(false);
+          return;
+        }
+        
         const data = await response.json();
         
         if (data.success) {
@@ -45,8 +52,8 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
           });
         }
       } catch (error) {
-        console.error('Erro ao carregar stats do servidor:', error);
-        // Manter valores padrão em caso de erro
+        // ✅ Erro silencioso - backend offline é esperado em dev
+        // Mantém valores padrão sem poluir console
       } finally {
         setLoading(false);
       }
@@ -77,7 +84,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
             {/* ✅ Badge responsivo */}
             <div className="flex items-center justify-center lg:justify-start gap-2 mb-6 flex-wrap">
               <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
-              <span className="px-3 sm:px-4 py-1 bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-500 text-xs sm:text-sm">
+              <span className="glass-subtle px-3 sm:px-4 py-1 rounded-full text-yellow-500 text-xs sm:text-sm">
                 {t('hero.seasonBadge')}
               </span>
               <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />

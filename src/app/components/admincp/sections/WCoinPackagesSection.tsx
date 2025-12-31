@@ -673,7 +673,7 @@ const WCoinPackagesSection: React.FC<WCoinPackagesSectionProps> = ({ apiBaseUrl 
                       {pkg.bonus_amount > 0 ? (
                         <span className="text-green-400">+{pkg.bonus_amount.toLocaleString()}</span>
                       ) : (
-                        <span className="text-gray-600">-</span>
+                        <span className="text-gray-400">-</span>
                       )}
                     </td>
                     <td className="px-6 py-4">

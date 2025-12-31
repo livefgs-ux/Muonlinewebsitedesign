@@ -258,7 +258,7 @@ function EventsSectionReal() {
           </div>
 
           {/* Current Server Time */}
-          <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6 mb-8">
+          <Card className="glass-dialog p-6 mb-8">
             <div className="flex items-center justify-center gap-4">
               <Clock className="w-6 h-6 text-yellow-500" />
               <div>
@@ -292,7 +292,7 @@ function EventsSectionReal() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                     >
-                      <Card className={`backdrop-blur-md bg-gradient-to-br from-${event.color}-950/30 to-${event.color}-900/20 border ${colors.border} p-4 hover:scale-105 transition-all`}>
+                      <Card className={`glass-dialog p-4 hover:scale-105 transition-all`}>
                         <div className="flex items-center gap-3 mb-3">
                           <div className={`w-10 h-10 ${colors.bg} rounded-lg flex items-center justify-center border ${colors.border}`}>
                             <Icon className={`w-5 h-5 ${colors.text}`} />
@@ -330,7 +330,7 @@ function EventsSectionReal() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.05 }}
                 >
-                  <Card className={`backdrop-blur-md bg-black/50 border ${colors.border} p-6 hover:scale-105 transition-all ${isHappening ? 'animate-pulse' : ''}`}>
+                  <Card className={`glass-dialog p-6 hover:scale-105 transition-all ${isHappening ? 'animate-pulse' : ''}`}>
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div className={`w-12 h-12 ${colors.bg} rounded-lg flex items-center justify-center shadow-lg ${colors.shadow}`}>
@@ -389,7 +389,7 @@ function EventsSectionReal() {
           </div>
 
           {/* Dica */}
-          <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-8">
+          <Card className="glass-dialog p-8">
             <div className="flex items-start gap-4">
               <div className="text-4xl">💡</div>
               <div>

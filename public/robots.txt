@@ -1,0 +1,105 @@
+# robots.txt for MeuMU Online
+# https://www.meumu.online
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /admincp/
+Disallow: /api/
+Disallow: /backend/
+Disallow: /_next/
+Disallow: /player/settings
+Disallow: /player/account
+Disallow: /private/
+
+# Allow important public pages
+Allow: /
+Allow: /news
+Allow: /downloads
+Allow: /rankings
+Allow: /events
+
+# Crawl delay (optional, 1 second)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://www.meumu.online/sitemap.xml
+Sitemap: https://www.meumu.online/sitemap-news.xml
+
+# Specific crawler rules
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0.5
+
+User-agent: Googlebot-Image
+Allow: /
+Disallow: /admin/
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# AI Crawlers (optional - allow for now)
+User-agent: GPTBot
+Allow: /
+Crawl-delay: 2
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: CCBot
+Allow: /
+Crawl-delay: 2
+
+User-agent: anthropic-ai
+Allow: /
+Crawl-delay: 2
+
+User-agent: Claude-Web
+Allow: /
+Crawl-delay: 2
+
+# Social Media Crawlers
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+# Block download bots
+User-agent: *
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /*.txt$
+Allow: /sitemap.xml
+Allow: /robots.txt
+Allow: /llms.txt
+
+# Host directive (optional)
+Host: https://www.meumu.online

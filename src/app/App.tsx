@@ -100,7 +100,7 @@ function AppContent() {
         setAdminSession(parsed);
         setShowAdminPanel(true);
       } catch (error) {
-        console.error('Erro ao carregar sessão admin:', error);
+        // ✅ Silencioso - session pode não existir
       }
     }
   }, []);

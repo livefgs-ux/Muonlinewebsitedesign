@@ -26,7 +26,8 @@ export function DownloadsSection() {
         // Usar dados estáticos por enquanto
         setInstallationSteps([]);
       } catch (error) {
-        console.error('Error loading installation steps:', error);
+        // ✅ Silencioso - backend pode estar offline
+        setInstallationSteps([]);
       } finally {
         setLoadingSteps(false);
       }
@@ -125,7 +126,7 @@ export function DownloadsSection() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Card className={`backdrop-blur-md bg-black/50 border ${colors.border} p-6 transition-all h-full flex flex-col`}>
+                  <Card className="glass-dialog p-6 transition-all h-full flex flex-col">
                     <div className={`w-16 h-16 ${colors.bg} rounded-lg flex items-center justify-center mb-4 shadow-lg ${colors.shadow}`}>
                       <item.icon className={`w-8 h-8 ${colors.text}`} />
                     </div>
@@ -161,7 +162,7 @@ export function DownloadsSection() {
           </div>
 
           {/* Installation Guide */}
-          <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-8 mb-8">
+          <Card className="glass-dialog p-8 mb-8">
             <h3 className="text-2xl text-white mb-6">{t('downloads.installationGuide')}</h3>
             
             <div className="space-y-4">
@@ -198,7 +199,7 @@ export function DownloadsSection() {
 
           {/* System Requirements */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-8">
+            <Card className="glass-dialog p-8">
               <h3 className="text-xl text-white mb-4">{t('downloads.minimumReqs')}</h3>
               <ul className="space-y-2">
                 {systemRequirements.minimum.map((req, index) => (
@@ -210,7 +211,7 @@ export function DownloadsSection() {
               </ul>
             </Card>
 
-            <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-8">
+            <Card className="glass-dialog p-8">
               <h3 className="text-xl text-white mb-4">{t('downloads.recommendedReqs')}</h3>
               <ul className="space-y-2">
                 {systemRequirements.recommended.map((req, index) => (
@@ -225,7 +226,7 @@ export function DownloadsSection() {
 
           {/* Mirrors & Support */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6">
+            <Card className="glass-dialog p-6">
               <h3 className="text-xl text-white mb-4">{t('downloads.downloadMirrors')}</h3>
               <div className="space-y-3">
                 {['Google Drive', 'MEGA', 'MediaFire'].map((mirror) => (
@@ -241,7 +242,7 @@ export function DownloadsSection() {
               </div>
             </Card>
 
-            <Card className="backdrop-blur-md bg-black/50 border-yellow-500/30 p-6">
+            <Card className="glass-dialog p-6">
               <h3 className="text-xl text-white mb-4">{t('downloads.needHelp')}</h3>
               <p className="text-gray-400 mb-4">
                 {t('downloads.needHelpDesc')}

@@ -301,7 +301,7 @@ export function SiteEditor({}: SiteEditorProps) {
       </div>
 
       <Tabs defaultValue="home" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-black/40 backdrop-blur-sm border border-amber-500/20">
+        <TabsList className="glass-intense glass-hover grid w-full grid-cols-5">
           <TabsTrigger value="home" className="flex items-center gap-2 data-[state=active]:bg-amber-500/20 data-[state=active]:text-white text-slate-200">
             <Layout className="w-4 h-4" />
             Home Banner
@@ -327,13 +327,13 @@ export function SiteEditor({}: SiteEditorProps) {
         {/* Home Banner Tab */}
         <TabsContent value="home" className="space-y-4">
           <Card className="bg-black/60 backdrop-blur-sm border-amber-500/30">
-            <CardHeader>
+            <CardHeader className="border-b border-amber-500/20 sticky top-0 bg-black/80 backdrop-blur-xl z-10">
               <CardTitle className="text-amber-400">Banner Principal</CardTitle>
               <CardDescription>
                 Edite o banner exibido na página inicial
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-6">
               <div className="space-y-2">
                 <Label htmlFor="banner-title">Título</Label>
                 <Input
@@ -388,14 +388,17 @@ export function SiteEditor({}: SiteEditorProps) {
                 </div>
               </div>
 
-              <Button
-                onClick={saveHomeBanner}
-                disabled={saving}
-                className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {saving ? 'Salvando...' : 'Salvar Banner'}
-              </Button>
+              {/* STICKY FOOTER COM BOTÃO */}
+              <div className="sticky bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl border-t border-amber-500/30 p-4 -mx-6 -mb-6 mt-6">
+                <Button
+                  onClick={saveHomeBanner}
+                  disabled={saving}
+                  className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 shadow-lg shadow-amber-500/20"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {saving ? 'Salvando...' : 'Aplicar Alterações no Banner'}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -403,13 +406,13 @@ export function SiteEditor({}: SiteEditorProps) {
         {/* Social Links Tab */}
         <TabsContent value="social" className="space-y-4">
           <Card className="bg-black/60 backdrop-blur-sm border-amber-500/30">
-            <CardHeader>
+            <CardHeader className="border-b border-amber-500/20 sticky top-0 bg-black/80 backdrop-blur-xl z-10">
               <CardTitle className="text-amber-400">Redes Sociais</CardTitle>
               <CardDescription>
                 Configure os links das redes sociais exibidos no site
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-6">
               <div className="space-y-2">
                 <Label htmlFor="social-discord">Discord</Label>
                 <Input
@@ -470,14 +473,17 @@ export function SiteEditor({}: SiteEditorProps) {
                 />
               </div>
 
-              <Button
-                onClick={saveSocialLinks}
-                disabled={saving}
-                className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {saving ? 'Salvando...' : 'Salvar Redes Sociais'}
-              </Button>
+              {/* STICKY FOOTER COM BOTÃO */}
+              <div className="sticky bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl border-t border-amber-500/30 p-4 -mx-6 -mb-6 mt-6">
+                <Button
+                  onClick={saveSocialLinks}
+                  disabled={saving}
+                  className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 shadow-lg shadow-amber-500/20"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {saving ? 'Salvando...' : 'Aplicar Alterações nas Redes Sociais'}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

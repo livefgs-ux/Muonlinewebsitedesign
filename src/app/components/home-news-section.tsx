@@ -85,21 +85,21 @@ export function HomeNewsSection({ onNavigate }: HomeNewsSectionProps) {
                   </p>
 
                   {/* Meta Info */}
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                  <div className="flex items-center justify-between text-xs text-gray-400 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 text-gray-400">
                         <User className="w-3 h-3" />
-                        <span>{item.author}</span>
+                        <span className="text-gray-400">{item.author}</span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 text-gray-400">
                         <Calendar className="w-3 h-3" />
-                        <span>{new Date(item.date).toLocaleDateString(language)}</span>
+                        <span className="text-gray-400">{new Date(item.date).toLocaleDateString(language)}</span>
                       </div>
                     </div>
                     {item.views !== undefined && (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 text-gray-400">
                         <Eye className="w-3 h-3" />
-                        <span>{item.views}</span>
+                        <span className="text-gray-400">{item.views}</span>
                       </div>
                     )}
                   </div>

@@ -57,7 +57,7 @@
   --popover: oklch(0.145 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0); /* ✅ CORRIGIDO: era 0.205 (escuro), agora 0.985 (claro) */
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -201,5 +201,50 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+  }
+}
+
+/* 
+ * ====================================================================
+ * GLASSMORPHISM UTILITIES - MeuMU Online Dark Medieval Fantasy
+ * Padrão oficial para todo o site
+ * V568 - Padronização completa
+ * ====================================================================
+ */
+
+@layer utilities {
+  /* Padrão Default - uso geral */
+  .glass-default {
+    @apply bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-xl border border-yellow-500/30 rounded-xl;
+  }
+
+  /* Padrão Intense - AdminCP, modais importantes */
+  .glass-intense {
+    @apply bg-gradient-to-br from-black/80 to-black/60 backdrop-blur-2xl border border-yellow-500/40 rounded-xl;
+  }
+
+  /* Padrão Subtle - widgets, cards secundários */
+  .glass-subtle {
+    @apply bg-black/40 backdrop-blur-lg border border-yellow-500/20 rounded-xl;
+  }
+
+  /* Padrão Premium - hero sections, destaques */
+  .glass-premium {
+    @apply bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-xl border-2 border-yellow-500/40 shadow-2xl shadow-yellow-500/10 rounded-xl;
+  }
+
+  /* Padrão Dialog - modais e overlays */
+  .glass-dialog {
+    @apply bg-gradient-to-br from-black/95 to-black/90 backdrop-blur-2xl border-2 border-yellow-500/30 shadow-2xl shadow-black/50 rounded-2xl;
+  }
+
+  /* Hover effect para glass cards */
+  .glass-hover {
+    @apply transition-all duration-300 hover:border-yellow-500/50 hover:shadow-lg hover:shadow-yellow-500/20;
+  }
+
+  /* Variant com arredondamento maior */
+  .glass-rounded-2xl {
+    @apply rounded-2xl;
   }
 }

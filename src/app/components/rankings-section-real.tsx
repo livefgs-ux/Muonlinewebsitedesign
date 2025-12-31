@@ -44,9 +44,9 @@ const MU_CLASSES: MuClass[] = [
 // Medal helper
 const getRankMedal = (rank: number) => {
   if (rank === 1) return { icon: Trophy, color: 'text-yellow-500', bg: 'bg-yellow-500/20', border: 'border-yellow-500' };
-  if (rank === 2) return { icon: Medal, color: 'text-gray-400', bg: 'bg-gray-400/20', border: 'border-gray-400' };
+  if (rank === 2) return { icon: Medal, color: 'text-gray-300', bg: 'bg-gray-300/20', border: 'border-gray-300' };
   if (rank === 3) return { icon: Award, color: 'text-orange-600', bg: 'bg-orange-600/20', border: 'border-orange-600' };
-  return { icon: Trophy, color: 'text-gray-500', bg: 'bg-gray-500/20', border: 'border-gray-500' };
+  return { icon: Trophy, color: 'text-gray-300', bg: 'bg-gray-300/20', border: 'border-gray-300' };
 };
 
 export function RankingsSection() {
@@ -188,7 +188,7 @@ export function RankingsSection() {
     <div className="flex items-center justify-center py-12">
       <div className="text-center">
         <div className="inline-block w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-400">Carregando ranking...</p>
+        <p className="text-gray-300">Carregando ranking...</p>
       </div>
     </div>
   );
@@ -250,11 +250,11 @@ export function RankingsSection() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Top #1 Resets */}
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30 p-6 hover:border-gold/60 transition-all">
+              <Card className="glass-dialog p-6 hover:border-gold/60 transition-all">
                 <div className="flex items-center gap-3 mb-4">
                   <Flame className="w-8 h-8 text-gold" />
                   <div>
-                    <div className="text-sm text-gray-400">Resets</div>
+                    <div className="text-sm text-gray-300">Resets</div>
                     <div className="text-lg text-white">{topResets[0]?.name || '---'}</div>
                   </div>
                 </div>
@@ -262,11 +262,11 @@ export function RankingsSection() {
               </Card>
 
               {/* Top #1 Level */}
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30 p-6 hover:border-gold/60 transition-all">
+              <Card className="glass-dialog p-6 hover:border-gold/60 transition-all">
                 <div className="flex items-center gap-3 mb-4">
                   <TrendingUp className="w-8 h-8 text-ethereal" />
                   <div>
-                    <div className="text-sm text-gray-400">Level</div>
+                    <div className="text-sm text-gray-300">Level</div>
                     <div className="text-lg text-white">{topLevel[0]?.name || '---'}</div>
                   </div>
                 </div>
@@ -274,11 +274,11 @@ export function RankingsSection() {
               </Card>
 
               {/* Top #1 PK */}
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30 p-6 hover:border-gold/60 transition-all">
+              <Card className="glass-dialog p-6 hover:border-gold/60 transition-all">
                 <div className="flex items-center gap-3 mb-4">
                   <Skull className="w-8 h-8 text-red-500" />
                   <div>
-                    <div className="text-sm text-gray-400">PK</div>
+                    <div className="text-sm text-gray-300">PK</div>
                     <div className="text-lg text-white">{topPK[0]?.name || '---'}</div>
                   </div>
                 </div>
@@ -286,11 +286,11 @@ export function RankingsSection() {
               </Card>
 
               {/* Top #1 Guild */}
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30 p-6 hover:border-gold/60 transition-all">
+              <Card className="glass-dialog p-6 hover:border-gold/60 transition-all">
                 <div className="flex items-center gap-3 mb-4">
                   <Users className="w-8 h-8 text-ethereal" />
                   <div>
-                    <div className="text-sm text-gray-400">Guild</div>
+                    <div className="text-sm text-gray-300">Guild</div>
                     <div className="text-lg text-white">{topGuilds[0]?.name || '---'}</div>
                   </div>
                 </div>
@@ -326,7 +326,7 @@ export function RankingsSection() {
 
             {/* Tab Content: Resets */}
             <TabsContent value="resets">
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30">
+              <Card className="glass-dialog">
                 {loadingResets ? (
                   <LoadingState />
                 ) : errorResets ? (
@@ -336,12 +336,12 @@ export function RankingsSection() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gold/20">
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Rank</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Player</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Class</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Resets</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Level</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Status</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Rank</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Player</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Class</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Resets</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Level</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Status</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -384,7 +384,7 @@ export function RankingsSection() {
 
             {/* Tab Content: Level */}
             <TabsContent value="level">
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30">
+              <Card className="glass-dialog">
                 {loadingLevel ? (
                   <LoadingState />
                 ) : errorLevel ? (
@@ -394,12 +394,12 @@ export function RankingsSection() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gold/20">
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Rank</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Player</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Class</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Level</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Resets</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Status</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Rank</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Player</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Class</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Level</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Resets</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Status</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -442,7 +442,7 @@ export function RankingsSection() {
 
             {/* Tab Content: PK */}
             <TabsContent value="pk">
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30">
+              <Card className="glass-dialog">
                 {loadingPK ? (
                   <LoadingState />
                 ) : errorPK ? (
@@ -452,12 +452,12 @@ export function RankingsSection() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gold/20">
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Rank</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Player</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Class</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Kills</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">PK Level</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Status</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Rank</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Player</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Class</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Kills</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">PK Level</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Status</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -523,7 +523,7 @@ export function RankingsSection() {
                 </div>
 
                 {/* Ranking da Classe Selecionada */}
-                <Card className="backdrop-blur-xl bg-black/60 border-gold/30">
+                <Card className="glass-dialog">
                   {loadingClass[selectedClass] ? (
                     <LoadingState />
                   ) : errorClass[selectedClass] ? (
@@ -536,12 +536,12 @@ export function RankingsSection() {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-gold/20">
-                            <th className="px-6 py-4 text-left text-sm text-gray-400">Rank</th>
-                            <th className="px-6 py-4 text-left text-sm text-gray-400">Player</th>
-                            <th className="px-6 py-4 text-center text-sm text-gray-400">Level</th>
-                            <th className="px-6 py-4 text-center text-sm text-gray-400">Resets</th>
-                            <th className="px-6 py-4 text-center text-sm text-gray-400">Kills</th>
-                            <th className="px-6 py-4 text-center text-sm text-gray-400">Status</th>
+                            <th className="px-6 py-4 text-left text-sm text-gray-200">Rank</th>
+                            <th className="px-6 py-4 text-left text-sm text-gray-200">Player</th>
+                            <th className="px-6 py-4 text-center text-sm text-gray-200">Level</th>
+                            <th className="px-6 py-4 text-center text-sm text-gray-200">Resets</th>
+                            <th className="px-6 py-4 text-center text-sm text-gray-200">Kills</th>
+                            <th className="px-6 py-4 text-center text-sm text-gray-200">Status</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -579,7 +579,7 @@ export function RankingsSection() {
                       </table>
                     </div>
                   ) : (
-                    <div className="py-12 text-center text-gray-400">
+                    <div className="py-12 text-center text-gray-300">
                       Nenhum jogador encontrado para esta classe
                     </div>
                   )}
@@ -589,7 +589,7 @@ export function RankingsSection() {
 
             {/* Tab Content: Guilds */}
             <TabsContent value="guilds">
-              <Card className="backdrop-blur-xl bg-black/60 border-gold/30">
+              <Card className="glass-dialog">
                 {loadingGuilds ? (
                   <LoadingState />
                 ) : errorGuilds ? (
@@ -599,11 +599,11 @@ export function RankingsSection() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gold/20">
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Rank</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Guild</th>
-                          <th className="px-6 py-4 text-left text-sm text-gray-400">Master</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Members</th>
-                          <th className="px-6 py-4 text-center text-sm text-gray-400">Score</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Rank</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Guild</th>
+                          <th className="px-6 py-4 text-left text-sm text-gray-200">Master</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Members</th>
+                          <th className="px-6 py-4 text-center text-sm text-gray-200">Score</th>
                         </tr>
                       </thead>
                       <tbody>

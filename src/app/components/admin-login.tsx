@@ -104,7 +104,10 @@ export function AdminLogin({
       onLoginSuccess(adminData);
       
     } catch (error: any) {
-      console.error("❌ Erro no login admin:", error);
+      // ✅ Log de erro apenas em dev
+      if (import.meta.env.DEV) {
+        console.error("❌ Erro no login admin:", error);
+      }
       
       // Mensagens de erro específicas
       if (error.message.includes("Network") || error.message.includes("fetch")) {

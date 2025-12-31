@@ -19,7 +19,7 @@ export function RealTimeRankings() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-xl border border-[var(--color-gold)]/30 rounded-2xl overflow-hidden">
+    <div className="glass-dialog overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-[var(--color-gold)]/10 to-transparent p-6 border-b border-[var(--color-gold)]/20">
         <div className="flex items-center justify-between">
