@@ -1,11 +1,8 @@
 import { useState, lazy, Suspense, useEffect } from 'react';
-import { Navigation } from './components/navigation';
-import { ServerInfoWidget } from './components/server-info-widget';
-import { MusicProvider } from './contexts/music-context';
-import { MusicPlayerWidget } from './components/music-player-widget';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PlayerProvider } from './contexts/PlayerContext';
+import { NewsProvider } from './contexts/NewsContext'; // ✅ V606: News provider
 import { logger } from './utils/logger'; // 🔒 V606: Logger seguro
 import { SharedBackground } from './components/shared-background'; // ✅ V606: Background import
 import { Footer } from './components/footer'; // ✅ V606: Footer import
@@ -195,10 +192,7 @@ function AppContent() {
         return (
           <AdminDashboard 
             adminData={adminData} 
-            onLogout={() => {
-              handleAdminLogout();
-              handleLogout();
-            }} 
+            onLogout={handleAdminLogout} 
             onNavigate={setCurrentSection}
           />
         );
@@ -260,7 +254,9 @@ export default function App() {
       <MusicProvider>
         <AuthProvider>
           <PlayerProvider>
-            <AppContent />
+            <NewsProvider>
+              <AppContent />
+            </NewsProvider>
           </PlayerProvider>
         </AuthProvider>
       </MusicProvider>
