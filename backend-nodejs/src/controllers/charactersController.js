@@ -19,7 +19,7 @@ const getAccountGuid = async (accountUsername) => {
   console.log(`🔍 Account Username recebido: "${accountUsername}"`);
   console.log(`🔍 Tipo: ${typeof accountUsername}`);
   
-  const sql = `SELECT guid FROM ${tables.accounts} WHERE account = ?`;
+  const sql = `SELECT guid FROM ${tables.accounts} WHERE BINARY account = ?`;
   console.log(`🔍 SQL: ${sql}`);
   console.log(`🔍 Parâmetros: ["${accountUsername}"]`);
   

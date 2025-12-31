@@ -40,7 +40,7 @@ const login = async (req, res) => {
       console.log('🔄 Tentando estrutura Season 6 (memb___id)...');
       sql = `SELECT memb___id as username, memb__pwd as pwd, memb___id as guid, mail_addr as email, bloc_code as blocked, ctl1_code as web_admin 
              FROM ${tables.accounts} 
-             WHERE memb___id = ?`;
+             WHERE BINARY memb___id = ?`;
       
       result = await executeQueryMU(sql, [username]);
     }
