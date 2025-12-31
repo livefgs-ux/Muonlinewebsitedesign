@@ -93,7 +93,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const refreshCharacters = async () => {
     // ✅ BUSCAR TOKEN EM MÚLTIPLOS LOCAIS (jogador OU admin)
     const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
-    if (!token) return;
+    
+    // V589: Log detalhado do token
+    console.log('🔍 [PlayerContext] refreshCharacters chamado');
+    console.log('🔍 [PlayerContext] Token presente:', !!token);
+    console.log('🔍 [PlayerContext] Token length:', token?.length || 0);
+    
+    if (!token) {
+      console.log('❌ [PlayerContext] Nenhum token encontrado - não buscando personagens');
+      return;
+    }
     
     // 🧪 Se for token fake (teste), não faz requisição
     if (token === 'fake_token') {
@@ -103,8 +112,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
 
     setIsLoading(true);
+    
+    // V589: Log da URL da requisição
+    const apiUrl = getApiUrl(API_CONFIG.ENDPOINTS.CHARACTERS);
+    console.log('🔍 [PlayerContext] Requisitando:', apiUrl);
+    
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CHARACTERS), {
+      const response = await fetch(apiUrl, {
         headers: {
           ...getAuthHeaders(token),
           // 🛡️ V580 FIX: Desabilitar cache para evitar HTTP 304 sem body

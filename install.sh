@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="589"
-VERSION_DATE="2025-12-31 03:00 CET - V589: FIX - Mensagens de erro de registro agora são exibidas corretamente"
+VERSION="590"
+VERSION_DATE="2025-12-31 03:15 CET - V590: DEBUG - Logs detalhados para rastrear problema de personagens"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
