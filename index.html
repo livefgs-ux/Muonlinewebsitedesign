@@ -53,9 +53,8 @@
   <meta name="theme-color" content="#0a0a0f">
   <meta name="msapplication-TileColor" content="#0a0a0f">
   
-  <!-- Security Headers (meta equivalents) -->
+  <!-- Security Headers - REMOVIDO X-Frame-Options (só funciona via HTTP header) -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
   <meta http-equiv="X-XSS-Protection" content="1; mode=block">
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
   
@@ -152,14 +151,19 @@
   <!-- Module Script -->
   <script type="module" src="/src/main.tsx"></script>
   
-  <!-- Performance Monitoring (example, replace with actual analytics) -->
+  <!-- Performance Monitoring -->
   <script>
     // Track page load performance
     window.addEventListener('load', function() {
       if (window.performance && window.performance.timing) {
         const perfData = window.performance.timing;
-        const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
-        console.log('Page Load Time:', pageLoadTime + 'ms');
+        // ✅ V617: Aguardar loadEventEnd estar disponível
+        setTimeout(() => {
+          const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+          if (pageLoadTime > 0) {
+            console.log('📊 Page Load Time:', pageLoadTime + 'ms');
+          }
+        }, 0);
       }
     });
   </script>

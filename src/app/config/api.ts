@@ -34,6 +34,7 @@ export const API_CONFIG = {
     AUTH_LOGOUT: '/auth/logout',
     AUTH_FORGOT_PASSWORD: '/auth/forgot-password',
     AUTH_ACCOUNT: '/auth/account',  // ✅ NOVO: Dados da conta
+    AUTH_CHANGE_PASSWORD: '/auth/update-password',  // ✅ V617: Alterar senha
     
     // Personagens
     CHARACTERS: '/characters',

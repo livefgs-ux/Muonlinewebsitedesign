@@ -51,11 +51,11 @@ export function AccountTab({ accountInfo }: AccountTabProps) {
     try {
       setIsChangingPassword(true);
 
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CHANGE_PASSWORD), {
-        method: 'POST',
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_CHANGE_PASSWORD), {
+        method: 'PUT',  // ✅ V617: Backend usa PUT, não POST
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          oldPassword,
+          currentPassword: oldPassword,  // ✅ V617: Backend espera "currentPassword"
           newPassword
         })
       });

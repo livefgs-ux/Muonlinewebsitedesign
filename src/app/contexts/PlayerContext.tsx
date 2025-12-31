@@ -205,7 +205,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           ...getAuthHeaders(token),
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ stats })
+        body: JSON.stringify(stats)  // ✅ V617: Enviar direto, não { stats }
       });
 
       const data = await response.json();

@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="616"
-VERSION_DATE="2025-12-31 17:45 CET - V616: ✨ Input manual de pontos (1-999+ de uma vez)"
+VERSION="618"
+VERSION_DATE="2025-12-31 18:15 CET - V618: 🐛 FIX - Alterar senha (endpoint + campos corretos)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -1629,7 +1629,7 @@ corrigir_bugs_v574() {
 
 # ═════════════════════════════════════════════════════════════
 # MENU PRINCIPAL
-# ═══════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════��══════════════════
 
 menu_principal() {
     while true; do

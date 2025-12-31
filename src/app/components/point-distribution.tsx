@@ -94,7 +94,7 @@ export function PointDistribution() {
 
     const stats: any = {};
     if (strength > 0) stats.strength = strength;
-    if (agility > 0) stats.agility = agility;
+    if (agility > 0) stats.dexterity = agility;  // ✅ BACKEND ESPERA "dexterity"
     if (vitality > 0) stats.vitality = vitality;
     if (energy > 0) stats.energy = energy;
     if (command > 0) stats.command = command;
