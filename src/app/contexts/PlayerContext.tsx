@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_CONFIG, getApiUrl, getAuthHeaders } from '../config/api';
+import { logger } from '../utils/logger'; // 🔒 V606: Logger seguro
 
 interface Character {
   name: string;
@@ -52,6 +53,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [playerStats, setPlayerStats] = useState<PlayerStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // 🔥 V606 FIX: Prevenir chamadas duplicadas de refreshCharacters
+  const hasInitializedRef = React.useRef(false);
 
   // 🛡️ V582 FIX CRÍTICO: Limpar dados ao deslogar
   // Monitora mudanças no token de autenticação
@@ -61,14 +65,21 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       
       if (!token) {
         // ✅ TOKEN REMOVIDO = LOGOUT → LIMPAR TUDO!
-        console.log('🧹 [PlayerContext] Token removido - limpando dados de personagens');
-        setCharacters([]);
-        setSelectedCharacter(null);
-        setPlayerStats(null);
-        setIsLoading(false);
+        logger.info('🧹 [PlayerContext] Token removido - limpando dados de personagens');
+        // 🔥 V606 FIX: Só atualizar se realmente tiver mudanças
+        setCharacters(prev => prev.length > 0 ? [] : prev);
+        setSelectedCharacter(prev => prev ? null : prev);
+        setPlayerStats(prev => prev ? null : prev);
+        setIsLoading(prev => prev ? false : prev);
+        hasInitializedRef.current = false;
       } else {
         // ✅ TOKEN EXISTE = LOGIN → BUSCAR PERSONAGENS
-        refreshCharacters();
+        // 🔥 V606 FIX: Só chamar refreshCharacters() UMA VEZ!
+        if (!hasInitializedRef.current) {
+          logger.info('🔄 [PlayerContext] Primeira inicialização - buscando personagens...');
+          hasInitializedRef.current = true;
+          refreshCharacters();
+        }
       }
     };
     
@@ -78,7 +89,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     // 🛡️ V582 FIX: Escutar mudanças no sessionStorage/localStorage (logout de outra aba)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'auth_token' || e.key === 'admin_token') {
-        console.log('🔄 [PlayerContext] Detectada mudança no token - atualizando...');
+        logger.info('🔄 [PlayerContext] Detectada mudança no token - atualizando...');
         checkToken();
       }
     };
@@ -95,18 +106,18 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
     
     // V589: Log detalhado do token
-    console.log('🔍 [PlayerContext] refreshCharacters chamado');
-    console.log('🔍 [PlayerContext] Token presente:', !!token);
-    console.log('🔍 [PlayerContext] Token length:', token?.length || 0);
+    logger.info('🔍 [PlayerContext] refreshCharacters chamado');
+    logger.info('🔍 [PlayerContext] Token presente:', !!token);
+    logger.info('🔍 [PlayerContext] Token length:', token?.length || 0);
     
     if (!token) {
-      console.log('❌ [PlayerContext] Nenhum token encontrado - não buscando personagens');
+      logger.info('❌ [PlayerContext] Nenhum token encontrado - não buscando personagens');
       return;
     }
     
     // 🧪 Se for token fake (teste), não faz requisição
     if (token === 'fake_token') {
-      console.log('⚠️ Modo de teste ativo - usando dados mockados');
+      logger.warn('⚠️ Modo de teste ativo - usando dados mockados');
       setIsLoading(false);
       return;
     }
@@ -115,7 +126,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     
     // V589: Log da URL da requisição
     const apiUrl = getApiUrl(API_CONFIG.ENDPOINTS.CHARACTERS);
-    console.log('🔍 [PlayerContext] Requisitando:', apiUrl);
+    logger.info('🔍 [PlayerContext] Requisitando:', apiUrl);
     
     try {
       const response = await fetch(apiUrl, {
@@ -127,17 +138,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         }
       });
 
-      console.log(`📊 [PlayerContext] Response status: ${response.status}`);
+      logger.info(`📊 [PlayerContext] Response status: ${response.status}`);
 
       if (response.ok) {
         const data = await response.json();
         
-        console.log(`📊 [PlayerContext] Dados recebidos:`, data);
+        logger.info(`📊 [PlayerContext] Dados recebidos:`, data);
         
         // ✅ CORREÇÃO: Backend retorna { success, data: [...] }, não { characters: [...] }
         const charactersArray = Array.isArray(data.data) ? data.data : (data.characters || []);
         
-        console.log(`📊 [PlayerContext] Personagens processados (${charactersArray.length}):`, charactersArray);
+        logger.info(`📊 [PlayerContext] Personagens processados (${charactersArray.length}):`, charactersArray);
         
         setCharacters(charactersArray);
         setPlayerStats(data.stats || null);
@@ -152,7 +163,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       } else {
         // ✅ LOGAR ERRO REAL DO BACKEND
         const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-        console.error(`❌ [PlayerContext] Erro ${response.status}:`, errorData);
+        logger.error(`❌ [PlayerContext] Erro ${response.status}:`, errorData);
         
         // Mesmo com erro, não bloqueia - dados vazios
         setCharacters([]);
@@ -160,7 +171,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       // ✅ LOGAR ERRO DE REDE (não tem nada a ver com servidor do jogo!)
-      console.error('❌ [PlayerContext] Erro de requisição (backend Node.js pode estar offline):', error);
+      logger.error('❌ [PlayerContext] Erro de requisição (backend Node.js pode estar offline):', error);
       
       // Mesmo com erro de rede, não bloqueia
       setCharacters([]);
@@ -206,7 +217,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         return { success: false, message: data.message || 'Erro ao distribuir pontos' };
       }
     } catch (error) {
-      console.error('Erro ao distribuir pontos:', error);
+      logger.error('Erro ao distribuir pontos:', error);
       return { success: false, message: 'Erro de conexão com o servidor' };
     }
   };
@@ -237,7 +248,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         return { success: false, message: data.message || 'Erro ao realizar reset' };
       }
     } catch (error) {
-      console.error('Erro ao realizar reset:', error);
+      logger.error('Erro ao realizar reset:', error);
       return { success: false, message: 'Erro de conexão com o servidor' };
     }
   };

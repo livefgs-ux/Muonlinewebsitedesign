@@ -28,14 +28,9 @@ export function CharacterManagement() {
   const { t } = useLanguage();
   const [expandedCharacter, setExpandedCharacter] = useState<string | null>(null);
 
-  // V592: LOG CRÍTICO - Debug para rastrear problema
-  console.log('🎮 [CharacterManagement] Renderizado');
-  console.log('🎮 [CharacterManagement] isLoading:', isLoading);
-  console.log('🎮 [CharacterManagement] characters.length:', characters.length);
-  console.log('🎮 [CharacterManagement] characters:', characters);
-
+  // 🔥 V606: Logs removidos após debug (causavam poluição de console)
+  
   if (isLoading) {
-    console.log('⏳ [CharacterManagement] Mostrando loading...');
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="size-8 animate-spin text-amber-400" />
@@ -44,7 +39,6 @@ export function CharacterManagement() {
   }
 
   if (characters.length === 0) {
-    console.log('❌ [CharacterManagement] Nenhum personagem - mostrando alerta');
     return (
       <Alert className="bg-blue-950/30 border-blue-500/30">
         <AlertDescription className="text-slate-300">
@@ -53,8 +47,6 @@ export function CharacterManagement() {
       </Alert>
     );
   }
-
-  console.log('✅ [CharacterManagement] Mostrando', characters.length, 'personagens');
 
   const getClassColor = (className: string) => {
     const classLower = className.toLowerCase();

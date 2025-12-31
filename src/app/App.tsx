@@ -4,12 +4,12 @@ import { ServerInfoWidget } from './components/server-info-widget';
 import { MusicProvider } from './contexts/music-context';
 import { MusicPlayerWidget } from './components/music-player-widget';
 import { LanguageProvider } from './contexts/LanguageContext';
-import { LanguageSelector } from './components/language-selector';
-import { NewsProvider } from './contexts/NewsContext';
-import { SharedBackground } from './components/shared-background';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PlayerProvider } from './contexts/PlayerContext';
-import { Footer } from './components/footer';
+import { logger } from './utils/logger'; // 🔒 V606: Logger seguro
+import { SharedBackground } from './components/shared-background'; // ✅ V606: Background import
+import { Footer } from './components/footer'; // ✅ V606: Footer import
+import { LanguageSelector } from './components/language-selector'; // ✅ V606: Language selector import
 
 // Lazy loading de componentes pesados
 const HeroSection = lazy(() => import('./components/hero-section'));
@@ -48,7 +48,7 @@ function AppContent() {
   
   // 🔍 DEBUG: Log toda mudança de estado
   useEffect(() => {
-    console.log('🔍 [App.tsx] Estado atualizado:', {
+    logger.debug('[App.tsx] Estado atualizado:', {
       currentSection,
       isLoggedIn,
       isLoading,
@@ -257,15 +257,13 @@ export default function App() {
   // IMPORTANT: All providers wrap the entire app to ensure hooks work correctly
   return (
     <LanguageProvider>
-      <NewsProvider>
-        <MusicProvider>
-          <AuthProvider>
-            <PlayerProvider>
-              <AppContent />
-            </PlayerProvider>
-          </AuthProvider>
-        </MusicProvider>
-      </NewsProvider>
+      <MusicProvider>
+        <AuthProvider>
+          <PlayerProvider>
+            <AppContent />
+          </PlayerProvider>
+        </AuthProvider>
+      </MusicProvider>
     </LanguageProvider>
   );
 }
