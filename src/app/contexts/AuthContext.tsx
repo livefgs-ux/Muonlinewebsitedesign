@@ -49,7 +49,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     const token = sessionStorage.getItem('auth_token');
+    
+    // V587: Se não houver token, tentar recuperar dados do sessionStorage
     if (!token) {
+      console.log('⚠️ Nenhum token encontrado - verificando dados locais...');
+      
+      const cachedUserData = sessionStorage.getItem('user_data');
+      if (cachedUserData) {
+        try {
+          const parsedData = JSON.parse(cachedUserData);
+          setUser(parsedData);
+          console.log('✅ Dados do usuário recuperados do sessionStorage (sem token)');
+          console.log('🛡️ isAdmin:', parsedData.isAdmin);
+        } catch (e) {
+          console.error('Erro ao parsear dados do usuário:', e);
+        }
+      }
+      
       setIsLoading(false);
       return;
     }
@@ -173,11 +189,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const data = await response.json();
+      
+      // V588: Log detalhado para debug
+      console.log('📝 [Register] Response status:', response.status);
+      console.log('📝 [Register] Response data:', data);
 
       if (response.ok) {
         return { success: true, message: 'Conta criada com sucesso! Faça login.' };
       } else {
-        return { success: false, message: data.message || 'Erro ao criar conta' };
+        // V588: Extrair mensagem de erro de forma mais robusta
+        const errorMessage = 
+          data.message || 
+          data.error || 
+          data.errors?.[0]?.message || 
+          `Erro ${response.status}: ${response.statusText}`;
+        
+        console.error('❌ [Register] Erro:', errorMessage);
+        return { success: false, message: errorMessage };
       }
     } catch (error) {
       console.error('Erro no registro:', error);

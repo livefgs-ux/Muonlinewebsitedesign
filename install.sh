@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="587"
-VERSION_DATE="2025-12-31 02:30 CET - V587: FEATURE - Sistema de pagamento WCoin com validação e redirecionamento"
+VERSION="589"
+VERSION_DATE="2025-12-31 03:00 CET - V589: FIX - Mensagens de erro de registro agora são exibidas corretamente"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
