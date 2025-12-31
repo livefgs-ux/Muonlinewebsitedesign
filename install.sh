@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="618"
-VERSION_DATE="2025-12-31 18:15 CET - V618: 🐛 FIX - Alterar senha (endpoint + campos corretos)"
+VERSION="619"
+VERSION_DATE="2025-12-31 18:30 CET - V619: 🚨 HOTFIX - Permissões MySQL (UPDATE em muonline)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
