@@ -62,53 +62,58 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
 
   return (
     <>
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* ✅ V605: RESPONSIVIDADE CORRIGIDA */}
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-8">
         {/* Background já está em App.tsx - não duplicar! */}
 
-        {/* Content - Positioned to the left */}
-        <div className="relative z-20 max-w-7xl mx-auto px-4 w-full">
+        {/* Content - Responsivo e centralizado */}
+        <div className="relative z-20 w-full max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="max-w-xl text-left"
+            className="w-full max-w-3xl mx-auto lg:mx-0 text-center lg:text-left"
           >
-            <div className="flex items-start gap-2 mb-6">
-              <Sparkles className="w-6 h-6 text-yellow-500" />
-              <span className="px-4 py-1 bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-500 text-sm">
+            {/* ✅ Badge responsivo */}
+            <div className="flex items-center justify-center lg:justify-start gap-2 mb-6 flex-wrap">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+              <span className="px-3 sm:px-4 py-1 bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-500 text-xs sm:text-sm">
                 {t('hero.seasonBadge')}
               </span>
-              <Sparkles className="w-6 h-6 text-yellow-500" />
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
             </div>
 
-            <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 text-white tracking-tight">
+            {/* ✅ Título responsivo */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-4 sm:mb-6 text-white tracking-tight leading-tight">
               MeuMU <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-300">Online</span>
             </h1>
 
-            <p className="text-xl sm:text-2xl text-gray-300 mb-6">
+            {/* ✅ Subtítulo responsivo */}
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-4 sm:mb-6">
               {t('hero.tagline')}
             </p>
 
-            <p className="text-lg text-gray-400 mb-8">
+            {/* ✅ Descrição responsiva */}
+            <p className="text-base sm:text-lg text-gray-400 mb-6 sm:mb-8">
               {t('hero.description')}
             </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-start gap-4 mb-8">
+            {/* ✅ CTA Buttons - Responsivo */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-6 sm:mb-8">
               <Button
                 onClick={() => onNavigate('downloads')}
-                className="group relative bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black px-8 py-6 text-lg shadow-2xl shadow-yellow-500/50 hover:shadow-yellow-500/70 transition-all"
+                className="group relative bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg shadow-2xl shadow-yellow-500/50 hover:shadow-yellow-500/70 transition-all w-full sm:w-auto"
               >
-                <Download className="w-5 h-5 mr-2 group-hover:animate-bounce" />
+                <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:animate-bounce" />
                 {t('hero.downloadNow')}
                 <div className="absolute inset-0 rounded-md bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
               
               <Button
                 onClick={() => onNavigate('dashboard')}
-                className="group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-6 text-lg shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/70 transition-all"
+                className="group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/70 transition-all w-full sm:w-auto"
               >
-                <LogIn className="w-5 h-5 mr-2" />
+                <LogIn className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {t('hero.playerArea') || 'Área do Jogador'}
                 <div className="absolute inset-0 rounded-md bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
@@ -116,15 +121,15 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
               <Button
                 onClick={() => onNavigate('events')}
                 variant="outline"
-                className="border-2 border-yellow-500/50 bg-black/30 backdrop-blur-sm text-yellow-500 hover:bg-yellow-500/10 px-8 py-6 text-lg"
+                className="border-2 border-yellow-500/50 bg-black/30 backdrop-blur-sm text-yellow-500 hover:bg-yellow-500/10 px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg w-full sm:w-auto"
               >
-                <Play className="w-5 h-5 mr-2" />
+                <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {t('hero.viewEvents')}
               </Button>
             </div>
 
-            {/* Server Stats - ✅ DADOS REAIS DO BANCO */}
-            <div className="grid grid-cols-2 gap-4 max-w-md">
+            {/* ✅ Server Stats - Grid Responsivo */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-2xl mx-auto lg:mx-0">
               {[
                 { 
                   label: t('hero.onlinePlayers'), 
@@ -148,19 +153,19 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="backdrop-blur-md bg-white/5 border border-yellow-500/20 rounded-lg p-4 hover:bg-white/10 transition-all"
+                  className="backdrop-blur-md bg-white/5 border border-yellow-500/20 rounded-lg p-3 sm:p-4 hover:bg-white/10 transition-all"
                 >
-                  <div className="text-2xl text-yellow-500">{stat.value}</div>
-                  <div className="text-sm text-gray-400">{stat.label}</div>
+                  <div className="text-xl sm:text-2xl text-yellow-500">{stat.value}</div>
+                  <div className="text-xs sm:text-sm text-gray-400">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
           </motion.div>
         </div>
 
-        {/* Scroll Indicator */}
+        {/* Scroll Indicator - Hidden on mobile */}
         <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20"
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 hidden sm:block"
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >

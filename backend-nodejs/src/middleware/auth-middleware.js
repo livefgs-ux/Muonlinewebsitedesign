@@ -61,6 +61,18 @@ const verifyToken = (req, res, next) => {
         });
       }
 
+      // ✅ V605: LOG DETALHADO DO JWT DECODIFICADO
+      console.log(`\n🔐 ========================================`);
+      console.log(`🔐 [AUTH-MIDDLEWARE] JWT VERIFICADO`);
+      console.log(`🔐 ========================================`);
+      console.log(`🔐 accountId: "${decoded.accountId}"`);
+      console.log(`🔐 isAdmin: ${decoded.isAdmin}`);
+      console.log(`🔐 iat (issued at): ${decoded.iat}`);
+      console.log(`🔐 exp (expires): ${decoded.exp}`);
+      console.log(`🔐 Tipo accountId: ${typeof decoded.accountId}`);
+      console.log(`🔐 Path: ${req.path}`);
+      console.log(`🔐 ========================================\n`);
+
       // Adicionar dados do usuário na requisição
       req.user = decoded;
       

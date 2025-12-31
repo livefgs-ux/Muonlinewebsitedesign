@@ -13,14 +13,33 @@ const { getClassName, successResponse, errorResponse } = require('../utils/helpe
  * ✅ SEASON 19 DV TEAMS: account_id é INTEGER (GUID), não STRING!
  */
 const getAccountGuid = async (accountUsername) => {
+  console.log(`\n🔍 ========================================`);
+  console.log(`🔍 [getAccountGuid] BUSCANDO GUID`);
+  console.log(`🔍 ========================================`);
+  console.log(`🔍 Account Username recebido: "${accountUsername}"`);
+  console.log(`🔍 Tipo: ${typeof accountUsername}`);
+  
   const sql = `SELECT guid FROM ${tables.accounts} WHERE account = ?`;
+  console.log(`🔍 SQL: ${sql}`);
+  console.log(`🔍 Parâmetros: ["${accountUsername}"]`);
+  
   const result = await executeQueryMU(sql, [accountUsername]);
   
+  console.log(`🔍 Query executada - Success: ${result.success}`);
+  console.log(`🔍 Resultados encontrados: ${result.data ? result.data.length : 0}`);
+  
   if (!result.success || result.data.length === 0) {
+    console.error(`❌ Conta NÃO ENCONTRADA: "${accountUsername}"`);
+    console.log(`❌ ========================================\n`);
     return null;
   }
   
-  return result.data[0].guid;
+  const guid = result.data[0].guid;
+  console.log(`✅ GUID ENCONTRADO: ${guid}`);
+  console.log(`✅ Tipo do GUID: ${typeof guid}`);
+  console.log(`✅ ========================================\n`);
+  
+  return guid;
 };
 
 /**

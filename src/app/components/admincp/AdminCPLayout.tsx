@@ -53,6 +53,9 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
   const user = adminData.user;
 
   // 📋 Menu de Módulos Administrativos
+  // 🎨 Sistema de Cores baseado no Design System do AdminCP Guide:
+  // - Cada módulo tem uma cor temática única para organização visual
+  // - Padrão: emerald (accounts), purple (characters), rose (bans), amber (credits), etc
   const adminModules = useMemo(() => [
     {
       id: 'dashboard',
@@ -66,32 +69,32 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
       id: 'accounts',
       name: 'Contas',
       icon: Users,
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-500/10',
+      color: 'text-emerald-400', // 🎨 Emerald = Account Management
+      bgColor: 'bg-emerald-500/10',
       permission: 'viewAccounts'
     },
     {
       id: 'characters',
       name: 'Personagens',
       icon: Swords,
-      color: 'text-amber-400',
-      bgColor: 'bg-amber-500/10',
+      color: 'text-purple-400', // 🎨 Purple = Character Management
+      bgColor: 'bg-purple-500/10',
       permission: 'editCharacters'
     },
     {
       id: 'donations',
       name: 'Doações',
       icon: DollarSign,
-      color: 'text-emerald-400',
-      bgColor: 'bg-emerald-500/10',
+      color: 'text-amber-400', // 🎨 Amber = Credits/Donations
+      bgColor: 'bg-amber-500/10',
       permission: 'viewAccounts'
     },
     {
       id: 'news',
       name: 'Notícias',
       icon: FileText,
-      color: 'text-cyan-400',
-      bgColor: 'bg-cyan-500/10',
+      color: 'text-sky-400', // 🎨 Sky = News Management
+      bgColor: 'bg-sky-500/10',
       permission: 'publishNews'
     },
     {
@@ -106,8 +109,8 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
       id: 'plugins',
       name: 'Plugins',
       icon: Boxes,
-      color: 'text-green-400',
-      bgColor: 'bg-green-500/10',
+      color: 'text-fuchsia-400', // 🎨 Fuchsia = Plugins
+      bgColor: 'bg-fuchsia-500/10',
       permission: 'viewAccounts'
     },
     {
@@ -130,32 +133,32 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
       id: 'site-editor',
       name: 'Editor de Site',
       icon: Layout,
-      color: 'text-pink-400',
-      bgColor: 'bg-pink-500/10',
+      color: 'text-indigo-400', // 🎨 Indigo = Site Editor
+      bgColor: 'bg-indigo-500/10',
       permission: 'viewAccounts'
     },
     {
       id: 'crons',
       name: 'Crons',
       icon: Clock,
-      color: 'text-indigo-400',
-      bgColor: 'bg-indigo-500/10',
+      color: 'text-cyan-400', // 🎨 Cyan = Tools/Crons
+      bgColor: 'bg-cyan-500/10',
       permission: 'viewAccounts'
     },
     {
       id: 'bans',
       name: 'Bans',
       icon: Ban,
-      color: 'text-red-400',
-      bgColor: 'bg-red-500/10',
+      color: 'text-rose-400', // 🎨 Rose = Bans Management
+      bgColor: 'bg-rose-500/10',
       permission: 'banUsers'
     },
     {
       id: 'system',
       name: 'Sistema',
       icon: Database,
-      color: 'text-yellow-400',
-      bgColor: 'bg-yellow-500/10',
+      color: 'text-teal-400', // 🎨 Teal = Database/System
+      bgColor: 'bg-teal-500/10',
       permission: 'viewAccounts'
     },
     {
@@ -177,9 +180,9 @@ export function AdminCPLayout({ adminData, onLogout, onNavigate }: AdminCPLayout
     {
       id: 'wcoin-packages',
       name: 'Pacotes WCoin',
-      icon: DollarSign,
-      color: 'text-emerald-400',
-      bgColor: 'bg-emerald-500/10',
+      icon: ShoppingCart, // 🎨 Icon mais apropriado para pacotes
+      color: 'text-amber-400', // 🎨 Amber = Credits/WCoin
+      bgColor: 'bg-amber-500/10',
       permission: 'viewAccounts'
     }
   ], []);

@@ -50,22 +50,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = async () => {
     const token = sessionStorage.getItem('auth_token');
     
-    // V587: Se não houver token, tentar recuperar dados do sessionStorage
+    // 🛡️ V605 FIX CRÍTICO: Se não houver token, limpar TUDO e deslogar
     if (!token) {
-      console.log('⚠️ Nenhum token encontrado - verificando dados locais...');
+      console.log('⚠️ Nenhum token encontrado - limpando sessão completamente');
       
-      const cachedUserData = sessionStorage.getItem('user_data');
-      if (cachedUserData) {
-        try {
-          const parsedData = JSON.parse(cachedUserData);
-          setUser(parsedData);
-          console.log('✅ Dados do usuário recuperados do sessionStorage (sem token)');
-          console.log('🛡️ isAdmin:', parsedData.isAdmin);
-        } catch (e) {
-          console.error('Erro ao parsear dados do usuário:', e);
-        }
-      }
-      
+      // ✅ LIMPAR TUDO para evitar estado inconsistente
+      sessionStorage.clear();
+      localStorage.clear(); // Limpar também localStorage (caso haja dados antigos)
+      setUser(null);
       setIsLoading(false);
       return;
     }
@@ -91,49 +83,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           setUser(userData);
           
-          // 🛡️ V578 FIX: Persistir dados do usuário no sessionStorage
-          // Isso garante que o estado de admin NÃO seja perdido em erros temporários
+          // 🛡️ V605: Persistir dados do usuário no sessionStorage
           sessionStorage.setItem('user_data', JSON.stringify(userData));
           
           console.log('✅ Usuário autenticado:', accountData.username, 'Admin:', accountData.isAdmin);
+          console.log('🔐 accountId no JWT:', accountData.username); // V605: Log para debug
         }
       } else if (response.status === 401 || response.status === 403) {
-        // ✅ Token inválido ou expirado - remover
-        console.log('🔴 Token inválido ou expirado - fazendo logout');
-        sessionStorage.removeItem('auth_token');
-        sessionStorage.removeItem('user_data'); // 🛡️ V578: Limpar dados persistidos
+        // ✅ Token inválido ou expirado - LIMPAR TUDO
+        console.log('🔴 Token inválido ou expirado - fazendo logout completo');
+        sessionStorage.clear();
+        localStorage.clear();
         setUser(null);
       } else {
-        // ⚠️ Outro erro (400, 500, 503, etc) - MANTER TOKEN E USER
-        // 🛡️ V578 FIX: Tentar recuperar dados do sessionStorage se disponível
-        console.log(`⚠️ Erro ${response.status} ao verificar token - tentando recuperar dados locais`);
-        
-        const cachedUserData = sessionStorage.getItem('user_data');
-        if (cachedUserData && !user) {
-          try {
-            const parsedData = JSON.parse(cachedUserData);
-            setUser(parsedData);
-            console.log('✅ Dados do usuário recuperados do cache local');
-          } catch (e) {
-            console.error('Erro ao parsear dados do usuário:', e);
-          }
-        }
+        // ⚠️ Outro erro (400, 500, 503, etc) - LIMPAR TUDO (V605 FIX)
+        console.log(`🔴 Erro ${response.status} ao verificar token - limpando sessão`);
+        sessionStorage.clear();
+        localStorage.clear();
+        setUser(null);
       }
     } catch (error) {
-      // 🛡️ Erro de rede ou servidor offline - MANTER TOKEN E USER
-      // 🛡️ V578 FIX: Recuperar dados do sessionStorage
-      console.log('⚠️ Backend offline - tentando recuperar dados locais');
-      
-      const cachedUserData = sessionStorage.getItem('user_data');
-      if (cachedUserData && !user) {
-        try {
-          const parsedData = JSON.parse(cachedUserData);
-          setUser(parsedData);
-          console.log('✅ Dados do usuário recuperados do cache local (offline)');
-        } catch (e) {
-          console.error('Erro ao parsear dados do usuário:', e);
-        }
-      }
+      // 🛡️ Erro de rede ou servidor offline - LIMPAR TUDO (V605 FIX)
+      console.log('🔴 Erro de conexão - limpando sessão por segurança');
+      sessionStorage.clear();
+      localStorage.clear();
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
