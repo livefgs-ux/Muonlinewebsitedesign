@@ -66,21 +66,27 @@ export const SharedBackground = memo(function SharedBackground() {
           ======================================== */}
       
       <div className="fixed inset-0 z-0">
-        {/* Imagem de fundo do Mu Online */}
+        {/* 🎨 V598: Fundo preto sólido para as bordas */}
+        <div className="absolute inset-0 bg-black" />
+        
+        {/* Imagem de fundo do Mu Online - CENTRALIZADA COM BORDAS */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0"
           style={{
             backgroundImage: `url(${backgroundUrl})`,
+            backgroundPosition: 'center center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '65% auto', // ✅ V599: Imagem ocupa 65% da largura = BORDAS MUITO GRANDES (17.5% cada)
             willChange: 'transform',
             filter: `brightness(${brightness}%) contrast(${contrast}%)`,
           }}
         />
         
-        {/* Overlay escuro para melhor contraste com conteúdo */}
-        <div className="absolute inset-0 bg-black/40" />
+        {/* Overlay escuro SUTIL para melhor contraste com conteúdo */}
+        <div className="absolute inset-0 bg-black/20" />
         
         {/* Gradientes sutis para profundidade */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40" />
         
         {/* Brilho sutil nas bordas */}
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/10 via-transparent to-amber-900/10" />

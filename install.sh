@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="590"
-VERSION_DATE="2025-12-31 03:15 CET - V590: DEBUG - Logs detalhados para rastrear problema de personagens"
+VERSION="602"
+VERSION_DATE="2025-12-31 06:25 CET - V602: FIX - Erro toLocaleString em players_online undefined (server-info-widget.tsx)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -743,12 +743,12 @@ EOF
     echo ""
     echo -e "${GREEN}══════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}✅✅✅ INSTALAÇÃO COMPLETA COM SUCESSO! ✅✅✅${NC}"
-    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}══════════════���════════════════════════════════════════════${NC}"
     echo ""
     echo -e "${BOLD}🌐 ACESSE O SITE:${NC}"
     echo ""
     if [ "$HTTPS_OK" = true ]; then
-        echo -e "   ${GREEN}🔒 HTTPS (Recomendado):${NC}"
+        echo -e "   ${GREEN}���� HTTPS (Recomendado):${NC}"
         echo -e "   ${BLUE}https://meumu.com${NC}"
         echo ""
         echo -e "   ${CYAN}🔓 HTTP (Desenvolvimento):${NC}"

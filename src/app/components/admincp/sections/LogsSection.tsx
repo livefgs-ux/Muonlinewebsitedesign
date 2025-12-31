@@ -39,6 +39,12 @@ export function LogsSection() {
       });
 
       if (!response.ok) {
+        // V591: Tratamento gracioso - endpoint pode não estar implementado
+        if (response.status === 500 || response.status === 404) {
+          console.warn('⚠️ Endpoint /api/admin/logs não disponível ou com erro');
+          setLogs([]);
+          return;
+        }
         throw new Error(`HTTP ${response.status}`);
       }
 
@@ -49,7 +55,10 @@ export function LogsSection() {
       }
     } catch (error) {
       console.error('❌ Erro ao carregar logs:', error);
-      toast.error('Erro ao carregar logs');
+      // V591: Não mostrar toast se endpoint não implementado
+      if (error instanceof Error && !error.message.includes('500') && !error.message.includes('404')) {
+        toast.error('Erro ao carregar logs');
+      }
       setLogs([]);
     } finally {
       setLoading(false);

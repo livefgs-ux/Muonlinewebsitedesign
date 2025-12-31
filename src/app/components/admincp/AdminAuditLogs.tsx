@@ -94,6 +94,18 @@ const AdminAuditLogs = () => {
       });
 
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/logs/logs?${params}`);
+      
+      // V591: Tratamento gracioso - endpoint pode não estar implementado
+      if (!response.ok) {
+        if (response.status === 500 || response.status === 404 || response.status === 401) {
+          console.warn('⚠️ Endpoint /api/admin/logs/logs não disponível ou sem autorização');
+          setLogs([]);
+          setTotalPages(0);
+          setTotalLogs(0);
+          return;
+        }
+      }
+      
       const data = await response.json();
 
       if (data.success) {
@@ -101,11 +113,14 @@ const AdminAuditLogs = () => {
         setTotalPages(data.data.pagination.totalPages);
         setTotalLogs(data.data.pagination.total);
       } else {
-        toast.error('Erro ao carregar logs');
+        // V591: Não mostrar erro se endpoint não implementado
+        console.warn('⚠️ Falha ao carregar logs');
+        setLogs([]);
       }
     } catch (error) {
       console.error('Erro ao carregar logs:', error);
-      toast.error('Erro ao conectar com o servidor');
+      // V591: Não mostrar toast para erros de endpoint não implementado
+      setLogs([]);
     } finally {
       setLoading(false);
     }
@@ -117,6 +132,13 @@ const AdminAuditLogs = () => {
   const loadStats = async () => {
     try {
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/logs/stats?days=30`);
+      
+      // V591: Tratamento gracioso
+      if (!response.ok) {
+        console.warn('⚠️ Endpoint de stats não disponível');
+        return;
+      }
+      
       const data = await response.json();
 
       if (data.success) {

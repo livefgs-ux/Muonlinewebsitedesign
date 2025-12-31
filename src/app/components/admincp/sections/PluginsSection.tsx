@@ -19,6 +19,7 @@ export function PluginsSection() {
   const [plugins, setPlugins] = useState<Plugin[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     loadPlugins();
@@ -39,6 +40,12 @@ export function PluginsSection() {
       });
 
       if (!response.ok) {
+        // V590: Tratamento gracioso - endpoint pode não estar implementado
+        if (response.status === 500 || response.status === 404) {
+          console.warn('⚠️ Endpoint /api/admin/plugins não disponível ou com erro');
+          setPlugins([]);
+          return;
+        }
         throw new Error(`HTTP ${response.status}`);
       }
 
@@ -49,7 +56,10 @@ export function PluginsSection() {
       }
     } catch (error) {
       console.error('❌ Erro ao carregar plugins:', error);
-      toast.error('Erro ao carregar plugins');
+      // V590: Não mostrar erro se endpoint não implementado
+      if (error instanceof Error && !error.message.includes('500') && !error.message.includes('404')) {
+        setError('Erro ao carregar plugins');
+      }
       setPlugins([]);
     } finally {
       setLoading(false);

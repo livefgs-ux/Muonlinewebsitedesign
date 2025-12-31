@@ -222,7 +222,8 @@ function AppContent() {
       {/* ⚠️ BACKGROUND UNIVERSAL - NUNCA REMOVER! ⚠️ */}
       <SharedBackground />
       
-      <div className="min-h-screen relative flex flex-col">
+      {/* V597: Container principal com z-index controlado */}
+      <div className="min-h-screen relative flex flex-col z-10">
         <Navigation 
           onNavigate={setCurrentSection} 
           currentSection={currentSection}
@@ -232,11 +233,12 @@ function AppContent() {
         />
         
         {/* Language Selector - Fixed top right */}
-        <div className="fixed top-4 right-6 z-[110]">
+        <div className="fixed top-4 right-6 z-[9998]">
           <LanguageSelector />
         </div>
         
-        <div className="flex-1">
+        {/* V597: Conteúdo scrollável com z-index baixo */}
+        <div className="flex-1 relative z-10">
           <Suspense fallback={<SectionLoader />}>
             {renderSection()}
           </Suspense>

@@ -23,7 +23,7 @@ import { useLanguage } from '../contexts/LanguageContext';
  * - Redes sociais
  * - Copyright
  * 
- * ⚠️ z-index: 40 (abaixo navbar z-100 e language selector z-110)
+ * ⚠️ V597: z-index: 9998 (sempre acima do conteúdo, abaixo da navbar 9999)
  */
 
 export function Footer() {
@@ -31,7 +31,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative z-40 mt-auto">
+    <footer className="relative z-[9998] mt-auto">
       {/* Linha decorativa superior */}
       <div className="h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
       

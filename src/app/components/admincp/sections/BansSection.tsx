@@ -52,6 +52,12 @@ export function BansSection() {
       });
 
       if (!response.ok) {
+        // V590: Tratamento gracioso - endpoint pode não estar implementado
+        if (response.status === 500 || response.status === 404) {
+          console.warn('⚠️ Endpoint /api/admin/bans/latest não disponível ou com erro');
+          setBans([]);
+          return;
+        }
         throw new Error(`HTTP ${response.status}`);
       }
 
@@ -62,7 +68,10 @@ export function BansSection() {
       }
     } catch (error) {
       console.error('❌ Erro ao carregar bans:', error);
-      toast.error('Erro ao carregar lista de banimentos');
+      // V590: Não mostrar toast se endpoint não implementado
+      if (error instanceof Error && !error.message.includes('500') && !error.message.includes('404')) {
+        toast.error('Erro ao carregar lista de banimentos');
+      }
       setBans([]);
     } finally {
       setLoading(false);

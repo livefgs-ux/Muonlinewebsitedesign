@@ -7,7 +7,7 @@ import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Alert, AlertDescription } from './ui/alert';
-import { Loader2, Lock, Mail, User, Shield, Sparkles, ArrowLeft } from 'lucide-react';
+import { Loader2, Lock, Mail, User, Shield, Sparkles, ArrowLeft, Check, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface LoginSectionProps {
@@ -34,12 +34,70 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
   const [registerError, setRegisterError] = useState('');
   const [registerSuccess, setRegisterSuccess] = useState('');
 
-  // Forgot Password state
+  // 🔐 V595: Validação em tempo real da senha
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    minLength: false,
+    hasUpperCase: false,
+    hasNumber: false,
+    hasSpecialChar: false
+  });
+
+  // 🔐 V595: Validação em tempo real do nome de usuário
+  const [usernameValid, setUsernameValid] = useState(true);
+  const [usernameError, setUsernameError] = useState('');
+
+  // 🔐 V595: Validação em tempo real do email
+  const [emailValid, setEmailValid] = useState(true);
+  const [emailError, setEmailError] = useState('');
+
+  // 🔐 V600: Estado para "Esqueci minha senha"
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotError, setForgotError] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState('');
+
+  // 🔐 V595: Função de validação de senha em tempo real
+  const validatePassword = (password: string) => {
+    setPasswordRequirements({
+      minLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    });
+  };
+
+  // 🔐 V595: Função de validação de nome de usuário
+  const validateUsername = (username: string) => {
+    // Apenas letras (a-z, A-Z), números (0-9) e ponto (.)
+    const validUsernameRegex = /^[a-zA-Z0-9.]*$/;
+    
+    if (!validUsernameRegex.test(username)) {
+      setUsernameValid(false);
+      setUsernameError('Apenas letras, números e ponto (.) são permitidos');
+      return false;
+    }
+    
+    setUsernameValid(true);
+    setUsernameError('');
+    return true;
+  };
+
+  // 🔐 V595: Função de validação de email
+  const validateEmail = (email: string) => {
+    // Email: apenas letras, números, ponto e @
+    const validEmailRegex = /^[a-zA-Z0-9.@]*$/;
+    
+    if (!validEmailRegex.test(email)) {
+      setEmailValid(false);
+      setEmailError('Apenas letras, números, ponto e @ são permitidos');
+      return false;
+    }
+    
+    setEmailValid(true);
+    setEmailError('');
+    return true;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -386,12 +444,24 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
                           type="text"
                           placeholder={t('auth.usernamePlaceholder') || 'Escolha um nome de usuário'}
                           value={registerUsername}
-                          onChange={(e) => setRegisterUsername(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setRegisterUsername(value);
+                            validateUsername(value);
+                          }}
                           required
                           minLength={4}
                           maxLength={10}
-                          className="bg-black/40 border-slate-700 focus:border-amber-500 text-white placeholder:text-slate-500"
+                          className={`bg-black/40 border-slate-700 focus:border-amber-500 text-white placeholder:text-slate-500 ${
+                            !usernameValid && registerUsername ? 'border-red-500' : ''
+                          }`}
                         />
+                        {!usernameValid && registerUsername && (
+                          <p className="text-xs text-red-400 flex items-center gap-1">
+                            <X className="size-3" />
+                            {usernameError}
+                          </p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -404,10 +474,22 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
                           type="email"
                           placeholder={t('auth.emailPlaceholder') || 'seu.email@exemplo.com'}
                           value={registerEmail}
-                          onChange={(e) => setRegisterEmail(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setRegisterEmail(value);
+                            validateEmail(value);
+                          }}
                           required
-                          className="bg-black/40 border-slate-700 focus:border-amber-500 text-white placeholder:text-slate-500"
+                          className={`bg-black/40 border-slate-700 focus:border-amber-500 text-white placeholder:text-slate-500 ${
+                            !emailValid && registerEmail ? 'border-red-500' : ''
+                          }`}
                         />
+                        {!emailValid && registerEmail && (
+                          <p className="text-xs text-red-400 flex items-center gap-1">
+                            <X className="size-3" />
+                            {emailError}
+                          </p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -418,13 +500,68 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
                         <Input
                           id="register-password"
                           type="password"
-                          placeholder={t('auth.passwordPlaceholder') || 'Mínimo 6 caracteres'}
+                          placeholder={t('auth.passwordPlaceholder') || 'Mínimo 8 caracteres'}
                           value={registerPassword}
-                          onChange={(e) => setRegisterPassword(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setRegisterPassword(value);
+                            validatePassword(value);
+                          }}
                           required
-                          minLength={6}
+                          minLength={8}
                           className="bg-black/40 border-slate-700 focus:border-amber-500 text-white placeholder:text-slate-500"
                         />
+                        
+                        {/* 🔐 V595: REQUISITOS DE SENHA EM TEMPO REAL */}
+                        {registerPassword && (
+                          <div className="space-y-1 mt-2 p-3 bg-black/40 border border-slate-700 rounded-lg">
+                            <p className="text-xs text-slate-400 mb-2">Requisitos:</p>
+                            
+                            <div className={`flex items-center gap-2 text-xs ${
+                              passwordRequirements.minLength ? 'text-green-400' : 'text-slate-500'
+                            }`}>
+                              {passwordRequirements.minLength ? (
+                                <Check className="size-3" />
+                              ) : (
+                                <X className="size-3" />
+                              )}
+                              <span>Pelo menos 8 caracteres</span>
+                            </div>
+                            
+                            <div className={`flex items-center gap-2 text-xs ${
+                              passwordRequirements.hasUpperCase ? 'text-green-400' : 'text-slate-500'
+                            }`}>
+                              {passwordRequirements.hasUpperCase ? (
+                                <Check className="size-3" />
+                              ) : (
+                                <X className="size-3" />
+                              )}
+                              <span>Uma letra maiúscula</span>
+                            </div>
+                            
+                            <div className={`flex items-center gap-2 text-xs ${
+                              passwordRequirements.hasNumber ? 'text-green-400' : 'text-slate-500'
+                            }`}>
+                              {passwordRequirements.hasNumber ? (
+                                <Check className="size-3" />
+                              ) : (
+                                <X className="size-3" />
+                              )}
+                              <span>Um número</span>
+                            </div>
+                            
+                            <div className={`flex items-center gap-2 text-xs ${
+                              passwordRequirements.hasSpecialChar ? 'text-green-400' : 'text-slate-500'
+                            }`}>
+                              {passwordRequirements.hasSpecialChar ? (
+                                <Check className="size-3" />
+                              ) : (
+                                <X className="size-3" />
+                              )}
+                              <span>Um caractere especial</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -439,9 +576,17 @@ export function LoginSection({ onLoginSuccess }: LoginSectionProps) {
                           value={registerConfirmPassword}
                           onChange={(e) => setRegisterConfirmPassword(e.target.value)}
                           required
-                          minLength={6}
-                          className="bg-black/40 border-slate-700 focus:border-amber-500 text-white placeholder:text-slate-500"
+                          minLength={8}
+                          className={`bg-black/40 border-slate-700 focus:border-amber-500 text-white placeholder:text-slate-500 ${
+                            registerConfirmPassword && registerPassword !== registerConfirmPassword ? 'border-red-500' : ''
+                          }`}
                         />
+                        {registerConfirmPassword && registerPassword !== registerConfirmPassword && (
+                          <p className="text-xs text-red-400 flex items-center gap-1">
+                            <X className="size-3" />
+                            As senhas não coincidem
+                          </p>
+                        )}
                       </div>
 
                       {registerError && (

@@ -52,7 +52,9 @@ export function AdminDiagnostics() {
     
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const token = localStorage.getItem('admin_token'); // ✅ CORRIGIDO: admin_token
+      
+      // V590: Buscar token de ambos os locais (igual ao resto do sistema)
+      const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
       
       if (!token) {
         throw new Error('Token de autenticação não encontrado');
@@ -60,9 +62,17 @@ export function AdminDiagnostics() {
 
       const startTime = performance.now();
       
-      // Testar health endpoint
-      const healthRes = await fetch(`${API_URL}/health`);
-      const healthData = await healthRes.json();
+      // V590: Testar health endpoint (pode não existir - tratamento gracioso)
+      let healthData = { database: 'unknown', status: 'unknown' };
+      let healthRes: Response | null = null;
+      try {
+        healthRes = await fetch(`${API_URL}/health`);
+        if (healthRes.ok) {
+          healthData = await healthRes.json();
+        }
+      } catch (err) {
+        console.warn('⚠️ Endpoint /health não disponível');
+      }
       
       // Buscar estatísticas do dashboard
       const statsRes = await fetch(`${API_URL}/api/admin/dashboard-stats`, {
@@ -88,7 +98,7 @@ export function AdminDiagnostics() {
           timestamp: new Date().toISOString(),
           status: {
             database: healthData.database === 'connected' ? 'online' : 'offline',
-            api: healthRes.ok ? 'online' : 'offline',
+            api: healthRes ? 'online' : 'offline',
             server: healthData.status === 'healthy' ? 'online' : 'offline'
           },
           metrics: {

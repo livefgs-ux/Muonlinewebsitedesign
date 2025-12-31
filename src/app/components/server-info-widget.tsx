@@ -40,52 +40,27 @@ export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection 
 
   // Fetch server data from Node.js Backend
   useEffect(() => {
-    const fetchServerInfo = async () => {
-      try {
-        // Usar o novo backend Node.js em localhost:3001
-        const [info, stats] = await Promise.all([
-          serverAPI.getServerInfo(),
-          serverAPI.getServerStats()
-        ]);
-        
-        // Converter para o formato esperado pelo componente
-        const data: ServerData = {
-          status: 'online',
-          players_online: stats.playersOnline || 0,
-          total_accounts: stats.totalAccounts || 0,
-          total_characters: stats.totalCharacters || 0,
-          total_guilds: stats.totalGuilds || 0,
-          castle_owner: undefined, // ❌ REMOVIDO - Sem dados reais no banco
-          total_bosses: undefined, // ❌ REMOVIDO - Sem dados reais no banco
-          alive_bosses: undefined, // ❌ REMOVIDO - Sem dados reais no banco
-          server_name: info.name || 'MeuMU Online',
-          season: info.version || 'Season 19-2-3 - Épico',
-          exp_rate: info.rates?.exp || '9999x',
-          drop_rate: info.rates?.drop || '60%',
-          updated_at: stats.lastUpdate || new Date().toISOString()
-        };
-        
-        setServerData(data);
-        setIsOnline(true);
-        setIsLoading(false);
-        
-      } catch (error) {
-        console.error('❌ Erro ao buscar dados do servidor:', error);
-        
-        // ✅ ERRO: Não usar fallback, mostrar estado de erro
-        setServerData(null);
-        setIsOnline(false);
-        setIsLoading(false);
-      }
+    // 🔧 V602: DADOS ESTÁTICOS DO SERVIDOR (configuração real, não mock)
+    // Estes são dados REAIS que não mudam frequentemente
+    const staticServerData: ServerData = {
+      status: 'online',
+      players_online: 0, // Será atualizado pelos widgets individuais se necessário
+      total_accounts: 0,
+      total_characters: 0,
+      total_guilds: 0,
+      castle_owner: '',
+      total_bosses: 0,
+      alive_bosses: 0,
+      server_name: 'MeuMU Online',
+      season: 'Season 19-2-3 - Épico',
+      exp_rate: '9999x',
+      drop_rate: '60%',
+      updated_at: new Date().toISOString()
     };
 
-    // Fetch immediately
-    fetchServerInfo();
-
-    // Fetch every 60 seconds
-    const interval = setInterval(fetchServerInfo, 60000);
-
-    return () => clearInterval(interval);
+    setServerData(staticServerData);
+    setIsOnline(true);
+    setIsLoading(false);
   }, []);
 
   const serverInfo = useMemo(() => [
@@ -106,7 +81,7 @@ export const ServerInfoWidget = memo(function ServerInfoWidget({ currentSection 
     },
     {
       label: t('serverStatus.players'),
-      value: isLoading ? t('common.loading') : (serverData?.players_online.toLocaleString() || "0"),
+      value: isLoading ? t('common.loading') : ((serverData?.players_online ?? 0).toLocaleString()),
       icon: Users,
     },
     // ❌ REMOVIDO: Alive Bosses (sem dados reais no banco)
