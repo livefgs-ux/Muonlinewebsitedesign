@@ -1,4 +1,8 @@
 import { useState, lazy, Suspense, useEffect } from 'react';
+import { Navigation } from './components/navigation';
+import { ServerInfoWidget } from './components/server-info-widget';
+import { MusicProvider } from './contexts/music-context';
+import { MusicPlayerWidget } from './components/music-player-widget';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PlayerProvider } from './contexts/PlayerContext';
