@@ -76,7 +76,7 @@ export const SharedBackground = memo(function SharedBackground() {
             backgroundImage: `url(${backgroundUrl})`,
             backgroundPosition: 'center center',
             backgroundRepeat: 'no-repeat',
-            backgroundSize: '65% auto', // ✅ V599: Imagem ocupa 65% da largura = BORDAS MUITO GRANDES (17.5% cada)
+            backgroundSize: 'cover', // ✅ V620: Sempre cobre toda a tela (responsivo)
             willChange: 'transform',
             filter: `brightness(${brightness}%) contrast(${contrast}%)`,
           }}

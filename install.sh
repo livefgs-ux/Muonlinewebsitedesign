@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="619"
-VERSION_DATE="2025-12-31 18:30 CET - V619: 🚨 HOTFIX - Permissões MySQL (UPDATE em muonline)"
+VERSION="620"
+VERSION_DATE="2025-12-31 18:45 CET - V620: 🐛 FIX - Background responsivo (cover)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -1108,7 +1108,7 @@ verificar_mysql() {
     pause
 }
 
-# ════��═══════════════════════════��═════════════════════════════
+# ══���═��═══════════════════════════��═════════════════════════════
 # FUNÇÃO 7: VERIFICAR PORTAS
 # ═══════════════════════════════════════════════════════════════
 
