@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="602"
-VERSION_DATE="2025-12-31 06:25 CET - V602: FIX - Erro toLocaleString em players_online undefined (server-info-widget.tsx)"
+VERSION="603"
+VERSION_DATE="2025-12-31 06:30 CET - V603: BACKUP - Snapshot completo pré-teste (BACKUP_V602_2025-12-31.md)"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -1437,7 +1437,7 @@ configurar_litespeed_proxy() {
         echo ""
         echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
         echo -e "${RED}❌ Erro ao configurar proxy reverso!${NC}"
-        echo -e "${RED}═══════════�����════════════════════════════════════════════════${NC}"
+        echo -e "${RED}════════��══�����════════════════════════════════════════════════${NC}"
         echo ""
         echo -e "${YELLOW}⚠️  Configure manualmente via CyberPanel:${NC}"
         echo -e "${CYAN}   https://meumu.com:8090${NC}"
