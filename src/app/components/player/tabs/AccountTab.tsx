@@ -48,19 +48,56 @@ export function AccountTab({ accountInfo }: AccountTabProps) {
       return;
     }
 
+    // ✅ V625: VALIDAÇÃO CRÍTICA - Verificar se token JWT existe
+    const authToken = sessionStorage.getItem('auth_token') || 
+                      localStorage.getItem('admin_token');
+    
+    if (!authToken) {
+      console.error('❌ [AccountTab] Token JWT não encontrado!');
+      toast.error('Sessão expirada. Faça login novamente.');
+      // Redirecionar para login
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+      return;
+    }
+
+    console.log('🔑 [AccountTab] Token JWT encontrado:', authToken.substring(0, 20) + '...');
+
     try {
       setIsChangingPassword(true);
 
+      // ✅ V625: Headers com autenticação JWT explícita
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      };
+
+      console.log('📤 [AccountTab] Enviando requisição PUT para:', getApiUrl(API_CONFIG.ENDPOINTS.AUTH_CHANGE_PASSWORD));
+      console.log('📤 [AccountTab] Headers:', { ...headers, Authorization: `Bearer ${authToken.substring(0, 20)}...` });
+
       const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.AUTH_CHANGE_PASSWORD), {
-        method: 'PUT',  // ✅ V617: Backend usa PUT, não POST
-        headers: getAuthHeaders(),
+        method: 'PUT',  // ✅ Backend usa PUT
+        headers,
         body: JSON.stringify({
-          currentPassword: oldPassword,  // ✅ V617: Backend espera "currentPassword"
+          currentPassword: oldPassword,  // ✅ Backend espera "currentPassword"
           newPassword
         })
       });
 
+      console.log('📥 [AccountTab] Response status:', response.status);
+
       const data = await response.json();
+      console.log('📥 [AccountTab] Response data:', data);
+
+      if (response.status === 401) {
+        // ✅ V625: Erro de autenticação específico
+        toast.error('Sessão expirada ou inválida. Faça login novamente.');
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+        return;
+      }
 
       if (data.success) {
         toast.success('Senha alterada com sucesso!');
@@ -71,7 +108,7 @@ export function AccountTab({ accountInfo }: AccountTabProps) {
         toast.error(data.message || 'Erro ao alterar senha!');
       }
     } catch (error) {
-      console.error('Erro ao alterar senha:', error);
+      console.error('❌ [AccountTab] Erro ao alterar senha:', error);
       toast.error('Erro ao alterar senha. Tente novamente.');
     } finally {
       setIsChangingPassword(false);

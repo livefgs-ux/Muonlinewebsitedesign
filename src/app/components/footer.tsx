@@ -31,12 +31,12 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative z-[9998] mt-auto">
+    <footer className="relative z-20 mt-auto">
       {/* Linha decorativa superior */}
       <div className="h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
       
-      {/* Footer principal */}
-      <div className="backdrop-blur-xl bg-black/80 border-t border-gold/20">
+      {/* 🎨 V628: Footer com backdrop-blur para não cobrir background */}
+      <div className="backdrop-blur-xl bg-black/70 border-t border-gold/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             

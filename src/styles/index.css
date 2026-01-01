@@ -2,18 +2,39 @@
 @import './tailwind.css';
 @import './theme.css';
 
-/* Dark Medieval Fantasy Custom Styles */
+/* 🎨 V628: CORREÇÃO DEFINITIVA DO BACKGROUND */
 
-/* 🔒 FIX: Previne o "salto" visual quando a scrollbar aparece/desaparece */
+/* ========================================
+   HTML & BODY - BASE LAYOUT
+   ======================================== */
+
 html {
-  overflow-y: scroll; /* Sempre mostra a scrollbar vertical */
-  scrollbar-gutter: stable; /* Reserva espaço para a scrollbar (navegadores modernos) */
+  overflow-y: scroll; /* Sempre mostra scrollbar */
+  scrollbar-gutter: stable; /* Reserva espaço */
+  min-height: 100vh; /* ✅ Altura mínima 100% da viewport */
 }
 
 body {
-  /* ⚠️ REMOVIDO background-color para permitir o background universal ser visível */
+  margin: 0;
+  padding: 0;
   color: #ffffff;
+  min-height: 100vh; /* ✅ Altura mínima 100% da viewport */
+  overflow-x: hidden; /* ✅ Previne scroll horizontal */
 }
+
+/* ========================================
+   ROOT CONTAINER - GARANTIR FULL WIDTH
+   ======================================== */
+
+#root {
+  min-height: 100vh; /* ✅ Altura mínima 100% */
+  width: 100%; /* ✅ Largura total */
+  position: relative;
+}
+
+/* ========================================
+   GLASSMORPHISM & EFFECTS
+   ======================================== */
 
 /* Glassmorphism effects */
 .glass-effect {
@@ -21,6 +42,10 @@ body {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(234, 179, 8, 0.3);
 }
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
@@ -39,6 +64,10 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #facc15, #eab308);
 }
+
+/* ========================================
+   SELECTION & ANIMATIONS
+   ======================================== */
 
 /* Selection color */
 ::selection {

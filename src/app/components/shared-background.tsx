@@ -63,33 +63,37 @@ export const SharedBackground = memo(function SharedBackground() {
     <>
       {/* ========================================
           BACKGROUND ÉPICO - IMAGEM DO MU ONLINE
+          🎨 V628: FIXED com height 100vh + 100% para cobrir com scroll
           ======================================== */}
       
-      <div className="fixed inset-0 z-0">
-        {/* 🎨 V598: Fundo preto sólido para as bordas */}
-        <div className="absolute inset-0 bg-black" />
+      <div className="fixed inset-0 z-0" style={{ minHeight: '100vh', height: '100%' }}>
+        {/* 🎨 Fundo preto sólido para as bordas */}
+        <div className="absolute inset-0 bg-black" style={{ minHeight: '100vh', height: '100%' }} />
         
-        {/* Imagem de fundo do Mu Online - CENTRALIZADA COM BORDAS */}
+        {/* Imagem de fundo do Mu Online - COBRE TELA INTEIRA */}
         <div 
           className="absolute inset-0"
           style={{
             backgroundImage: `url(${backgroundUrl})`,
             backgroundPosition: 'center center',
             backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover', // ✅ V620: Sempre cobre toda a tela (responsivo)
+            backgroundSize: 'cover', // ✅ Sempre cobre toda a tela
+            backgroundAttachment: 'fixed', // ✅ V628: Mantém fixo durante scroll
+            minHeight: '100vh',
+            height: '100%',
             willChange: 'transform',
             filter: `brightness(${brightness}%) contrast(${contrast}%)`,
           }}
         />
         
         {/* Overlay escuro SUTIL para melhor contraste com conteúdo */}
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/20" style={{ minHeight: '100vh', height: '100%' }} />
         
         {/* Gradientes sutis para profundidade */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40" style={{ minHeight: '100vh', height: '100%' }} />
         
         {/* Brilho sutil nas bordas */}
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/10 via-transparent to-amber-900/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/10 via-transparent to-amber-900/10" style={{ minHeight: '100vh', height: '100%' }} />
       </div>
 
       {/* ========================================

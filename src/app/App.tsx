@@ -220,8 +220,8 @@ function AppContent() {
       {/* ⚠️ BACKGROUND UNIVERSAL - NUNCA REMOVER! ⚠️ */}
       <SharedBackground />
       
-      {/* V597: Container principal com z-index controlado */}
-      <div className="min-h-screen relative flex flex-col z-10">
+      {/* 🎨 V628: Container SEM limitação de largura para background funcionar */}
+      <div className="min-h-screen w-full relative flex flex-col">
         <Navigation 
           onNavigate={setCurrentSection} 
           currentSection={currentSection}
@@ -235,12 +235,12 @@ function AppContent() {
           <LanguageSelector />
         </div>
         
-        {/* V597: Conteúdo scrollável com z-index baixo */}
-        <div className="flex-1 relative z-10">
+        {/* Conteúdo scrollável - relative z-10 para ficar acima do background */}
+        <main className="flex-1 relative z-10 w-full">
           <Suspense fallback={<SectionLoader />}>
             {renderSection()}
           </Suspense>
-        </div>
+        </main>
         
         <Footer />
         
