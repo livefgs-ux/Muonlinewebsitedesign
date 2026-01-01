@@ -4,9 +4,11 @@
 -- 
 -- Este script cria um usuário MySQL com permissões limitadas:
 -- 
--- ✅ Database 'muonline': SELECT (READ-ONLY)
+-- ✅ Database 'muonline': SELECT (READ-ONLY) + WRITE ESPECÍFICO
 --    - Não pode alterar dados do servidor MU
 --    - Pode apenas ler rankings, personagens, etc.
+--    - Pode atualizar pontos, resetar, unstick, clear PK em character_info
+--    - Pode trocar senha, atualizar email, ban/unban em accounts
 -- 
 -- ✅ Database 'meuweb': SELECT, INSERT, UPDATE, DELETE (READ+WRITE)
 --    - Pode gerenciar dados do website
@@ -41,12 +43,23 @@ CREATE USER 'webuser'@'localhost' IDENTIFIED BY '@meusite123@';
 CREATE USER 'webuser'@'127.0.0.1' IDENTIFIED BY '@meusite123@';
 
 -- ═══════════════════════════════════════════════════════════════
--- PASSO 3: PERMISSÕES NO DATABASE 'muonline' (READ-ONLY)
+-- PASSO 3: PERMISSÕES NO DATABASE 'muonline' (READ-ONLY + WRITE ESPECÍFICO)
 -- ═══════════════════════════════════════════════════════════════
 
--- Apenas SELECT (leitura) - não pode alterar dados do servidor MU
+-- ✅ V629: SELECT global (leitura em todas as tabelas)
 GRANT SELECT ON muonline.* TO 'webuser'@'localhost';
 GRANT SELECT ON muonline.* TO 'webuser'@'127.0.0.1';
+
+-- ✅ V629: UPDATE específico em tabelas necessárias para funcionalidades do site
+GRANT UPDATE ON muonline.character_info TO 'webuser'@'localhost';
+GRANT UPDATE ON muonline.character_info TO 'webuser'@'127.0.0.1';
+
+GRANT UPDATE ON muonline.accounts TO 'webuser'@'localhost';
+GRANT UPDATE ON muonline.accounts TO 'webuser'@'127.0.0.1';
+
+-- 📋 JUSTIFICATIVA:
+-- character_info: distribuir pontos, reset, unstick, clear PK
+-- accounts: trocar senha, atualizar email, ban/unban
 
 -- ═══════════════════════════════════════════════════════════════
 -- PASSO 4: PERMISSÕES NO DATABASE 'meuweb' (READ+WRITE)
@@ -72,6 +85,9 @@ SELECT User, Host FROM mysql.user WHERE User = 'webuser';
 -- Verificar permissões no database 'muonline'
 SHOW GRANTS FOR 'webuser'@'localhost';
 
+-- Verificar permissões no database 'meuweb'
+SHOW GRANTS FOR 'webuser'@'localhost';
+
 -- ═══════════════════════════════════════════════════════════════
 -- OBSERVAÇÕES IMPORTANTES
 -- ═══════════════════════════════════════════════════════════════
@@ -79,7 +95,7 @@ SHOW GRANTS FOR 'webuser'@'localhost';
 -- 📋 RESUMO DAS PERMISSÕES:
 -- 
 -- ✅ webuser@localhost:
---    - muonline: SELECT (read-only)
+--    - muonline: SELECT (read-only) + UPDATE específico em character_info e accounts
 --    - meuweb: SELECT, INSERT, UPDATE, DELETE (read+write)
 -- 
 -- ❌ SEM PERMISSÕES PERIGOSAS:

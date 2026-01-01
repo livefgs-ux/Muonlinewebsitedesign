@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
 VERSION="629"
-VERSION_DATE="2025-12-31 23:30 CET - V629: 🔧 FIX CRÍTICO - Distribuir pontos + Troca de senha corrigidos"
+VERSION_DATE="2025-12-31 23:45 CET - V629: 🔐 FIX CRÍTICO - Permissões MySQL + Frontend corrigidos"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -1652,6 +1652,7 @@ menu_principal() {
         echo ""
         echo -e "${YELLOW}11)${NC} 🔧 Configurar OpenLiteSpeed Proxy Reverso"
         echo -e "${YELLOW}12)${NC} 🛠️  Corrigir Bugs V574 (WCoin + Events)"
+        echo -e "${YELLOW}13)${NC} 🔐 Corrigir Permissões MySQL (V629 - Distribuir Pontos)"
         echo ""
         echo -e "${RED} 0)${NC} ❌ Sair"
         echo ""
@@ -1671,6 +1672,7 @@ menu_principal() {
             10) atualizar_github ;;
             11) configurar_litespeed_proxy ;;
             12) corrigir_bugs_v574 ;;
+            13) corrigir_permissoes_mysql_v629 ;;
             0) 
                 clear_screen
                 echo -e "${GREEN}Até logo! 👋${NC}"
