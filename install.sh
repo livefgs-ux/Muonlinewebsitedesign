@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="620"
-VERSION_DATE="2025-12-31 18:45 CET - V620: 🐛 FIX - Background responsivo (cover)"
+VERSION="622"
+VERSION_DATE="2025-12-31 20:30 CET - V622: 🔀 HYBRID SYSTEM - MySQL + SQL Server 2019"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores

@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "mssql": "^10.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {},
+  "note": "Adicione esta dependência ao package.json existente para suportar SQL Server 2019"
+}
