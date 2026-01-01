@@ -42,7 +42,7 @@ interface PlayerContextType {
   isLoading: boolean;
   selectCharacter: (characterName: string) => void;
   refreshCharacters: () => Promise<void>;
-  distributePoints: (characterName: string, stats: Partial<Pick<Character, 'strength' | 'dexterity' | 'vitality' | 'energy' | 'command'>>) => Promise<{ success: boolean; message: string }>;
+  distributePoints: (characterName: string, stats: any) => Promise<{ success: boolean; message: string }>;
   resetCharacter: (characterName: string) => Promise<{ success: boolean; message: string }>;
 }
 
@@ -188,37 +188,65 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const distributePoints = async (
-    characterName: string, 
-    stats: Partial<Pick<Character, 'strength' | 'dexterity' | 'vitality' | 'energy' | 'command'>>
-  ) => {
+  const distributePoints = async (characterName: string, stats: any) => {
     // ✅ BUSCAR TOKEN EM MÚLTIPLOS LOCAIS (jogador OU admin)
     const token = sessionStorage.getItem('auth_token') || localStorage.getItem('admin_token');
     if (!token) {
-      return { success: false, message: 'Não autenticado' };
+      return { success: false, message: '⚠️ Sessão expirada. Faça login novamente.' };
     }
 
     try {
-      const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.CHARACTERS}/${characterName}/points`), {  // ✅ CORRETO
-        method: 'PUT',  // ✅ PUT, não POST
+      console.log('📤 [PlayerContext] Distribuindo pontos:', { characterName, stats });
+      
+      const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.CHARACTERS}/${characterName}/points`), {
+        method: 'PUT',
         headers: {
           ...getAuthHeaders(token),
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(stats)  // ✅ V617: Enviar direto, não { stats }
+        body: JSON.stringify(stats)
       });
 
+      console.log('📥 [PlayerContext] Response status:', response.status);
       const data = await response.json();
+      console.log('📥 [PlayerContext] Response data:', data);
 
       if (response.ok) {
         await refreshCharacters();
-        return { success: true, message: data.message || 'Pontos distribuídos com sucesso!' };
+        return { success: true, message: '✅ Pontos distribuídos com sucesso!' };
       } else {
-        return { success: false, message: data.message || 'Erro ao distribuir pontos' };
+        // ✅ V629: MELHOR FEEDBACK DE ERRO
+        let errorMessage = data.message || data.error || 'Erro ao distribuir pontos';
+        
+        // Mensagens específicas por código de erro
+        if (response.status === 400) {
+          errorMessage = '⚠️ Dados inválidos. Verifique os valores.';
+        } else if (response.status === 403) {
+          errorMessage = '⚠️ Personagem está online! Desconecte do jogo primeiro.';
+        } else if (response.status === 404) {
+          errorMessage = '⚠️ Personagem não encontrado.';
+        } else if (response.status === 500) {
+          errorMessage = '❌ Erro no servidor. Tente novamente em alguns instantes.';
+          console.error('🔥 [PlayerContext] Erro 500 detalhado:', data);
+        }
+        
+        return { success: false, message: errorMessage };
       }
-    } catch (error) {
-      logger.error('Erro ao distribuir pontos:', error);
-      return { success: false, message: 'Erro de conexão com o servidor' };
+    } catch (error: any) {
+      console.error('❌ [PlayerContext] Erro ao distribuir pontos:', error);
+      
+      // Mensagem de erro específica
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        return { 
+          success: false, 
+          message: '❌ Erro de conexão. Verifique sua internet e tente novamente.' 
+        };
+      }
+      
+      return { 
+        success: false, 
+        message: '❌ Erro inesperado. Contate o suporte se persistir.' 
+      };
     }
   };
 

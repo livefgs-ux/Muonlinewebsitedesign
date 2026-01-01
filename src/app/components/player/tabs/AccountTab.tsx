@@ -29,22 +29,22 @@ export function AccountTab({ accountInfo }: AccountTabProps) {
 
     // Validações
     if (!oldPassword || !newPassword || !confirmPassword) {
-      toast.error('Preencha todos os campos!');
+      toast.error('⚠️ Preencha todos os campos!');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error('As senhas não coincidem!');
+      toast.error('⚠️ As senhas não coincidem!');
       return;
     }
 
     if (newPassword.length < 4) {
-      toast.error('A nova senha deve ter pelo menos 4 caracteres!');
+      toast.error('⚠️ A nova senha deve ter pelo menos 4 caracteres!');
       return;
     }
 
     if (oldPassword === newPassword) {
-      toast.error('A nova senha deve ser diferente da atual!');
+      toast.error('⚠️ A nova senha deve ser diferente da atual!');
       return;
     }
 
@@ -54,11 +54,8 @@ export function AccountTab({ accountInfo }: AccountTabProps) {
     
     if (!authToken) {
       console.error('❌ [AccountTab] Token JWT não encontrado!');
-      toast.error('Sessão expirada. Faça login novamente.');
-      // Redirecionar para login
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
+      toast.error('⚠️ Sessão expirada. Faça login novamente.');
+      // ❌ V629: REMOVIDO redirect automático que causava refresh
       return;
     }
 
@@ -90,26 +87,39 @@ export function AccountTab({ accountInfo }: AccountTabProps) {
       const data = await response.json();
       console.log('📥 [AccountTab] Response data:', data);
 
+      // ✅ V629: MELHOR TRATAMENTO DE ERROS
       if (response.status === 401) {
-        // ✅ V625: Erro de autenticação específico
-        toast.error('Sessão expirada ou inválida. Faça login novamente.');
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 2000);
+        toast.error('⚠️ Senha atual incorreta!');
+        return;
+      }
+
+      if (response.status === 400) {
+        toast.error(data.message || '⚠️ Dados inválidos!');
+        return;
+      }
+
+      if (response.status === 500) {
+        console.error('🔥 [AccountTab] Erro 500 detalhado:', data);
+        toast.error('❌ Erro no servidor. Tente novamente em alguns instantes.');
         return;
       }
 
       if (data.success) {
-        toast.success('Senha alterada com sucesso!');
+        toast.success('✅ Senha alterada com sucesso!');
         setOldPassword('');
         setNewPassword('');
         setConfirmPassword('');
       } else {
-        toast.error(data.message || 'Erro ao alterar senha!');
+        toast.error(data.message || '❌ Erro ao alterar senha!');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ [AccountTab] Erro ao alterar senha:', error);
-      toast.error('Erro ao alterar senha. Tente novamente.');
+      
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        toast.error('❌ Erro de conexão. Verifique sua internet.');
+      } else {
+        toast.error('❌ Erro inesperado. Contate o suporte.');
+      }
     } finally {
       setIsChangingPassword(false);
     }
