@@ -458,9 +458,462 @@ const resetCharacter = async (req, res) => {
   }
 };
 
+/**
+ * Grand Reset de Personagem
+ * ✅ BASEADO NO WEBENGINE: CharacterReset (Grand Reset variant)
+ * Requisitos: Level 400 + Reset máximo (configurável)
+ */
+const grandResetCharacter = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const { accountId } = req.user;
+    
+    console.log(`\n🔄 ========================================`);
+    console.log(`🔄 GRAND RESET REQUEST`);
+    console.log(`🔄 ========================================`);
+    console.log(`🔄 Account: ${accountId}`);
+    console.log(`🔄 Character: ${name}`);
+    
+    if (!name) {
+      return errorResponse(res, 'Nome do personagem é obrigatório', 400);
+    }
+    
+    // Buscar GUID da conta
+    const accountGuid = await getAccountGuid(accountId);
+    
+    if (!accountGuid) {
+      console.log(`❌ Conta não encontrada: ${accountId}`);
+      return errorResponse(res, 'Conta não encontrada', 404);
+    }
+    
+    // Verificar se o personagem existe e pode grand resetar
+    const checkSql = `
+      SELECT 
+        level,
+        reset as resets,
+        greset as grandResets,
+        online,
+        money as zen
+      FROM ${tables.characterInfo}
+      WHERE name = ? AND account_id = ?
+    `;
+    
+    const checkResult = await executeQueryMU(checkSql, [name, accountGuid]);
+    
+    if (!checkResult.success || checkResult.data.length === 0) {
+      console.log(`❌ Personagem não encontrado: ${name}`);
+      return errorResponse(res, 'Personagem não encontrado', 404);
+    }
+    
+    const character = checkResult.data[0];
+    
+    // Verificar se está online
+    if (character.online === 1) {
+      console.log(`⚠️ Personagem online, não pode grand resetar: ${name}`);
+      return errorResponse(res, 'Não é possível grand resetar personagem online', 400);
+    }
+    
+    // Requisitos de grand reset
+    const requiredLevel = 400;
+    const requiredResets = 10; // Configurável
+    const grandResetCost = 50000000; // 50kk zen
+    
+    if (character.level < requiredLevel) {
+      console.log(`⚠️ Level insuficiente: ${character.level} < ${requiredLevel}`);
+      return errorResponse(res, `Level mínimo para grand reset: ${requiredLevel}`, 400);
+    }
+    
+    if (character.resets < requiredResets) {
+      console.log(`⚠️ Resets insuficientes: ${character.resets} < ${requiredResets}`);
+      return errorResponse(res, `Resets mínimos para grand reset: ${requiredResets}`, 400);
+    }
+    
+    if (character.zen < grandResetCost) {
+      console.log(`⚠️ Zen insuficiente: ${character.zen} < ${grandResetCost}`);
+      return errorResponse(res, 'Zen insuficiente para grand reset', 400);
+    }
+    
+    // Realizar grand reset (limpa level + resets, adiciona grand reset)
+    const grandResetSql = `
+      UPDATE ${tables.characterInfo}
+      SET 
+        level = 1,
+        reset = 0,
+        greset = greset + 1,
+        points = points + 1000,
+        money = money - ?
+      WHERE name = ? AND account_id = ?
+    `;
+    
+    const grandResetResult = await executeQueryMU(grandResetSql, [grandResetCost, name, accountGuid]);
+    
+    if (!grandResetResult.success) {
+      console.error(`❌ Erro ao grand resetar:`, grandResetResult.error);
+      return errorResponse(res, 'Erro ao realizar grand reset', 500);
+    }
+    
+    console.log(`✅ Grand Reset realizado com sucesso: ${name} → Grand Reset #${character.grandResets + 1}`);
+    
+    return successResponse(res, {
+      newGrandResetCount: character.grandResets + 1,
+      resetCount: 0,
+      level: 1,
+      bonusPoints: 1000,
+      zenSpent: grandResetCost
+    }, 'Grand Reset realizado com sucesso');
+    
+  } catch (error) {
+    console.error('❌ Exception ao grand resetar personagem:', error);
+    return errorResponse(res, 'Erro ao realizar grand reset', 500);
+  }
+};
+
+/**
+ * Reset Stats de Personagem
+ * ✅ BASEADO NO WEBENGINE: CharacterResetStats
+ * Reseta stats para base da classe, retorna pontos
+ */
+const resetStats = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const { accountId } = req.user;
+    
+    console.log(`\n📊 ========================================`);
+    console.log(`📊 RESET STATS REQUEST`);
+    console.log(`📊 ========================================`);
+    console.log(`📊 Account: ${accountId}`);
+    console.log(`📊 Character: ${name}`);
+    
+    if (!name) {
+      return errorResponse(res, 'Nome do personagem é obrigatório', 400);
+    }
+    
+    // Buscar GUID da conta
+    const accountGuid = await getAccountGuid(accountId);
+    
+    if (!accountGuid) {
+      console.log(`❌ Conta não encontrada: ${accountId}`);
+      return errorResponse(res, 'Conta não encontrada', 404);
+    }
+    
+    // Verificar se o personagem existe
+    const checkSql = `
+      SELECT 
+        race as class,
+        level,
+        level_master as masterLevel,
+        strength as str,
+        agility as dex,
+        vitality as vit,
+        energy as ene,
+        leadership as cmd,
+        points,
+        online,
+        money as zen
+      FROM ${tables.characterInfo}
+      WHERE name = ? AND account_id = ?
+    `;
+    
+    const checkResult = await executeQueryMU(checkSql, [name, accountGuid]);
+    
+    if (!checkResult.success || checkResult.data.length === 0) {
+      console.log(`❌ Personagem não encontrado: ${name}`);
+      return errorResponse(res, 'Personagem não encontrado', 404);
+    }
+    
+    const character = checkResult.data[0];
+    
+    // Verificar se está online
+    if (character.online === 1) {
+      console.log(`⚠️ Personagem online, não pode resetar stats: ${name}`);
+      return errorResponse(res, 'Não é possível resetar stats de personagem online', 400);
+    }
+    
+    // Custo de reset stats
+    const resetStatsCost = 1000000; // 1kk zen
+    
+    if (character.zen < resetStatsCost) {
+      console.log(`⚠️ Zen insuficiente: ${character.zen} < ${resetStatsCost}`);
+      return errorResponse(res, 'Zen insuficiente para reset stats', 400);
+    }
+    
+    // Base stats por classe (baseado no WebEngine custom character_class)
+    const baseStats = {
+      // DW (0-15)
+      0: { str: 18, dex: 18, vit: 15, ene: 30, cmd: 0 },
+      1: { str: 18, dex: 18, vit: 15, ene: 30, cmd: 0 },
+      3: { str: 18, dex: 18, vit: 15, ene: 30, cmd: 0 },
+      7: { str: 18, dex: 18, vit: 15, ene: 30, cmd: 0 },
+      15: { str: 18, dex: 18, vit: 15, ene: 30, cmd: 0 },
+      
+      // DK (16-31)
+      16: { str: 28, dex: 20, vit: 25, ene: 10, cmd: 0 },
+      17: { str: 28, dex: 20, vit: 25, ene: 10, cmd: 0 },
+      19: { str: 28, dex: 20, vit: 25, ene: 10, cmd: 0 },
+      23: { str: 28, dex: 20, vit: 25, ene: 10, cmd: 0 },
+      31: { str: 28, dex: 20, vit: 25, ene: 10, cmd: 0 },
+      
+      // ELF (32-47)
+      32: { str: 22, dex: 25, vit: 15, ene: 20, cmd: 0 },
+      33: { str: 22, dex: 25, vit: 15, ene: 20, cmd: 0 },
+      35: { str: 22, dex: 25, vit: 15, ene: 20, cmd: 0 },
+      39: { str: 22, dex: 25, vit: 15, ene: 20, cmd: 0 },
+      47: { str: 22, dex: 25, vit: 15, ene: 20, cmd: 0 },
+      
+      // MG (48-63)
+      48: { str: 26, dex: 26, vit: 26, ene: 16, cmd: 0 },
+      51: { str: 26, dex: 26, vit: 26, ene: 16, cmd: 0 },
+      55: { str: 26, dex: 26, vit: 26, ene: 16, cmd: 0 },
+      63: { str: 26, dex: 26, vit: 26, ene: 16, cmd: 0 },
+      
+      // DL (64-79)
+      64: { str: 26, dex: 20, vit: 20, ene: 15, cmd: 25 },
+      67: { str: 26, dex: 20, vit: 20, ene: 15, cmd: 25 },
+      71: { str: 26, dex: 20, vit: 20, ene: 15, cmd: 25 },
+      79: { str: 26, dex: 20, vit: 20, ene: 15, cmd: 25 },
+      
+      // SUM (80-95)
+      80: { str: 21, dex: 21, vit: 18, ene: 23, cmd: 0 },
+      81: { str: 21, dex: 21, vit: 18, ene: 23, cmd: 0 },
+      83: { str: 21, dex: 21, vit: 18, ene: 23, cmd: 0 },
+      87: { str: 21, dex: 21, vit: 18, ene: 23, cmd: 0 },
+      95: { str: 21, dex: 21, vit: 18, ene: 23, cmd: 0 },
+      
+      // RF (96-111)
+      96: { str: 32, dex: 27, vit: 25, ene: 20, cmd: 0 },
+      99: { str: 32, dex: 27, vit: 25, ene: 20, cmd: 0 },
+      103: { str: 32, dex: 27, vit: 25, ene: 20, cmd: 0 },
+      111: { str: 32, dex: 27, vit: 25, ene: 20, cmd: 0 },
+      
+      // GL (112-127)
+      112: { str: 30, dex: 30, vit: 25, ene: 24, cmd: 0 },
+      116: { str: 30, dex: 30, vit: 25, ene: 24, cmd: 0 },
+      119: { str: 30, dex: 30, vit: 25, ene: 24, cmd: 0 },
+      127: { str: 30, dex: 30, vit: 25, ene: 24, cmd: 0 },
+      
+      // RW (128-143)
+      128: { str: 13, dex: 18, vit: 14, ene: 40, cmd: 0 },
+      129: { str: 13, dex: 18, vit: 14, ene: 40, cmd: 0 },
+      131: { str: 13, dex: 18, vit: 14, ene: 40, cmd: 0 },
+      135: { str: 13, dex: 18, vit: 14, ene: 40, cmd: 0 },
+      143: { str: 13, dex: 18, vit: 14, ene: 40, cmd: 0 },
+      
+      // SL (144-159)
+      144: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      145: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      147: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      151: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      159: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      
+      // GC (160-175)
+      160: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      161: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      163: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      167: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      175: { str: 28, dex: 30, vit: 15, ene: 10, cmd: 0 },
+      
+      // LW (176-191)
+      176: { str: 19, dex: 19, vit: 15, ene: 30, cmd: 0 },
+      177: { str: 19, dex: 19, vit: 15, ene: 30, cmd: 0 },
+      179: { str: 19, dex: 19, vit: 15, ene: 30, cmd: 0 },
+      183: { str: 19, dex: 19, vit: 15, ene: 30, cmd: 0 },
+      191: { str: 19, dex: 19, vit: 15, ene: 30, cmd: 0 },
+      
+      // LEM (192-207)
+      192: { str: 18, dex: 18, vit: 19, ene: 30, cmd: 0 },
+      193: { str: 18, dex: 18, vit: 19, ene: 30, cmd: 0 },
+      195: { str: 18, dex: 18, vit: 19, ene: 30, cmd: 0 },
+      199: { str: 18, dex: 18, vit: 19, ene: 30, cmd: 0 },
+      207: { str: 18, dex: 18, vit: 19, ene: 30, cmd: 0 },
+      
+      // IK (208-223)
+      208: { str: 25, dex: 28, vit: 15, ene: 10, cmd: 0 },
+      209: { str: 25, dex: 28, vit: 15, ene: 10, cmd: 0 },
+      211: { str: 25, dex: 28, vit: 15, ene: 10, cmd: 0 },
+      215: { str: 25, dex: 28, vit: 15, ene: 10, cmd: 0 },
+      223: { str: 25, dex: 28, vit: 15, ene: 10, cmd: 0 },
+      
+      // ALC (224-239)
+      224: { str: 15, dex: 20, vit: 23, ene: 15, cmd: 0 },
+      225: { str: 15, dex: 20, vit: 23, ene: 15, cmd: 0 },
+      227: { str: 15, dex: 20, vit: 23, ene: 15, cmd: 0 },
+      231: { str: 15, dex: 20, vit: 23, ene: 15, cmd: 0 },
+      239: { str: 15, dex: 20, vit: 23, ene: 15, cmd: 0 }
+    };
+    
+    const base = baseStats[character.class];
+    
+    if (!base) {
+      console.log(`⚠️ Classe não encontrada: ${character.class}`);
+      return errorResponse(res, 'Classe inválida', 400);
+    }
+    
+    // Calcular pontos que serão retornados
+    const currentStats = character.str + character.dex + character.vit + character.ene + character.cmd;
+    const baseStatsSum = base.str + base.dex + base.vit + base.ene + base.cmd;
+    const pointsToReturn = currentStats - baseStatsSum;
+    
+    // Calcular pontos de level e master level
+    const levelPoints = (character.level - 1) * 5;
+    const masterLevelPoints = character.masterLevel * 1;
+    const totalAvailablePoints = character.points + pointsToReturn;
+    
+    console.log(`📊 Stats atuais: STR=${character.str}, DEX=${character.dex}, VIT=${character.vit}, ENE=${character.ene}, CMD=${character.cmd}`);
+    console.log(`📊 Stats base: STR=${base.str}, DEX=${base.dex}, VIT=${base.vit}, ENE=${base.ene}, CMD=${base.cmd}`);
+    console.log(`📊 Pontos a retornar: ${pointsToReturn}`);
+    console.log(`📊 Pontos totais: ${totalAvailablePoints}`);
+    
+    // Resetar stats
+    const resetStatsSql = `
+      UPDATE ${tables.characterInfo}
+      SET 
+        strength = ?,
+        agility = ?,
+        vitality = ?,
+        energy = ?,
+        leadership = ?,
+        points = ?,
+        money = money - ?
+      WHERE name = ? AND account_id = ?
+    `;
+    
+    const resetStatsResult = await executeQueryMU(resetStatsSql, [
+      base.str,
+      base.dex,
+      base.vit,
+      base.ene,
+      base.cmd,
+      totalAvailablePoints,
+      resetStatsCost,
+      name,
+      accountGuid
+    ]);
+    
+    if (!resetStatsResult.success) {
+      console.error(`❌ Erro ao resetar stats:`, resetStatsResult.error);
+      return errorResponse(res, 'Erro ao resetar stats', 500);
+    }
+    
+    console.log(`✅ Stats resetados com sucesso: ${name}`);
+    
+    return successResponse(res, {
+      baseStats: base,
+      pointsReturned: pointsToReturn,
+      totalPoints: totalAvailablePoints,
+      zenSpent: resetStatsCost
+    }, 'Stats resetados com sucesso');
+    
+  } catch (error) {
+    console.error('❌ Exception ao resetar stats:', error);
+    return errorResponse(res, 'Erro ao resetar stats', 500);
+  }
+};
+
+/**
+ * Clear PK (Player Killer status)
+ * ✅ BASEADO NO WEBENGINE: Clear PK functionality
+ * Remove PK count e PK level do personagem
+ */
+const clearPK = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const { accountId } = req.user;
+    
+    console.log(`\n🕊️ ========================================`);
+    console.log(`🕊️ CLEAR PK REQUEST`);
+    console.log(`🕊️ ========================================`);
+    console.log(`🕊️ Account: ${accountId}`);
+    console.log(`🕊️ Character: ${name}`);
+    
+    if (!name) {
+      return errorResponse(res, 'Nome do personagem é obrigatório', 400);
+    }
+    
+    // Buscar GUID da conta
+    const accountGuid = await getAccountGuid(accountId);
+    
+    if (!accountGuid) {
+      console.log(`❌ Conta não encontrada: ${accountId}`);
+      return errorResponse(res, 'Conta não encontrada', 404);
+    }
+    
+    // Verificar se o personagem existe
+    const checkSql = `
+      SELECT 
+        pk_count as pkCount,
+        pk_level as pkLevel,
+        online,
+        money as zen
+      FROM ${tables.characterInfo}
+      WHERE name = ? AND account_id = ?
+    `;
+    
+    const checkResult = await executeQueryMU(checkSql, [name, accountGuid]);
+    
+    if (!checkResult.success || checkResult.data.length === 0) {
+      console.log(`❌ Personagem não encontrado: ${name}`);
+      return errorResponse(res, 'Personagem não encontrado', 404);
+    }
+    
+    const character = checkResult.data[0];
+    
+    // Verificar se está online
+    if (character.online === 1) {
+      console.log(`⚠️ Personagem online, não pode clear PK: ${name}`);
+      return errorResponse(res, 'Não é possível clear PK de personagem online', 400);
+    }
+    
+    // Verificar se tem PK para limpar
+    if (character.pkCount === 0 && character.pkLevel === 0) {
+      console.log(`⚠️ Personagem não possui PK: ${name}`);
+      return errorResponse(res, 'Personagem não possui PK para limpar', 400);
+    }
+    
+    // Custo de clear PK
+    const clearPKCost = 5000000; // 5kk zen
+    
+    if (character.zen < clearPKCost) {
+      console.log(`⚠️ Zen insuficiente: ${character.zen} < ${clearPKCost}`);
+      return errorResponse(res, 'Zen insuficiente para clear PK', 400);
+    }
+    
+    // Limpar PK
+    const clearPKSql = `
+      UPDATE ${tables.characterInfo}
+      SET 
+        pk_count = 0,
+        pk_level = 0,
+        money = money - ?
+      WHERE name = ? AND account_id = ?
+    `;
+    
+    const clearPKResult = await executeQueryMU(clearPKSql, [clearPKCost, name, accountGuid]);
+    
+    if (!clearPKResult.success) {
+      console.error(`❌ Erro ao clear PK:`, clearPKResult.error);
+      return errorResponse(res, 'Erro ao limpar PK', 500);
+    }
+    
+    console.log(`✅ PK limpo com sucesso: ${name}`);
+    
+    return successResponse(res, {
+      previousPKCount: character.pkCount,
+      previousPKLevel: character.pkLevel,
+      zenSpent: clearPKCost
+    }, 'PK limpo com sucesso');
+    
+  } catch (error) {
+    console.error('❌ Exception ao clear PK:', error);
+    return errorResponse(res, 'Erro ao limpar PK', 500);
+  }
+};
+
 module.exports = {
   getAccountCharacters,
   getCharacterDetails,
   distributePoints,
-  resetCharacter
+  resetCharacter,
+  grandResetCharacter,
+  resetStats,
+  clearPK
 };

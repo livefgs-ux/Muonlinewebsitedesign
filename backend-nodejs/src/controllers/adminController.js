@@ -352,4 +352,308 @@ exports.getAllCharacters = async (req, res) => {
   }
 };
 
+/**
+ * 🌐 ONLINE ACCOUNTS VIEW
+ * ✅ BASEADO NO WEBENGINE: Online accounts monitoring
+ * GET /api/admin/accounts/online
+ */
+exports.getOnlineAccounts = async (req, res) => {
+  try {
+    console.log('\n🌐 ========================================');
+    console.log('🌐 ONLINE ACCOUNTS REQUEST');
+    console.log('🌐 ========================================');
+
+    const { page = 1, limit = 50 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    // Buscar contas online com seus personagens online
+    const sql = `
+      SELECT 
+        a.account,
+        a.mail_addr as email,
+        a.created_at,
+        a.last_login_date as lastLogin,
+        a.last_login_ip as lastIP,
+        (SELECT COUNT(*) FROM character_info WHERE account_id = a.guid) as totalCharacters,
+        (SELECT COUNT(*) FROM character_info WHERE account_id = a.guid AND online = 1) as onlineCharacters,
+        (SELECT GROUP_CONCAT(name SEPARATOR ', ') FROM character_info WHERE account_id = a.guid AND online = 1) as onlineCharacterNames
+      FROM accounts a
+      WHERE EXISTS (
+        SELECT 1 FROM character_info 
+        WHERE account_id = a.guid AND online = 1
+      )
+      ORDER BY a.last_login_date DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    const result = await executeQueryMU(sql, [parseInt(limit), offset]);
+
+    if (!result.success) {
+      console.error('❌ Erro ao buscar contas online:', result.error);
+      return errorResponse(res, 'Erro ao buscar contas online', 500);
+    }
+
+    // Contar total de contas online
+    const countSQL = `
+      SELECT COUNT(DISTINCT a.account) as total
+      FROM accounts a
+      WHERE EXISTS (
+        SELECT 1 FROM character_info 
+        WHERE account_id = a.guid AND online = 1
+      )
+    `;
+
+    const countResult = await executeQueryMU(countSQL);
+    const totalOnlineAccounts = countResult.success ? countResult.data[0].total : 0;
+
+    console.log(`✅ ${result.data.length} contas online encontradas (Total: ${totalOnlineAccounts})`);
+
+    return successResponse(res, {
+      accounts: result.data,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: parseInt(totalOnlineAccounts),
+        totalPages: Math.ceil(totalOnlineAccounts / parseInt(limit))
+      }
+    }, 'Contas online obtidas com sucesso');
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar contas online:', error);
+    return errorResponse(res, 'Erro interno ao buscar contas online', 500);
+  }
+};
+
+/**
+ * 🚫 LATEST BANS VIEW
+ * ✅ BASEADO NO WEBENGINE: Recent bans monitoring
+ * GET /api/admin/bans/latest
+ */
+exports.getLatestBans = async (req, res) => {
+  try {
+    console.log('\n🚫 ========================================');
+    console.log('🚫 LATEST BANS REQUEST');
+    console.log('🚫 ========================================');
+
+    const { page = 1, limit = 50, days = 30 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    // Buscar bans recentes
+    const sql = `
+      SELECT 
+        a.account,
+        a.mail_addr as email,
+        a.blocked,
+        a.block_date as banDate,
+        a.block_reason as banReason,
+        a.blocked_by as bannedBy,
+        a.last_login_date as lastLogin,
+        a.last_login_ip as lastIP,
+        (SELECT COUNT(*) FROM character_info WHERE account_id = a.guid) as totalCharacters
+      FROM accounts a
+      WHERE a.blocked = 1
+        AND a.block_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      ORDER BY a.block_date DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    const result = await executeQueryMU(sql, [parseInt(days), parseInt(limit), offset]);
+
+    if (!result.success) {
+      console.error('❌ Erro ao buscar bans recentes:', result.error);
+      return errorResponse(res, 'Erro ao buscar bans recentes', 500);
+    }
+
+    // Contar total de bans no período
+    const countSQL = `
+      SELECT COUNT(*) as total
+      FROM accounts
+      WHERE blocked = 1
+        AND block_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
+    `;
+
+    const countResult = await executeQueryMU(countSQL, [parseInt(days)]);
+    const totalBans = countResult.success ? countResult.data[0].total : 0;
+
+    console.log(`✅ ${result.data.length} bans recentes encontrados (Total: ${totalBans})`);
+
+    return successResponse(res, {
+      bans: result.data,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: parseInt(totalBans),
+        totalPages: Math.ceil(totalBans / parseInt(limit))
+      },
+      filters: {
+        days: parseInt(days)
+      }
+    }, 'Bans recentes obtidos com sucesso');
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar bans recentes:', error);
+    return errorResponse(res, 'Erro interno ao buscar bans recentes', 500);
+  }
+};
+
+/**
+ * 🗑️ CACHE MANAGER - Clear Cache
+ * ✅ BASEADO NO WEBENGINE: Cache management
+ * DELETE /api/admin/cache
+ */
+exports.clearCache = async (req, res) => {
+  try {
+    console.log('\n🗑️ ========================================');
+    console.log('🗑️ CLEAR CACHE REQUEST');
+    console.log('🗑️ ========================================');
+
+    const { type = 'all' } = req.body;
+    const { CacheManager } = require('../utils/cacheManager');
+
+    // Clear cache
+    CacheManager.clearCache(type);
+
+    console.log(`✅ Cache cleared: ${type}`);
+
+    return successResponse(res, {
+      clearedCache: type,
+      timestamp: new Date().toISOString()
+    }, `Cache ${type} limpo com sucesso`);
+
+  } catch (error) {
+    console.error('❌ Erro ao limpar cache:', error);
+    return errorResponse(res, 'Erro interno ao limpar cache', 500);
+  }
+};
+
+/**
+ * 📊 CACHE MANAGER - Get Cache Stats
+ * ✅ BASEADO NO WEBENGINE: Cache statistics
+ * GET /api/admin/cache/stats
+ */
+exports.getCacheStats = async (req, res) => {
+  try {
+    console.log('\n📊 ========================================');
+    console.log('📊 CACHE STATS REQUEST');
+    console.log('📊 ========================================');
+
+    const { type = 'all' } = req.query;
+    const { CacheManager } = require('../utils/cacheManager');
+
+    // Get cache stats
+    const stats = CacheManager.getStats(type);
+    const keys = CacheManager.getKeys(type);
+
+    console.log(`✅ Cache stats retrieved: ${type}`);
+
+    return successResponse(res, {
+      stats,
+      keys,
+      type,
+      timestamp: new Date().toISOString()
+    }, 'Estatísticas de cache obtidas com sucesso');
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar estatísticas de cache:', error);
+    return errorResponse(res, 'Erro interno ao buscar estatísticas de cache', 500);
+  }
+};
+
+/**
+ * 🚫 IP BLOCKING - Block IP
+ * ✅ BASEADO NO WEBENGINE: IP Management
+ * POST /api/admin/ip/block
+ */
+exports.blockIP = async (req, res) => {
+  try {
+    console.log('\n🚫 ========================================');
+    console.log('🚫 BLOCK IP REQUEST');
+    console.log('🚫 ========================================');
+
+    const { ip, reason, expiresAt } = req.body;
+    const { accountId } = req.user;
+
+    if (!ip || !reason) {
+      return errorResponse(res, 'IP e motivo são obrigatórios', 400);
+    }
+
+    const { blockIP } = require('../middleware/ipBlocking');
+    const result = await blockIP(ip, reason, accountId, expiresAt || null);
+
+    if (result.success) {
+      console.log(`✅ IP bloqueado: ${ip}`);
+      return successResponse(res, result, 'IP bloqueado com sucesso');
+    } else {
+      return errorResponse(res, result.message, 400);
+    }
+
+  } catch (error) {
+    console.error('❌ Erro ao bloquear IP:', error);
+    return errorResponse(res, 'Erro interno ao bloquear IP', 500);
+  }
+};
+
+/**
+ * ✅ IP BLOCKING - Unblock IP
+ * ✅ BASEADO NO WEBENGINE: IP Management
+ * POST /api/admin/ip/unblock
+ */
+exports.unblockIP = async (req, res) => {
+  try {
+    console.log('\n✅ ========================================');
+    console.log('✅ UNBLOCK IP REQUEST');
+    console.log('✅ ========================================');
+
+    const { ip } = req.body;
+    const { accountId } = req.user;
+
+    if (!ip) {
+      return errorResponse(res, 'IP é obrigatório', 400);
+    }
+
+    const { unblockIP } = require('../middleware/ipBlocking');
+    const result = await unblockIP(ip, accountId);
+
+    if (result.success) {
+      console.log(`✅ IP desbloqueado: ${ip}`);
+      return successResponse(res, result, 'IP desbloqueado com sucesso');
+    } else {
+      return errorResponse(res, result.message, 400);
+    }
+
+  } catch (error) {
+    console.error('❌ Erro ao desbloquear IP:', error);
+    return errorResponse(res, 'Erro interno ao desbloquear IP', 500);
+  }
+};
+
+/**
+ * 📋 IP BLOCKING - List Blocked IPs
+ * ✅ BASEADO NO WEBENGINE: IP Management
+ * GET /api/admin/ip/list
+ */
+exports.listBlockedIPs = async (req, res) => {
+  try {
+    console.log('\n📋 ========================================');
+    console.log('📋 LIST BLOCKED IPS REQUEST');
+    console.log('📋 ========================================');
+
+    const { page = 1, limit = 50, status = 'active' } = req.query;
+
+    const { listBlockedIPs } = require('../middleware/ipBlocking');
+    const result = await listBlockedIPs(page, limit, status);
+
+    if (result.success) {
+      console.log(`✅ ${result.data.ips.length} IPs bloqueados listados`);
+      return successResponse(res, result.data, 'IPs bloqueados listados com sucesso');
+    } else {
+      return errorResponse(res, result.message, 500);
+    }
+
+  } catch (error) {
+    console.error('❌ Erro ao listar IPs bloqueados:', error);
+    return errorResponse(res, 'Erro interno ao listar IPs bloqueados', 500);
+  }
+};
+
 module.exports = exports;

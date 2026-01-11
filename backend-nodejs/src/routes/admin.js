@@ -18,4 +18,19 @@ router.get('/dashboard-stats', adminController.getDashboardStats);
 // Personagens (visão global admin)
 router.get('/all-characters', adminController.getAllCharacters);
 
+// Online Accounts
+router.get('/accounts/online', adminController.getOnlineAccounts);
+
+// Latest Bans
+router.get('/bans/latest', adminController.getLatestBans);
+
+// Cache Management
+router.get('/cache/stats', adminController.getCacheStats);
+router.delete('/cache', adminController.clearCache);
+
+// IP Blocking Management
+router.get('/ip/list', adminController.listBlockedIPs);
+router.post('/ip/block', adminController.blockIP);
+router.post('/ip/unblock', adminController.unblockIP);
+
 module.exports = router;

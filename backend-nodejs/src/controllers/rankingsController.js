@@ -367,11 +367,88 @@ const getCharacterRank = async (req, res) => {
   }
 };
 
+/**
+ * Top Grand Resets - NOVO (WebEngine Integration)
+ * ✅ BASEADO NO WEBENGINE: Top Grand Resets Ranking
+ */
+const getTopGrandResets = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 100;
+    const offset = parseInt(req.query.offset) || 0;
+    
+    console.log('\n🔄 ========================================');
+    console.log('🔄 TOP GRAND RESETS REQUEST');
+    console.log('🔄 ========================================');
+    console.log(`🔄 Limit: ${limit}, Offset: ${offset}`);
+    
+    // Verificar cache primeiro
+    const { getRankingsCache, updateRankingsCache } = require('../utils/cacheManager');
+    const cacheKey = `grand_resets_${limit}_${offset}`;
+    const cached = getRankingsCache('GRAND_RESETS');
+    
+    if (cached && cached[cacheKey]) {
+      console.log('✅ Cache HIT: Top Grand Resets');
+      return successResponse(res, cached[cacheKey]);
+    }
+    
+    console.log('❌ Cache MISS: Top Grand Resets - Buscando no banco');
+    
+    const sql = `
+      SELECT 
+        name,
+        level,
+        race,
+        reset as resets,
+        greset as grandResets,
+        level_master as masterLevel,
+        pk_level as pkLevel,
+        online
+      FROM ${tables.characters}
+      WHERE greset > 0
+      ORDER BY greset DESC, reset DESC, level DESC
+      LIMIT ? OFFSET ?
+    `;
+    
+    const result = await executeQueryMU(sql, [limit, offset]);
+    
+    if (!result.success) {
+      console.error('❌ Erro SQL:', result.error);
+      return errorResponse(res, 'Erro ao buscar ranking de grand resets', 500);
+    }
+    
+    const rankings = result.data.map((char, index) => ({
+      position: offset + index + 1,
+      name: char.name,
+      level: char.level,
+      class: getClassName(char.race),
+      classNumber: char.race,
+      grandResets: char.grandResets,
+      resets: char.resets,
+      masterLevel: char.masterLevel,
+      pkLevel: char.pkLevel,
+      online: char.online === 1
+    }));
+    
+    // Atualizar cache
+    const cacheData = { [cacheKey]: rankings };
+    await updateRankingsCache('GRAND_RESETS', cacheData);
+    
+    console.log(`✅ Top Grand Resets: ${rankings.length} resultados`);
+    
+    return successResponse(res, rankings);
+    
+  } catch (error) {
+    console.error('❌ Erro no ranking de grand resets:', error);
+    return errorResponse(res, 'Erro ao buscar ranking', 500);
+  }
+};
+
 module.exports = {
   getTopResets,
   getTopPK,
   getTopLevel,
   getTopGuilds,
   getTopByClass,
-  getCharacterRank
+  getCharacterRank,
+  getTopGrandResets  // ← NOVO
 };

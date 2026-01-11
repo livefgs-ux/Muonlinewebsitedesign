@@ -10,7 +10,8 @@ const {
   getTopLevel,
   getTopGuilds,
   getTopByClass,
-  getCharacterRank
+  getCharacterRank,
+  getTopGrandResets
 } = require('../controllers/rankingsController');
 const { validateRankingParams } = require('../utils/validators');
 
@@ -31,5 +32,8 @@ router.get('/class/:classId', validateRankingParams, getTopByClass);
 
 // GET /api/rankings/character/:name - Posição de um personagem
 router.get('/character/:name', getCharacterRank);
+
+// GET /api/rankings/grandresets - Top Grand Resets
+router.get('/grandresets', validateRankingParams, getTopGrandResets);
 
 module.exports = router;

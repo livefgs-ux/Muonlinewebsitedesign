@@ -4,8 +4,8 @@
 # MEUMU ONLINE - INSTALADOR INTERATIVO
 # ═══════════════════════════════════════════════════════════════
 # 📌 VERSÃO DO INSTALADOR
-VERSION="629"
-VERSION_DATE="2025-12-31 23:45 CET - V629: 🔐 FIX CRÍTICO - Permissões MySQL + Frontend corrigidos"
+VERSION="631"
+VERSION_DATE="2026-01-10 23:45 CET - V631: 🚀 WebEngine Integration - Cache, Grand Reset, IP Blocking"
 # ═══════════════════════════════════════════════════════════════
 
 # Cores
@@ -32,7 +32,7 @@ BASE_DIR="/home/meumu.com/public_html"
 MYSQL_ADMIN_CMD="sudo mysql"
 MYSQL_WEB_USER="webuser"
 MYSQL_WEB_PASS="@meusite123@"
-WEB_GROUP="cyberpanel"
+WEB_GROUP="clp"  # CloudPanel group
 
 # ═══════════════════════════════════════════════════════════════
 # FUNÇÕES AUXILIARES
