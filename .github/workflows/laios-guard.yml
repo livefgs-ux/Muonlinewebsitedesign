@@ -1,0 +1,44 @@
+name: LAIOS GUARD
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  integrity-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect forbidden file changes
+        run: |
+          git fetch origin main
+          CHANGED=$(git diff --name-only origin/main...HEAD)
+
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          if echo "$CHANGED" | grep -E '(^install-nexus.sh|^\.github/|^scripts/)'; then
+            echo "❌ PROTECTED FILE MODIFICATION DETECTED"
+            exit 1
+          fi
+
+      - name: Anti Split-Brain Check
+        run: |
+          if [ -f App.tsx ] || [ -f index.tsx ] || [ -f index.html ]; then
+            echo "❌ SPLIT-BRAIN DETECTED: Root entry points found"
+            exit 1
+          fi
+
+          if [ ! -f frontend/src/App.tsx ]; then
+            echo "❌ Missing frontend source of truth"
+            exit 1
+          fi
+
+          echo "✅ Integrity OK"
